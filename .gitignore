@@ -1,0 +1,15 @@
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+.venv/
+
+# Distribution files
+dist/
+build/
+*.egg-info/
+
+# System files
+.DS_Store
+Thumbs.db
