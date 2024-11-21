@@ -1,9 +1,9 @@
 # Byte-compiled files
-__pycache__/
+__pycache__/*
 *.py[cod]
 
 # Virtual environment
-.venv/
+.venv/*
 
 # Distribution files
 dist/
