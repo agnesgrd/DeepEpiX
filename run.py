@@ -9,8 +9,10 @@ app = dash.Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.BOOTS
 # Main layout with page container for dynamic content loading
 app.layout = html.Div(
     children=[
+        dcc.Store(id="folder-store"),
+
         # This will track the URL and switch between pages based on tab selection
-        dcc.Location(id='url', refresh=True),
+        dcc.Location(id='url', refresh=False),
 
         # Main content
         html.Div(
@@ -27,7 +29,7 @@ app.layout = html.Div(
                 html.H3("Navigation"),
                 html.Div(
                     children=[
-                        dcc.Link('Home', href='/home', style={'display': 'block', 'margin-bottom': '10px'}),
+                        dcc.Link('Home', href='/', style={'display': 'block', 'margin-bottom': '10px'}),
                         dcc.Link('View', href='/view', style={'display': 'block', 'margin-bottom': '10px'}),
                         dcc.Link('Analyze', href='/analyze', style={'display': 'block', 'margin-bottom': '10px'}),
                         dcc.Link('Predict', href='/predict', style={'display': 'block', 'margin-bottom': '10px'}),
