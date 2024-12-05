@@ -9,7 +9,9 @@ app = dash.Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.BOOTS
 # Main layout with page container for dynamic content loading
 app.layout = html.Div(
     children=[
-        dcc.Store(id="folder-store"),
+        dcc.Store(id="folder-store", storage_type="local"),
+        dcc.Store(id="frequency-store", storage_type="local"),
+        dcc.Store(id="preprocessed-data-store", storage_type="local"),
 
         # This will track the URL and switch between pages based on tab selection
         dcc.Location(id='url', refresh=False),
@@ -48,6 +50,7 @@ app.layout = html.Div(
     ],
     style={"display": "flex"},
 )
+
 
 if __name__ == "__main__":
     app.run_server(debug=True)

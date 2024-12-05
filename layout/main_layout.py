@@ -9,3 +9,24 @@ layout = html.Div([
         dcc.Link("Go to Spike Detection", href='/spike-detection')
     ])
 ])
+
+# Common styles
+
+input_styles = {
+    "path":{
+        "width": "100%",
+        "padding": "10px",
+        "fontSize": "16px",
+        "borderWidth": "1px",
+        "borderStyle": "solid",
+        "borderRadius": "5px",
+    },
+    "number":{
+        "width": "10%",
+        "padding": "10px",
+        "fontSize": "16px",
+        "borderWidth": "1px",
+        "borderStyle": "solid",
+        "borderRadius": "5px",
+    }
+}
