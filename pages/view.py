@@ -7,6 +7,9 @@ import io
 import base64
 import matplotlib.pyplot as plt
 import plotly.graph_objs as go  # Import Plotly for graphing
+from pages.home import get_preprocessed_dataframe
+import pandas as pd
+import static.constants as constants
 
 dash.register_page(__name__)
 
@@ -33,42 +36,45 @@ def display_folder_path(folder_path):
 # Callback to apply preprocessing and display the MEG signal
 @dash.callback(
     Output("meg-signal-graph", "figure"),  # Correctly linked to the dcc.Graph component
-    Input("folder-store", "data"),  # Access the stored data
-    Input("frequency-store", "data"),
-    State("preprocessed-data-store", "data"),
+    Input("session-id", "data"),
+    State("folder-store", "data"),  # Access the stored data
+    State("frequency-store", "data"),
     prevent_initial_call=False
 )
 
-def display_meg(folder_path, freq_params, preprocessed_data):
-    """Preprocess and display MEG signal as a Plotly graph."""
-    if preprocessed_data is None:
+def display_meg(session_id, folder_path, freq_data):
+    """Preprocess and display MEG signal as a Plotly graph with a range slider."""
+    if session_id is None:
         raise ValueError("No data available.")
     
     try:
-        times = preprocessed_data["times"]
-        data = preprocessed_data["data"]
-        channel_names = preprocessed_data["channel_names"]
+        raw_df = get_preprocessed_dataframe(session_id, folder_path, freq_data)
 
-            # picks = mne.pick_types(raw.info, meg=True, exclude='bads')
-            # t_idx = raw.time_as_index([0, 180.])  
-            # data, times = raw[picks, t_idx[0]:t_idx[1]] 
-            # # Extract the first 5 channels, first 1000 time points
-            # channel_names = [raw.ch_names[pick] for pick in picks] # Get channel names for the first 5 channels
+        # Extract timestamps and ensure they are in float (seconds since start)
+        times = (raw_df.index - raw_df.index[0]).total_seconds() # Convert to seconds
+
+        # Extract channel names
+        channel_names = constants.left_ch_names #raw_df.columns.tolist()
 
         # Create traces for each channel
         traces = []
-        for i, channel in enumerate(channel_names):
+        for channel in channel_names:
+            channel_data = raw_df[channel]  # Data for the specific channel
             traces.append(go.Scatter(
                 x=times,  # Time points
-                y=data[i],  # Data for the channel
+                y=channel_data,  # Data for the channel
                 mode="lines",
                 name=channel  # Label each trace with the channel name
             ))
 
-        # Define the layout for the Plotly graph
+        # Define the layout for the Plotly graph, including the range slider
         layout = go.Layout(
             title="MEG Signal Visualization (Preprocessed)",
-            xaxis=dict(title="Time (s)"),
+            xaxis=dict(
+                title="Time (s)",
+                rangeslider=dict(visible=True),  # Enable the range slider
+                type="linear"  # Ensure the x-axis is linear
+            ),
             yaxis=dict(title="Amplitude"),
             legend=dict(title="Channels"),
         )
@@ -93,4 +99,4 @@ def display_meg(folder_path, freq_params, preprocessed_data):
             title=f"Error: An unexpected error occurred. {str(e)}",
             xaxis=dict(title="Time (s)"),
             yaxis=dict(title="Amplitude")
-    )
+        )

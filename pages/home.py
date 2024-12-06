@@ -6,9 +6,27 @@ import os
 import mne
 from layout import input_styles
 from dash.exceptions import PreventUpdate
+from flask_caching import Cache
+from io import StringIO
+import pandas as pd
+from dash import get_app
+
+
 
 # Register the page
 dash.register_page(__name__, path = "/")
+app=get_app()
+cache = Cache(app.server, config={
+    'CACHE_TYPE': 'redis',
+    # Note that filesystem cache doesn't work on systems with ephemeral
+    # filesystems like Heroku.
+    'CACHE_TYPE': 'filesystem',
+    'CACHE_DIR': 'cache-directory',
+
+    # should be equal to maximum number of users on the app at a single time
+    # higher numbers will store more data in the filesystem / redis cache
+    'CACHE_THRESHOLD': 10
+})
 
 layout = html.Div([
     html.H1("HOME: Choose MEG Data Folder"),
@@ -38,6 +56,7 @@ layout = html.Div([
 
     # Hidden store to keep the folder path
     # dcc.Store(id="folder-store"),
+    # dcc.Store(id="session-id"),
 
     html.Div([
         dbc.Button(
@@ -93,9 +112,6 @@ layout = html.Div([
 ]
 )
 
-
-
-
 @dash.callback(
     Output("entered-folder", "children"),
     Output("folder-store", "data"),
@@ -144,21 +160,11 @@ def handle_frequency_parameters(resample_freq, high_pass_freq, low_pass_freq):
             "high_pass_freq": high_pass_freq
         }
         return frequency_values, False
-
-@dash.callback(
-    Output("preprocess-status", "children"),
-    Output("url", "pathname"),
-    Output("preprocessed-data-store", "data"),
-    Input("preprocess-display-button", "n_clicks"),
-    State("folder-store", "data"),
-    State("frequency-store", "data"),
-    prevent_initial_call=True
-)
-def preprocess_meg_data(n_clicks, folder_path, freq_data):
-    """Preprocess MEG data and save it."""
-    if n_clicks is None:
-        raise PreventUpdate
-    if n_clicks > 0:
+  
+def get_preprocessed_dataframe(session_id, folder_path, freq_data):
+    print(session_id)
+    @cache.memoize()
+    def preprocess_meg_data(folder_path, freq_data):
         try:
             resample_freq = freq_data.get("resample_freq")
             low_pass_freq = freq_data.get("low_pass_freq")
@@ -169,20 +175,38 @@ def preprocess_meg_data(n_clicks, folder_path, freq_data):
             raw.resample(resample_freq)
 
             # Transform the raw data into a serializable format
-            raw_data = raw.get_data()  # Get numerical data (channels × time)
-            raw_info = {
-                "channel_names": raw.ch_names,
-                "sfreq": raw.info["sfreq"],
-                "times": raw.times[:100].tolist(),  # Limit to first 100 times to reduce size
-                "data": raw_data[:, :100].tolist()  # Limit to first 100 samples for serialization
-            }
+            raw_df = raw.to_data_frame(picks="meg", index="time")  # Get numerical data (channels × time)
 
-            return "Preprocessed and saved data", "/view", raw_info
+            return raw_df.to_json()
         
         except Exception as e:
-            return f"Error during preprocesing : {str(e)}", dash.no_update, None
+            return f"Error during preprocessing : {str(e)}"
+    
+    return pd.read_json(StringIO(preprocess_meg_data(folder_path, freq_data)))
 
-    return None, dash.no_update, None
+@dash.callback(
+    Output("preprocess-status", "children"),
+    Output("url", "pathname"),
+    Input("preprocess-display-button", "n_clicks"),
+    State("session-id", "data"),
+    State("folder-store", "data"),
+    State("frequency-store", "data"),
+    prevent_initial_call=True
+)
+def preprocess_meg_data(n_clicks, session_id, folder_path, freq_data):
+    """Preprocess MEG data and save it."""
+    if n_clicks is None:
+        raise PreventUpdate
+    if n_clicks > 0:
+        try:
+            raw_df = get_preprocessed_dataframe(session_id, folder_path, freq_data)
+
+            return "Preprocessed and saved data", "/view"
+        
+        except Exception as e:
+            return f"Error during preprocessing : {str(e)}", dash.no_update
+
+    return None, dash.no_update
     
 
 

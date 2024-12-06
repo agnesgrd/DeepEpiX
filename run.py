@@ -2,16 +2,32 @@
 import dash
 from dash import html, dcc
 import dash_bootstrap_components as dbc
+import uuid
+from flask_caching import Cache
 
 # Initialize Dash app with use_pages=True
 app = dash.Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
+cache = Cache(app.server, config={
+    'CACHE_TYPE': 'redis',
+    # Note that filesystem cache doesn't work on systems with ephemeral
+    # filesystems like Heroku.
+    'CACHE_TYPE': 'filesystem',
+    'CACHE_DIR': 'cache-directory',
+
+    # should be equal to maximum number of users on the app at a single time
+    # higher numbers will store more data in the filesystem / redis cache
+    'CACHE_THRESHOLD': 10
+})
+
+
 # Main layout with page container for dynamic content loading
 app.layout = html.Div(
     children=[
-        dcc.Store(id="folder-store", storage_type="local"),
-        dcc.Store(id="frequency-store", storage_type="local"),
-        dcc.Store(id="preprocessed-data-store", storage_type="local"),
+        dcc.Store(id="folder-store", storage_type="session"),
+        dcc.Store(id="frequency-store", storage_type="session"),
+        # dcc.Store(id="preprocessed-data-store", storage_type="local"),
+        dcc.Store(id="session-id", storage_type="session", data=str(uuid.uuid4())),
 
         # This will track the URL and switch between pages based on tab selection
         dcc.Location(id='url', refresh=False),

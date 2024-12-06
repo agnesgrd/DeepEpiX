@@ -17,3 +17,6 @@ Thumbs.db
 
 # Data
 data/
+
+# Cache
+cache-directory/
