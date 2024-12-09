@@ -164,7 +164,7 @@ def handle_frequency_parameters(resample_freq, high_pass_freq, low_pass_freq):
 def get_preprocessed_dataframe(session_id, folder_path, freq_data):
     print(session_id)
     @cache.memoize()
-    def preprocess_meg_data(folder_path, freq_data):
+    def preprocess_meg_data(session_id, folder_path, freq_data):
         try:
             resample_freq = freq_data.get("resample_freq")
             low_pass_freq = freq_data.get("low_pass_freq")
@@ -178,11 +178,11 @@ def get_preprocessed_dataframe(session_id, folder_path, freq_data):
             raw_df = raw.to_data_frame(picks="meg", index="time")  # Get numerical data (channels × time)
 
             return raw_df.to_json()
-        
+            
         except Exception as e:
             return f"Error during preprocessing : {str(e)}"
     
-    return pd.read_json(StringIO(preprocess_meg_data(folder_path, freq_data)))
+    return pd.read_json(StringIO(preprocess_meg_data(session_id, folder_path, freq_data)))
 
 @dash.callback(
     Output("preprocess-status", "children"),
