@@ -176,7 +176,7 @@ def get_preprocessed_dataframe(session_id, folder_path, freq_data):
 
             # Transform the raw data into a serializable format
             raw_df = raw.to_data_frame(picks="meg", index="time")  # Get numerical data (channels × time)
-
+            
             return raw_df.to_json()
             
         except Exception as e:
