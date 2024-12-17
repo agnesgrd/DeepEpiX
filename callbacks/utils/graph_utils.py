@@ -43,15 +43,20 @@ def normalize_dataframe_columns(df):
 
     return df_standardized
 
-def get_filtered_df(time_range, raw_df, annotations_df):
+def get_raw_df_filtered_on_time(time_range, raw_df):
 
     times = (raw_df.index - raw_df.index[0]).total_seconds()
     time_mask = (times >= time_range[0]) & (times <= time_range[1])
     filtered_times = times[time_mask]
     filtered_raw_df = raw_df[time_mask]
-    annotations_times = annotations_df.index
-    annotations_time_mask = (annotations_times >= time_range[0]) & (annotations_times <= time_range[1])
-    filtered_annotations_df = annotations_df[annotations_time_mask]
     
-    return filtered_times, filtered_raw_df, filtered_annotations_df
+    return filtered_times, filtered_raw_df
+
+def get_annotations_df_filtered_on_time(time_range, annotations_df):
+
+    times = annotations_df.index
+    time_mask = (times >= time_range[0]) & (times <= time_range[1])
+    filtered_annotations_df = annotations_df[time_mask]
+    
+    return filtered_annotations_df
 

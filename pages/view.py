@@ -13,7 +13,7 @@ import numpy as np
 import traceback
 import layout.graph_layout as gl
 from callbacks.folder_path_callbacks import register_callbacks_folder_path
-from callbacks.graph_callbacks import register_update_meg_signal, register_move_time_slider
+from callbacks.graph_callbacks import register_update_graph_time_channel, register_update_annotations, register_move_time_slider
 
 
 dash.register_page(__name__)
@@ -34,7 +34,9 @@ layout = html.Div([
                 options=[{'label': desc, 'value': desc} for desc in annotation_types],  # List of types
                 value=annotation_types,  # Default to showing all annotations
                 inline=True,  # Display items inline
-                style={"margin": "10px 0"}
+                style={"margin": "10px 0"},
+                persistence=True,
+                persistence_type="local"
             ),
         ], style={
             "padding": "10px",
@@ -50,7 +52,9 @@ layout = html.Div([
 
 register_callbacks_folder_path()
 
-register_update_meg_signal()
+register_update_graph_time_channel()
+
+register_update_annotations()
 
 register_move_time_slider()
 

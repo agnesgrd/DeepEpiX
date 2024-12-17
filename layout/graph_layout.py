@@ -33,7 +33,9 @@ def get_graph_layout():
                 step=1,
                 marks={i: {'label': c.ALL_CH_NAMES_PREFIX[i] if i % 10 == 0 else '', 'style': {'fontSize': '10px'}} for i in range(len(c.ALL_CH_NAMES_PREFIX))},
                 value=[135, 145],
-                vertical=True  # Makes the slider vertical
+                vertical=True,  # Makes the slider vertical
+                persistence=True,
+                persistence_type="local"
             )
         ], style={
             "padding": "10px",
@@ -60,7 +62,9 @@ def get_graph_layout():
                     step=1,
                     marks={i: str(i) for i in range(0, 181, 10)},  # Add visible marks
                     value=[0, 10],  # Default range
-                    tooltip={"placement": "bottom", "always_visible": True}
+                    tooltip={"placement": "bottom", "always_visible": True},
+                    persistence=True,
+                    persistence_type="local"
                 ),
                 html.Div([
                     html.Button("←", id="time-left", n_clicks=0, style={"font-size": "16px", "padding": "5px 10px"}),
