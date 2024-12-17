@@ -10,22 +10,16 @@ from flask_caching import Cache
 from io import StringIO
 import pandas as pd
 from dash import get_app
-
-
+from sklearn.preprocessing import StandardScaler
 
 # Register the page
 dash.register_page(__name__, path = "/")
 app=get_app()
 cache = Cache(app.server, config={
-    'CACHE_TYPE': 'redis',
-    # Note that filesystem cache doesn't work on systems with ephemeral
-    # filesystems like Heroku.
     'CACHE_TYPE': 'filesystem',
     'CACHE_DIR': 'cache-directory',
-
-    # should be equal to maximum number of users on the app at a single time
-    # higher numbers will store more data in the filesystem / redis cache
-    'CACHE_THRESHOLD': 10
+    'CACHE_DEFAULT_TIMEOUT': 1000,
+    'CACHE_THRESHOLD': 10 # higher numbers will store more data in the filesystem / redis cache
 })
 
 layout = html.Div([
@@ -98,15 +92,17 @@ layout = html.Div([
                 disabled=True,
                 n_clicks=0
             ),
+            # Loading spinner wraps only the elements that require loading
+            dcc.Loading(
+                id="loading",
+                type="default", 
+                children=[
+                    html.Div(id="preprocess-status", style={"margin-top": "10px"})
+                ]
+            ),
+            # Location for URL refresh
             dcc.Location(id="url", refresh=True),
-
-            html.Div(id="preprocess-status", style={"margin-top": "10px"}),
-            dcc.Loading(id="loading", type="default", 
-            children=[
-            html.Div(id="preprocess-status", style={"margin-top": "10px"}),
-            dcc.Location(id="url", refresh=True)
-        ],)
-        ], style={"padding": "10px", "margin-top": "20px"}),
+        ], style={"padding": "10px", "margin-top": "20px"})
     ],
     style={"display": "none"}) # Initially hidden
 ]
@@ -161,52 +157,66 @@ def handle_frequency_parameters(resample_freq, high_pass_freq, low_pass_freq):
         }
         return frequency_values, False
   
-def get_preprocessed_dataframe(session_id, folder_path, freq_data):
-    print(session_id)
+def get_preprocessed_dataframe(folder_path, freq_data):
     @cache.memoize()
-    def preprocess_meg_data(session_id, folder_path, freq_data):
+    def preprocess_meg_data(folder_path, freq_data):
         try:
             resample_freq = freq_data.get("resample_freq")
             low_pass_freq = freq_data.get("low_pass_freq")
             high_pass_freq = freq_data.get("high_pass_freq")
 
             raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
-            raw.filter(l_freq=low_pass_freq, h_freq=high_pass_freq, n_jobs=8)
+            raw.filter(l_freq=high_pass_freq, h_freq=low_pass_freq, n_jobs=8)
             raw.resample(resample_freq)
 
             # Transform the raw data into a serializable format
             raw_df = raw.to_data_frame(picks="meg", index="time")  # Get numerical data (channels × time)
+            # Standardisation des données channel par channel
+            scaler = StandardScaler()
+
+            # Appliquer la standardisation à chaque canal (les colonnes de raw_df sont les canaux)
+            raw_df_standardized = raw_df.apply(lambda x: scaler.fit_transform(x.values.reshape(-1, 1)).flatten(), axis=0)
             
-            return raw_df.to_json()
+            return raw_df_standardized.to_json()
             
         except Exception as e:
             return f"Error during preprocessing : {str(e)}"
     
-    return pd.read_json(StringIO(preprocess_meg_data(session_id, folder_path, freq_data)))
+    return pd.read_json(StringIO(preprocess_meg_data(folder_path, freq_data)))
 
+def get_annotations_dataframe(folder_path):
+    raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
+    annotations_df = raw.annotations.to_data_frame()
+    annotations_df['onset'] = pd.to_datetime(annotations_df['onset']).dt.tz_localize('UTC')
+    origin_time = pd.Timestamp(raw.annotations.orig_time)
+    annotations_df['onset'] = (annotations_df['onset'] - origin_time).dt.total_seconds()
+    annotations_dict = annotations_df.to_dict(orient="records")
+    return annotations_dict
+    
 @dash.callback(
     Output("preprocess-status", "children"),
     Output("url", "pathname"),
+    Output("annotations-store", "data"),
     Input("preprocess-display-button", "n_clicks"),
-    State("session-id", "data"),
     State("folder-store", "data"),
     State("frequency-store", "data"),
     prevent_initial_call=True
 )
-def preprocess_meg_data(n_clicks, session_id, folder_path, freq_data):
+def preprocess_meg_data(n_clicks, folder_path, freq_data):
     """Preprocess MEG data and save it."""
     if n_clicks is None:
         raise PreventUpdate
     if n_clicks > 0:
         try:
-            raw_df = get_preprocessed_dataframe(session_id, folder_path, freq_data)
+            raw_df = get_preprocessed_dataframe(folder_path, freq_data)
+            annotations_dict = get_annotations_dataframe(folder_path)
 
-            return "Preprocessed and saved data", "/view"
+            return "Preprocessed and saved data", "/view", annotations_dict
         
         except Exception as e:
-            return f"Error during preprocessing : {str(e)}", dash.no_update
+            return f"Error during preprocessing : {str(e)}", dash.no_update, None
 
-    return None, dash.no_update
+    return None, dash.no_update, None
     
 
 
