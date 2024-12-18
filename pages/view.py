@@ -13,12 +13,12 @@ import numpy as np
 import traceback
 import layout.graph_layout as gl
 from callbacks.folder_path_callbacks import register_callbacks_folder_path
-from callbacks.graph_callbacks import register_update_graph_time_channel, register_update_annotations, register_move_time_slider
+from callbacks.graph_callbacks import register_update_graph_time_channel, register_update_annotations, register_move_time_slider, register_callbacks_annotation_names
+from callbacks.utils import annotation_utils as au
 
 
 dash.register_page(__name__)
 
-annotation_types = list(c.ANNOTATIONS_COLORS.keys())
 
 layout = html.Div([
     html.H1("VIEW: Visualize and Annotate MEG Signal"),
@@ -31,8 +31,8 @@ layout = html.Div([
             html.Label("Select Annotations:"),
             dcc.Checklist(
                 id="annotation-checkboxes",
-                options=[{'label': desc, 'value': desc} for desc in annotation_types],  # List of types
-                value=annotation_types,  # Default to showing all annotations
+                # options=[{'label': name, 'value': name} for name in annotation_names],  # List of types
+                # value=annotation_names,  # Default to showing all annotations
                 inline=True,  # Display items inline
                 style={"margin": "10px 0"},
                 persistence=True,
@@ -51,6 +51,8 @@ layout = html.Div([
 ])
 
 register_callbacks_folder_path()
+
+register_callbacks_annotation_names()
 
 register_update_graph_time_channel()
 

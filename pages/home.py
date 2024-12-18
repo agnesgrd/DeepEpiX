@@ -210,7 +210,6 @@ def preprocess_meg_data(n_clicks, folder_path, freq_data):
         try:
             raw_df = get_preprocessed_dataframe(folder_path, freq_data)
             annotations_dict = get_annotations_dataframe(folder_path)
-
             return "Preprocessed and saved data", "/view", annotations_dict
         
         except Exception as e:

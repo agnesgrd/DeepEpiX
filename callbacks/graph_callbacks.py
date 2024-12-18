@@ -7,14 +7,25 @@ from dash import Patch
 from pages.home import get_preprocessed_dataframe
 import static.constants as c
 import callbacks.utils.graph_utils as gu
+import callbacks.utils.annotation_utils as au
 import numpy as np
 import traceback
 import plotly.graph_objects as go
 from plotly_resampler import FigureResampler
 from plotly_resampler.aggregation import MinMaxLTTB
-from pages.home import get_preprocessed_dataframe
 import pandas as pd
 
+def register_callbacks_annotation_names():
+    # Callback to populate the checklist options and default value dynamically
+    @dash.callback(
+        Output("annotation-checkboxes", "options"),
+        Output("annotation-checkboxes", "value"),
+        Input("annotations-store", "data")
+    )
+    def display_annotation_names_checklist(annotations_store):
+        annotation_names = au.get_annotation_descriptions(annotations_store)
+        options = [{'label': name, 'value': name} for name in annotation_names]
+        return options, annotation_names  # Set all annotations as default selected
 
 def generate_graph_time_channel(time_range, channel_range, annotations_to_show, folder_path, freq_data, annotations):
     """Handles the preprocessing and figure generation for the MEG signal visualization."""
@@ -29,7 +40,7 @@ def generate_graph_time_channel(time_range, channel_range, annotations_to_show, 
     selected_channels = c.ALL_CH_NAMES[start_channel:end_channel + 1]
     filtered_raw_df = filtered_raw_df[selected_channels]
 
-    filtered_raw_df = gu.normalize_dataframe_columns(filtered_raw_df)
+    # filtered_raw_df = gu.normalize_dataframe_columns(filtered_raw_df)
 
     # Offset channel traces along the y-axis
     channel_offset = gu.calculate_channel_offset(len(selected_channels))/6
@@ -51,7 +62,7 @@ def generate_graph_time_channel(time_range, channel_range, annotations_to_show, 
             go.Scattergl(name=f"Channel {i}", mode="lines"),  # Scattergl ensures fast rendering
             hf_x=filtered_times,
             hf_y=filtered_raw_df[channel_data],  # High-frequency y data
-            max_n_samples=600, # Adjust this for the maximum resolution you want per trace,
+            max_n_samples=27000, # Adjust this for the maximum resolution you want per trace,
 )
         
     fig.update_traces(line = {"width":0.8})
@@ -68,7 +79,7 @@ def generate_graph_time_channel(time_range, channel_range, annotations_to_show, 
             ticklabelposition="outside right"
         ),
         title='MEG Signal Visualization',
-        height=600,
+        height=1000,
         showlegend=False
         )
 
@@ -102,13 +113,14 @@ def register_update_graph_time_channel():
 def register_update_annotations():
     @dash.callback(
         Output("meg-signal-graph", "figure", allow_duplicate=True),
+        
+        Input("meg-signal-graph", "figure"),  # Current figure to update
         Input("annotation-checkboxes", "value"),  # Annotations to show based on the checklist
-        State("meg-signal-graph", "figure"),  # Current figure to update
         State("time-slider", "value"),
         State("annotations-store", "data"),
         prevent_initial_call=True
     )
-    def update_annotations(annotations_to_show, fig_dict, time_range, annotations):
+    def update_annotations(fig_dict, annotations_to_show, time_range, annotations):
         """Update annotations visibility based on the checklist selection."""
         # Create a Patch for the figure
         fig_patch = Patch()
