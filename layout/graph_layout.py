@@ -26,17 +26,22 @@ def get_graph_layout():
         # Sidebar with Channel Slider
         html.Div([
             html.Label("Select Channels:"),
-            dcc.RangeSlider(
-                id="channel-slider",
-                min=0,
-                max=len(c.ALL_CH_NAMES) - 1,
-                step=1,
-                marks={i: {'label': c.ALL_CH_NAMES_PREFIX[i] if i % 10 == 0 else '', 'style': {'fontSize': '10px'}} for i in range(len(c.ALL_CH_NAMES_PREFIX))},
-                value=[135, 145],
-                vertical=True,  # Makes the slider vertical
-                persistence=True,
-                persistence_type="local"
-            )
+            # Checklist for selecting regions
+            dcc.Checklist(
+            id="channel-region-checkboxes",
+            options=[
+                {
+                    'label': f"{region_code} ({len(channels)})", 
+                    'value': region_code
+                }
+                for region_code, channels in c.GROUP_CHANNELS_BY_REGION.items()
+            ],
+            value=["RC", "LC", "ZC"],  # Default selected regions (Right, Left, Z regions)
+            inline=False,
+            style={"margin": "10px 0"},
+            persistence=True,
+            persistence_type="local"
+        )
         ], style={
             "padding": "10px",
             "height": "100%",

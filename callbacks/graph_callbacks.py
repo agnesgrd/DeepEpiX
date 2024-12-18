@@ -27,7 +27,7 @@ def register_callbacks_annotation_names():
         options = [{'label': name, 'value': name} for name in annotation_names]
         return options, annotation_names  # Set all annotations as default selected
 
-def generate_graph_time_channel(time_range, channel_range, annotations_to_show, folder_path, freq_data, annotations):
+def generate_graph_time_channel(time_range, channel_region, annotations_to_show, folder_path, freq_data, annotations):
     """Handles the preprocessing and figure generation for the MEG signal visualization."""
     # Preprocess data
     raw_df = get_preprocessed_dataframe(folder_path, freq_data)
@@ -35,9 +35,17 @@ def generate_graph_time_channel(time_range, channel_range, annotations_to_show, 
     # Filter time range
     filtered_times, filtered_raw_df = gu.get_raw_df_filtered_on_time(time_range, raw_df)
 
-    # Filter channel range
-    start_channel, end_channel = channel_range
-    selected_channels = c.ALL_CH_NAMES[start_channel:end_channel + 1]
+    # Get the selected channels based on region
+    selected_channels = []
+    for region_code in channel_region:
+        if region_code in c.GROUP_CHANNELS_BY_REGION:
+            selected_channels.extend(c.GROUP_CHANNELS_BY_REGION[region_code])
+
+    # If no channels are selected, raise an error
+    if not selected_channels:
+        raise ValueError("No channels selected from the given regions.")
+    
+    # Filter the dataframe based on the selected channels
     filtered_raw_df = filtered_raw_df[selected_channels]
 
     # filtered_raw_df = gu.normalize_dataframe_columns(filtered_raw_df)
@@ -90,17 +98,17 @@ def register_update_graph_time_channel():
         Output("meg-signal-graph", "figure"),
         Output("python-error", "children"),
         Input("time-slider", "value"),  # Time range selection
-        Input("channel-slider", "value"),  # Channel range selection as state
+        Input("channel-region-checkboxes", "value"),  # Channel range selection as state
         State("annotation-checkboxes", "value"),
         State("folder-store", "data"),
         State("frequency-store", "data"),
         State("annotations-store", "data"),
         prevent_initial_call=False
         )
-    def update_graph_time_channel(time_range, channel_range, annotations_to_show, folder_path, freq_data, annotations):
+    def update_graph_time_channel(time_range, channel_region, annotations_to_show, folder_path, freq_data, annotations):
         """Update MEG signal visualization based on time and channel selection."""
         try:
-            fig = generate_graph_time_channel(time_range, channel_range, annotations_to_show, folder_path, freq_data, annotations)
+            fig = generate_graph_time_channel(time_range, channel_region, annotations_to_show, folder_path, freq_data, annotations)
 
             return fig, None
         except FileNotFoundError:
