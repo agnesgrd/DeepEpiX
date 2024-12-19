@@ -13,7 +13,7 @@ import numpy as np
 import traceback
 import layout.graph_layout as gl
 from callbacks.folder_path_callbacks import register_callbacks_folder_path
-from callbacks.graph_callbacks import register_update_graph_time_channel, register_update_annotations, register_move_time_slider, register_callbacks_annotation_names
+from callbacks.graph_callbacks import register_update_graph_time_channel, register_update_annotations, register_move_time_slider, register_callbacks_annotation_names, register_manage_channels_checklist
 from callbacks.utils import annotation_utils as au
 
 
@@ -59,4 +59,6 @@ register_update_graph_time_channel()
 register_update_annotations()
 
 register_move_time_slider()
+
+register_manage_channels_checklist()
 

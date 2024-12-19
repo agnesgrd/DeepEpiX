@@ -51,7 +51,8 @@ def generate_graph_time_channel(time_range, channel_region, annotations_to_show,
     # filtered_raw_df = gu.normalize_dataframe_columns(filtered_raw_df)
 
     # Offset channel traces along the y-axis
-    channel_offset = gu.calculate_channel_offset(len(selected_channels))/6
+    channel_offset = gu.calculate_channel_offset(len(selected_channels))/12
+
     y_axis_ticks = gu.get_y_axis_ticks(selected_channels, channel_offset)
     filtered_raw_df += np.tile(y_axis_ticks, (len(filtered_raw_df), 1))
 
@@ -67,7 +68,7 @@ def generate_graph_time_channel(time_range, channel_region, annotations_to_show,
     for i, channel_data in enumerate(filtered_raw_df):
         # For each channel, add its trace to the figure
         fig.add_trace(
-            go.Scattergl(name=f"Channel {i}", mode="lines"),  # Scattergl ensures fast rendering
+            go.Scattergl(name=f"Channel {i}", mode="lines", line=dict(color=c.CHANNEL_TO_COLOR[channel_data], width=0.8)),  # Scattergl ensures fast rendering
             hf_x=filtered_times,
             hf_y=filtered_raw_df[channel_data],  # High-frequency y data
             max_n_samples=27000, # Adjust this for the maximum resolution you want per trace,
@@ -231,5 +232,28 @@ def register_move_time_slider():
         ]
 
         return new_range
+
+def register_manage_channels_checklist():
+    @dash.callback(
+        Output("channel-region-checkboxes", "value"),
+        [Input("check-all-btn", "n_clicks"),
+        Input("clear-all-btn", "n_clicks")],
+    )
+    def manage_checklist(check_all_clicks, clear_all_clicks):
+        # Determine which button was clicked
+        ctx = dash.callback_context
+
+        if not ctx.triggered:
+            return dash.no_update
+        triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
+
+        all_regions = list(c.GROUP_CHANNELS_BY_REGION.keys())
+
+        if triggered_id == "check-all-btn":
+            return all_regions  # Select all regions
+        elif triggered_id == "clear-all-btn":
+            return []  # Clear all selections
+
+        return dash.no_update
 
 

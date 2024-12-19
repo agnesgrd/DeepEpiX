@@ -1,32 +1,32 @@
 from dash import html, dcc
+import dash_bootstrap_components as dbc
 import static.constants as c
 
 def get_graph_layout():
-
-    # # Generate vertical line shapes for annotations
-    # annotation_lines = [
-    #     {
-    #         'type': 'line',
-    #         'x0': onset,
-    #         'x1': onset,
-    #         'y0': 0,
-    #         'y1': 1,
-    #         'xref': 'x',
-    #         'yref': 'paper',  # 'paper' makes the y-range relative [0, 1]
-    #         'line': {
-    #             'color': 'red' if desc == 'spike' else 'blue',
-    #             'width': 2,
-    #             'dash': 'dot'
-    #         }
-    #     }
-    #     for onset, desc in zip(annotations_df['onset'], annotations_df['description'])
-    # ]
 
     layout = html.Div([  # Main container for the layout
         # Sidebar with Channel Slider
         html.Div([
             html.Label("Select Channels:"),
             # Checklist for selecting regions
+            dbc.Button(
+                "Check All",
+                id="check-all-btn",
+                color="success",
+                outline="True",
+                size="sm",
+                n_clicks=0
+            ),
+            dbc.Button(
+                "Clear All",
+                id="clear-all-btn",
+                color="danger",
+                outline="True",
+                size="sm",
+                n_clicks=0
+            ),
+            # html.Button("Check All", id="check-all-btn", n_clicks=0, style={"margin-right": "10px"}),
+            # html.Button("Clear All", id="clear-all-btn", n_clicks=0),
             dcc.Checklist(
             id="channel-region-checkboxes",
             options=[
@@ -36,7 +36,7 @@ def get_graph_layout():
                 }
                 for region_code, channels in c.GROUP_CHANNELS_BY_REGION.items()
             ],
-            value=["RC", "LC", "ZC"],  # Default selected regions (Right, Left, Z regions)
+            value=["MRF", "MLF"],  # Default selected regions (Right, Left, Z regions)
             inline=False,
             style={"margin": "10px 0"},
             persistence=True,
