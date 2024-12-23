@@ -35,7 +35,7 @@ app.layout = html.Div(
                 html.H1("DeepEpiX"),
                 page_container,  # This will hold the content of each page
             ],
-            style={"width": "80%", "display": "inline-block", "padding": "20px"},
+            style={"width": "90%", "display": "inline-block", "padding": "10px"},
         ),
 
         # Navigation (replacing dcc.Tabs with dcc.Link for URL routing)
@@ -56,7 +56,7 @@ app.layout = html.Div(
                 "width": "10%",
                 "display": "inline-block",
                 "vertical-align": "top",
-                "padding": "20px",
+                "padding": "10px",
                 "border-left": "1px solid #ccc",
             },
         ),

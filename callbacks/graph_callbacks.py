@@ -20,13 +20,16 @@ def register_callbacks_annotation_names():
     @dash.callback(
         Output("annotation-checkboxes", "options"),
         Output("annotation-checkboxes", "value"),
-        Input("annotations-store", "data")
+        Input("annotations-store", "data"),
+        prevent_initial_call = False
     )
     def display_annotation_names_checklist(annotations_store):
         annotation_names = au.get_annotation_descriptions(annotations_store)
         options = [{'label': name, 'value': name} for name in annotation_names]
         return options, annotation_names  # Set all annotations as default selected
+    
 
+# Modify your graph update function to take into account the time range from the scrollable X-axis
 def generate_graph_time_channel(time_range, channel_region, annotations_to_show, folder_path, freq_data, annotations):
     """Handles the preprocessing and figure generation for the MEG signal visualization."""
     # Preprocess data
@@ -48,11 +51,8 @@ def generate_graph_time_channel(time_range, channel_region, annotations_to_show,
     # Filter the dataframe based on the selected channels
     filtered_raw_df = filtered_raw_df[selected_channels]
 
-    # filtered_raw_df = gu.normalize_dataframe_columns(filtered_raw_df)
-
     # Offset channel traces along the y-axis
     channel_offset = gu.calculate_channel_offset(len(selected_channels))/12
-
     y_axis_ticks = gu.get_y_axis_ticks(selected_channels, channel_offset)
     filtered_raw_df += np.tile(y_axis_ticks, (len(filtered_raw_df), 1))
 
@@ -66,49 +66,62 @@ def generate_graph_time_channel(time_range, channel_region, annotations_to_show,
 
     # Add traces to the figure
     for i, channel_data in enumerate(filtered_raw_df):
-        # For each channel, add its trace to the figure
         fig.add_trace(
-            go.Scattergl(name=f"Channel {i}", mode="lines", line=dict(color=c.CHANNEL_TO_COLOR[channel_data], width=0.8)),  # Scattergl ensures fast rendering
+            go.Scattergl(name=f"Channel {i}", mode="lines", line=dict(color=c.CHANNEL_TO_COLOR[channel_data], width=1)),
             hf_x=filtered_times,
-            hf_y=filtered_raw_df[channel_data],  # High-frequency y data
-            max_n_samples=27000, # Adjust this for the maximum resolution you want per trace,
-)
-        
-    fig.update_traces(line = {"width":0.8})
+            hf_y=filtered_raw_df[channel_data],
+            max_n_samples=27000,
+        )
 
-    # Update the layout with the legend and any other customizations
+    # Update layout with x-axis range and other customizations
     fig.update_layout(
         autosize=True,
-        xaxis=dict(title='Time (s)'),
+        xaxis=dict(
+            title='Time (s)',
+            range=[0, 180],  # Set dynamic time range based on the scrollable x-axis
+            fixedrange=False,
+            rangeslider=dict(visible=True),
+            autorange = False
+        ),
         yaxis=dict(
             title='Channels',
             showgrid=True,
-            tickvals=y_axis_ticks,  # Align ticks with channels
-            ticktext=[f'{selected_channels[i]}' for i in range(len(selected_channels))],  # Label each channel
+            tickvals=y_axis_ticks,
+            ticktext=[f'{selected_channels[i]}' for i in range(len(selected_channels))],
             ticklabelposition="outside right"
         ),
-        title='MEG Signal Visualization',
+        title={
+            'text': folder_path if folder_path else 'Select a folder path in Home Page',
+            'x' : 0.5,
+            'font': {'size': 12},
+            'automargin': True,
+            'yref': 'paper'
+        },
         height=1000,
         showlegend=False
-        )
+    )
 
-    return fig  # Return the figure to be rendered in the graph
+    return fig
 
-def register_update_graph_time_channel():  
+# Update the callback to dynamically handle time range changes through the scrollable X-axis
+def register_update_graph_time_channel(): 
     @dash.callback(
         Output("meg-signal-graph", "figure"),
         Output("python-error", "children"),
-        Input("time-slider", "value"),  # Time range selection
-        Input("channel-region-checkboxes", "value"),  # Channel range selection as state
-        State("annotation-checkboxes", "value"),
-        State("folder-store", "data"),
+        Input("channel-region-checkboxes", "value"),
+        Input("annotation-checkboxes", "value"),
+        Input("folder-store", "data"),
         State("frequency-store", "data"),
         State("annotations-store", "data"),
         prevent_initial_call=False
-        )
-    def update_graph_time_channel(time_range, channel_region, annotations_to_show, folder_path, freq_data, annotations):
+    )
+    def update_graph_time_channel(channel_region, annotations_to_show, folder_path, freq_data, annotations):
         """Update MEG signal visualization based on time and channel selection."""
         try:
+            if not channel_region or not folder_path or not freq_data:  # Check if data is missing
+                return go.Figure(), "Missing data for graph rendering."
+            time_range = [0,180]
+            print("here")
             fig = generate_graph_time_channel(time_range, channel_region, annotations_to_show, folder_path, freq_data, annotations)
 
             return fig, None
@@ -122,30 +135,40 @@ def register_update_graph_time_channel():
 def register_update_annotations():
     @dash.callback(
         Output("meg-signal-graph", "figure", allow_duplicate=True),
-        
         Input("meg-signal-graph", "figure"),  # Current figure to update
         Input("annotation-checkboxes", "value"),  # Annotations to show based on the checklist
-        State("time-slider", "value"),
         State("annotations-store", "data"),
         prevent_initial_call=True
     )
-    def update_annotations(fig_dict, annotations_to_show, time_range, annotations):
+    def update_annotations(fig_dict, annotations_to_show, annotations):
         """Update annotations visibility based on the checklist selection."""
+        # Default time range in case the figure doesn't contain valid x-axis range data
+        time_range = [0, 180]
+
+        # Check if fig_dict contains the x-axis range
+        # if fig_dict and "layout" in fig_dict and "xaxis" in fig_dict["layout"]:
+        #     xaxis_range = fig_dict["layout"]["xaxis"].get("range", None)
+        #     if xaxis_range and len(xaxis_range) == 2:
+        #         time_range = [xaxis_range[0], xaxis_range[1]]
+
         # Create a Patch for the figure
         fig_patch = Patch()
 
-        # Get the current y-axis range from the figure
-        y_min, y_max = (
-            fig_dict.get("layout", {}).get("yaxis", {}).get("range", [0, 1])
-        )
+        # Check if fig_dict is None (i.e., if it is the initial empty figure)
+        if fig_dict is None or 'layout' not in fig_dict or 'yaxis' not in fig_dict['layout']:
+            # Set default y_min and y_max if the figure layout is not available
+            y_min, y_max = 0, 1  # Set default range for the y-axis
+        else:
+            # Get the current y-axis range from the figure
+            y_min, y_max = fig_dict['layout']['yaxis'].get('range', [0, 1])
 
         # Convert annotations to DataFrame
         annotations_df = pd.DataFrame(annotations).set_index("onset")
 
+        # Filter annotations based on the current time range
         filtered_annotations_df = gu.get_annotations_df_filtered_on_time(time_range, annotations_df)
 
-        # Filter and update shapes
-        # Prepare the shapes for the selected annotations
+        # Prepare the shapes and annotations for the selected annotations
         new_shapes = []
         new_annotations = []
         for _, row in filtered_annotations_df.iterrows():
@@ -162,8 +185,8 @@ def register_update_annotations():
                         yref="y",
                         line=dict(color="red", width=2, dash="dot"),
                         opacity=0.25
-                        )
                     )
+                )
                 # Add the label in the margin
                 new_annotations.append(
                     dict(
@@ -178,60 +201,11 @@ def register_update_annotations():
                     )
                 )
 
-        # Update only the shapes in the figure using Patch
+        # Update the figure with the new shapes and annotations
         fig_patch["layout"]["shapes"] = new_shapes
         fig_patch["layout"]["annotations"] = new_annotations
 
         return fig_patch
-    
-# def register_update_annotations():
-#     @dash.callback(
-#         Output("meg-signal-graph", "figure", allow_duplicate=True),
-#         Input("annotation-checkboxes", "value"),  # Annotations to show based on the checklist
-#         State("meg-signal-graph", "figure"),  # Current figure to update
-#         State("time-slider", "value"),
-#         State("annotations-store", "data"),
-#         prevent_initial_call=True
-#     )
-#     def update_annotations(annotations_to_show, fig_dict, time_range, annotations):
-#         """Update annotations visibility based on the checklist selection."""
-#         try:
-#             fig_patch = generate_annotations(annotations_to_show, fig_dict, time_range, annotations)
-#         except Exception as e:
-#             pass
-#         return fig_patch
-    
-def register_move_time_slider():
-    @dash.callback(
-    Output("time-slider", "value"),
-    Input("time-left", "n_clicks"),
-    Input("time-right", "n_clicks"),
-    State("time-slider", "value"),
-    prevent_initial_call=True
-    )
-    def shift_time_range(left_clicks, right_clicks, current_range):
-        """Shift the time range left or right."""
-
-        # Define shift step 
-        start, end = current_range
-        shift_step = end - start
-
-        # Determine how much to shift based on button clicks
-        shift = (right_clicks - left_clicks) * shift_step
-
-        # Update the time range0
-        if shift > 0:
-            new_range = [shift, shift + shift_step]
-        else:
-            new_range = [0, shift_step]
-
-        # Ensure the range stays within bounds
-        new_range = [
-            max(0, new_range[0]),  # Prevent start from going below 0
-            min(180, new_range[1])  # Prevent end from exceeding max time (100 in this case)
-        ]
-
-        return new_range
 
 def register_manage_channels_checklist():
     @dash.callback(
