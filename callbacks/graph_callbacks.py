@@ -36,7 +36,7 @@ def generate_graph_time_channel(time_range, channel_region, annotations_to_show,
     raw_df = get_preprocessed_dataframe(folder_path, freq_data)
 
     # Filter time range
-    filtered_times, filtered_raw_df = gu.get_raw_df_filtered_on_time(time_range, raw_df)
+    filtered_times, filtered_raw_df = gu.get_raw_df_filtered_on_time([0,180], raw_df)
 
     # Get the selected channels based on region
     selected_channels = []
@@ -54,7 +54,7 @@ def generate_graph_time_channel(time_range, channel_region, annotations_to_show,
     # Offset channel traces along the y-axis
     channel_offset = gu.calculate_channel_offset(len(selected_channels))/12
     y_axis_ticks = gu.get_y_axis_ticks(selected_channels, channel_offset)
-    filtered_raw_df += np.tile(y_axis_ticks, (len(filtered_raw_df), 1))
+    shifted_filtered_raw_df = filtered_raw_df + np.tile(y_axis_ticks, (len(filtered_raw_df), 1))
 
     # Create the resampled figure
     fig = FigureResampler(
@@ -67,9 +67,18 @@ def generate_graph_time_channel(time_range, channel_region, annotations_to_show,
     # Add traces to the figure
     for i, channel_data in enumerate(filtered_raw_df):
         fig.add_trace(
-            go.Scattergl(name=f"Channel {i}", mode="lines", line=dict(color=c.CHANNEL_TO_COLOR[channel_data], width=1)),
+            go.Scattergl(
+                name=f"Channel {i}", 
+                mode="lines", 
+                line=dict(color=c.CHANNEL_TO_COLOR[channel_data], width=1),
+                text=[
+                    f"Time: {time} s<br>Value: {value}<br>Channel: {channel_data}"
+                    for time, value in zip(filtered_times, filtered_raw_df[channel_data])
+                ],  # Create text for each data point
+                hovertemplate="%{text}<extra></extra>",  # Use the 'text' for hover display
+                ),
             hf_x=filtered_times,
-            hf_y=filtered_raw_df[channel_data],
+            hf_y=shifted_filtered_raw_df[channel_data],
             max_n_samples=27000,
         )
 
@@ -78,9 +87,12 @@ def generate_graph_time_channel(time_range, channel_region, annotations_to_show,
         autosize=True,
         xaxis=dict(
             title='Time (s)',
-            range=[0, 180],  # Set dynamic time range based on the scrollable x-axis
+            range=time_range,  # Set dynamic time range based on the scrollable x-axis
             fixedrange=False,
-            rangeslider=dict(visible=True),
+            rangeslider=dict(
+                visible=True,
+                thickness=0.02,  # Narrow slider (default is 0.15)
+            ),
             autorange = False
         ),
         yaxis=dict(
@@ -103,7 +115,6 @@ def generate_graph_time_channel(time_range, channel_region, annotations_to_show,
 
     return fig
 
-# Update the callback to dynamically handle time range changes through the scrollable X-axis
 def register_update_graph_time_channel(): 
     @dash.callback(
         Output("meg-signal-graph", "figure"),
@@ -120,7 +131,7 @@ def register_update_graph_time_channel():
         try:
             if not channel_region or not folder_path or not freq_data:  # Check if data is missing
                 return go.Figure(), "Missing data for graph rendering."
-            time_range = [0,180]
+            time_range = [0,10]
             print("here")
             fig = generate_graph_time_channel(time_range, channel_region, annotations_to_show, folder_path, freq_data, annotations)
 
@@ -135,77 +146,98 @@ def register_update_graph_time_channel():
 def register_update_annotations():
     @dash.callback(
         Output("meg-signal-graph", "figure", allow_duplicate=True),
+        Output("first-page-loading", "data"),
         Input("meg-signal-graph", "figure"),  # Current figure to update
         Input("annotation-checkboxes", "value"),  # Annotations to show based on the checklist
         State("annotations-store", "data"),
-        prevent_initial_call=True
+        State("first-page-loading", "data"),
+        prevent_initial_call=True,
+        supress_callback_exceptions=True
     )
-    def update_annotations(fig_dict, annotations_to_show, annotations):
+    def update_annotations(fig_dict, annotations_to_show, annotations, first_load):
         """Update annotations visibility based on the checklist selection."""
         # Default time range in case the figure doesn't contain valid x-axis range data
         time_range = [0, 180]
 
-        # Check if fig_dict contains the x-axis range
-        # if fig_dict and "layout" in fig_dict and "xaxis" in fig_dict["layout"]:
-        #     xaxis_range = fig_dict["layout"]["xaxis"].get("range", None)
-        #     if xaxis_range and len(xaxis_range) == 2:
-        #         time_range = [xaxis_range[0], xaxis_range[1]]
+        # ctx = dash.callback_context
 
-        # Create a Patch for the figure
-        fig_patch = Patch()
-
-        # Check if fig_dict is None (i.e., if it is the initial empty figure)
-        if fig_dict is None or 'layout' not in fig_dict or 'yaxis' not in fig_dict['layout']:
-            # Set default y_min and y_max if the figure layout is not available
-            y_min, y_max = 0, 1  # Set default range for the y-axis
+        # if not ctx.triggered:
+        #     return dash.no_update
+        # triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
+        # if triggered_id == "meg-signal-graph":
+        if first_load == 1:
+            return None, 1
+        
         else:
-            # Get the current y-axis range from the figure
-            y_min, y_max = fig_dict['layout']['yaxis'].get('range', [0, 1])
+        
+            print('updating annotations')
+            # Check if fig_dict contains the x-axis range
+            # if fig_dict and "layout" in fig_dict and "xaxis" in fig_dict["layout"]:
+            #     xaxis_range = fig_dict["layout"]["xaxis"].get("range", None)
+            #     if xaxis_range and len(xaxis_range) == 2:
+            #         time_range = [xaxis_range[0], xaxis_range[1]]
 
-        # Convert annotations to DataFrame
-        annotations_df = pd.DataFrame(annotations).set_index("onset")
+            # Create a Patch for the figure
+            fig_patch = Patch()
 
-        # Filter annotations based on the current time range
-        filtered_annotations_df = gu.get_annotations_df_filtered_on_time(time_range, annotations_df)
+            # Check if fig_dict is None (i.e., if it is the initial empty figure)
+            if fig_dict is None or 'layout' not in fig_dict or 'yaxis' not in fig_dict['layout']:
+                # Set default y_min and y_max if the figure layout is not available
+                y_min, y_max = 0, 1  # Set default range for the y-axis
+            else:
+                # Get the current y-axis range from the figure
+                y_min, y_max = fig_dict['layout']['yaxis'].get('range', [0, 1])
 
-        # Prepare the shapes and annotations for the selected annotations
-        new_shapes = []
-        new_annotations = []
-        for _, row in filtered_annotations_df.iterrows():
-            description = row["description"]
-            if description in annotations_to_show:
-                new_shapes.append(
-                    dict(
-                        type="line",
-                        x0=row.name,
-                        x1=row.name,
-                        y0=y_min,
-                        y1=y_max,
-                        xref="x",
-                        yref="y",
-                        line=dict(color="red", width=2, dash="dot"),
-                        opacity=0.25
+            # Convert annotations to DataFrame
+            annotations_df = pd.DataFrame(annotations).set_index("onset")
+
+            # Filter annotations based on the current time range
+            filtered_annotations_df = gu.get_annotations_df_filtered_on_time(time_range, annotations_df)
+
+            # Prepare the shapes and annotations for the selected annotations
+            new_shapes = []
+            new_annotations = []
+            for _, row in filtered_annotations_df.iterrows():
+                description = row["description"]
+                if description in annotations_to_show:
+                    new_shapes.append(
+                        dict(
+                            type="line",
+                            x0=row.name,
+                            x1=row.name,
+                            y0=y_min,
+                            y1=y_max,
+                            xref="x",
+                            yref="y",
+                            line=dict(color="red", width=2, dash="dot"),
+                            opacity=0.25
+                        )
                     )
-                )
-                # Add the label in the margin
-                new_annotations.append(
-                    dict(
-                        x=row.name,
-                        y=1.05,  # Slightly above the graph in the margin
-                        xref="x",
-                        yref="paper",  # Use paper coordinates for the y-axis (margins)
-                        text=description,  # Annotation text
-                        showarrow=False,  # No arrow needed
-                        font=dict(size=10, color="red"),  # Customize font
-                        align="center",
+                    # Add the label in the margin
+                    new_annotations.append(
+                        dict(
+                            x=row.name,
+                            y=1.05,  # Slightly above the graph in the margin
+                            xref="x",
+                            yref="paper",  # Use paper coordinates for the y-axis (margins)
+                            text=description,  # Annotation text
+                            showarrow=False,  # No arrow needed
+                            font=dict(size=10, color="red"),  # Customize font
+                            align="center",
+                        )
                     )
-                )
 
-        # Update the figure with the new shapes and annotations
-        fig_patch["layout"]["shapes"] = new_shapes
-        fig_patch["layout"]["annotations"] = new_annotations
+            # Update the figure with the new shapes and annotations
+            fig_patch["layout"]["shapes"] = new_shapes
+            fig_patch["layout"]["annotations"] = new_annotations
+            # fig_patch["layout"]["xaxis"] = dict(
+            #         rangeslider=dict(
+            #         visible=True,
+            #         thickness=0.02,  # Narrow slider (default is 0.15)
+            #     ),
+            #     )
 
-        return fig_patch
+            return fig_patch, 1
 
 def register_manage_channels_checklist():
     @dash.callback(
@@ -229,5 +261,48 @@ def register_manage_channels_checklist():
             return []  # Clear all selections
 
         return dash.no_update
+    
+def register_move_time_slider():
+    @dash.callback(
+        Output("meg-signal-graph", "figure", allow_duplicate = True),
+        Input("keyboard", "keydown"),
+        State("meg-signal-graph", "figure"),
+        prevent_initial_call=True,
+        supress_callback_exceptions=True
+    )
+    def move_time_slider(keydown, fig):
+        print(f'Key Pressed: {keydown}')
+
+        # Get the current x-axis range
+        xaxis_range = fig["layout"]["xaxis"]["range"]
+        move_amount = 1/3*(xaxis_range[1]-xaxis_range[0])  # Number of seconds to move
+
+        # Define the bounds for the x-axis (adjust based on your data)
+        min_bound = 0
+        max_bound = 180
+
+        # Update the range based on the key press
+        if keydown["key"] == "ArrowLeft":
+            print("left")
+            new_range = [xaxis_range[0] - move_amount, xaxis_range[1] - move_amount]
+            if new_range[0] < min_bound:
+                new_range = [min_bound, min_bound + move_amount]
+        elif keydown["key"] == "ArrowRight":
+            new_range = [xaxis_range[0] + move_amount, xaxis_range[1] + move_amount]
+            print('right')
+            if new_range[1] > max_bound:
+                new_range = [max_bound - move_amount, max_bound]
+        else:
+            print("problem")
+            return fig  # Return the figure unchanged if the key is not handled
+
+        fig_patch = Patch()
+        # Update the figure with the new x-axis range
+        fig_patch["layout"]["xaxis"]["range"] = new_range
+
+        return fig_patch
+
+
+
 
 

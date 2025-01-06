@@ -13,7 +13,8 @@ def create_sidebar():
             color="success",
             outline=True,
             size="sm",
-            n_clicks=0
+            n_clicks=0,
+            style={"fontSize": "12px"}
         ),
         dbc.Button(
             "Clear All",
@@ -21,7 +22,8 @@ def create_sidebar():
             color="danger",
             outline=True,
             size="sm",
-            n_clicks=0
+            n_clicks=0,
+            style={"fontSize": "12px"}
         ),
         dcc.Checklist(
             id="channel-region-checkboxes",
@@ -59,21 +61,45 @@ def create_sidebar():
         "justifyContent": "center",
         "gap": "0px",  # Space between elements
         "width": "100px",  # Adjust width as needed for better layout
-        "boxSizing": "border-box"
+        "boxSizing": "border-box",
+        "fontSize": "12px"
     })
 
 # Helper function to create the graph container with relevant styles
 def create_graph_container():
     return html.Div(
-        dcc.Graph(
-            id="meg-signal-graph",
-            config={"responsive": True}
-        ),
+        [
+            dcc.Graph(
+                id="meg-signal-graph",
+                figure = {
+                    'data': [],
+                    'layout': {
+                        'xaxis': {
+                            'range': [0, 10],  # Initial time range
+                            'title': 'Time (s)',
+                        },
+                        'yaxis': {
+                            'title': 'Channels',
+                        },
+                        'title': 'MEG Signal Visualization'
+                        # 'height': 600,
+                    },
+                },
+                config={"responsive": True},
+                style={"height": "85%", "width": "100%"}  # Ensure the graph uses all available space
+            ),
+            # Store the current range to be used by clientside callback
+            dcc.Store(id='current-range', data={'min': 0, 'max': 10})
+        ],
         style={
             "flex": 1,
-            "overflowY": "auto",   # If necessary
-            "whiteSpace": "nowrap",
-            "padding": "0px"
+            "height": "85%",       # Use the full viewport height
+            "overflow": "hidden",    # Disable any scrolling
+            "display": "flex",       # Enable flexible layout
+            "flexDirection": "column",  # Adjust layout to column if needed
+            "padding": "0px",
+            "margin": "0px",
+            "boxSizing": "border-box"  # Ensure padding and borders are accounted for
         }
     )
 
