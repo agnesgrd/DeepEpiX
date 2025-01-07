@@ -6,7 +6,7 @@ from io import StringIO
 from sklearn.preprocessing import StandardScaler
 
 
-def calculate_channel_offset(num_channels, plot_height=500, min_gap=50):
+def calculate_channel_offset(num_channels, plot_height=900, min_gap=50):
     """
     Calculate the optimal channel offset to avoid overlap of traces in the plot.
     

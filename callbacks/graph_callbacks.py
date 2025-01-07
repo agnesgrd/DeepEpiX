@@ -109,7 +109,6 @@ def generate_graph_time_channel(time_range, channel_region, annotations_to_show,
             'automargin': True,
             'yref': 'paper'
         },
-        height=1000,
         showlegend=False
     )
 
@@ -130,6 +129,7 @@ def register_update_graph_time_channel():
         """Update MEG signal visualization based on time and channel selection."""
         try:
             if not channel_region or not folder_path or not freq_data:  # Check if data is missing
+                print('yo')
                 return go.Figure(), "Missing data for graph rendering."
             time_range = [0,10]
             print("here")
@@ -146,11 +146,11 @@ def register_update_graph_time_channel():
 def register_update_annotations():
     @dash.callback(
         Output("meg-signal-graph", "figure", allow_duplicate=True),
-        Output("first-page-loading", "data"),
+        Output("first-load-store", "data", allow_duplicate=True),
         Input("meg-signal-graph", "figure"),  # Current figure to update
         Input("annotation-checkboxes", "value"),  # Annotations to show based on the checklist
         State("annotations-store", "data"),
-        State("first-page-loading", "data"),
+        State("first-load-store", "data"),
         prevent_initial_call=True,
         supress_callback_exceptions=True
     )
@@ -159,91 +159,212 @@ def register_update_annotations():
         # Default time range in case the figure doesn't contain valid x-axis range data
         time_range = [0, 180]
 
-        # ctx = dash.callback_context
-
-        # if not ctx.triggered:
-        #     return dash.no_update
-        # triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
-        # if triggered_id == "meg-signal-graph":
-        if first_load == 1:
-            return None, 1
+        # if first_load == 1:
+        #     return None, 1
         
+        # else:
+        
+        print('updating annotations')
+
+        # Create a Patch for the figure
+        fig_patch = Patch()
+
+        # Check if fig_dict is None (i.e., if it is the initial empty figure)
+        if fig_dict is None or 'layout' not in fig_dict or 'yaxis' not in fig_dict['layout']:
+            # Set default y_min and y_max if the figure layout is not available
+            y_min, y_max = 0, 1  # Set default range for the y-axis
         else:
+            # Get the current y-axis range from the figure
+            y_min, y_max = fig_dict['layout']['yaxis'].get('range', [0, 1])
+
+        # Convert annotations to DataFrame
+        annotations_df = pd.DataFrame(annotations).set_index("onset")
+
+        # Filter annotations based on the current time range
+        filtered_annotations_df = gu.get_annotations_df_filtered_on_time(time_range, annotations_df)
+
+        # Prepare the shapes and annotations for the selected annotations
+        new_shapes = []
+        new_annotations = []
+        for _, row in filtered_annotations_df.iterrows():
+            description = row["description"]
+            if description in annotations_to_show:
+                new_shapes.append(
+                    dict(
+                        type="line",
+                        x0=row.name,
+                        x1=row.name,
+                        y0=y_min,
+                        y1=y_max,
+                        xref="x",
+                        yref="y",
+                        line=dict(color="red", width=2, dash="dot"),
+                        opacity=0.25
+                    )
+                )
+                # Add the label in the margin
+                new_annotations.append(
+                    dict(
+                        x=row.name,
+                        y=1.05,  # Slightly above the graph in the margin
+                        xref="x",
+                        yref="paper",  # Use paper coordinates for the y-axis (margins)
+                        text=description,  # Annotation text
+                        showarrow=False,  # No arrow needed
+                        font=dict(size=10, color="red"),  # Customize font
+                        align="center",
+                    )
+                )
+
+        # Update the figure with the new shapes and annotations
+        fig_patch["layout"]["shapes"] = new_shapes
+        fig_patch["layout"]["annotations"] = new_annotations
+
+        print("finished adding annotations on main graph")
+
+        return fig_patch, 1
         
-            print('updating annotations')
-            # Check if fig_dict contains the x-axis range
-            # if fig_dict and "layout" in fig_dict and "xaxis" in fig_dict["layout"]:
-            #     xaxis_range = fig_dict["layout"]["xaxis"].get("range", None)
-            #     if xaxis_range and len(xaxis_range) == 2:
-            #         time_range = [xaxis_range[0], xaxis_range[1]]
+def register_update_annotation_graph():
+    @dash.callback(
+        Output("annotation-graph", "figure"),
+        Output("first-load-store", "data"),
+        Input("annotation-checkboxes", "value"),
+        State("annotations-store", "data"),
+        State("annotation-graph", "figure"),
+        State("first-load-store", "data"),
+        prevent_initial_call=True
+    )
+    def update_annotation_graph(annotations_to_show, annotations, annotation_fig, first_load):
+        print("Callback triggered")
+        print("Annotations to show:", annotations_to_show)
+        print("Annotations:", annotations)
+        print("First load:", first_load)
 
-            # Create a Patch for the figure
-            fig_patch = Patch()
+        if not annotations or not isinstance(annotations, list):
+            return dash.no_update, 1
 
-            # Check if fig_dict is None (i.e., if it is the initial empty figure)
-            if fig_dict is None or 'layout' not in fig_dict or 'yaxis' not in fig_dict['layout']:
-                # Set default y_min and y_max if the figure layout is not available
-                y_min, y_max = 0, 1  # Set default range for the y-axis
-            else:
-                # Get the current y-axis range from the figure
-                y_min, y_max = fig_dict['layout']['yaxis'].get('range', [0, 1])
+        time_range = [0, 180]
 
-            # Convert annotations to DataFrame
+        fig_patch = go.Figure(annotation_fig)
+
+        # Convert annotations to DataFrame
+        try:
             annotations_df = pd.DataFrame(annotations).set_index("onset")
+            print("Annotations DataFrame:", annotations_df)
+        except Exception as e:
+            print("Error creating DataFrame:", e)
+            return dash.no_update, 1
 
-            # Filter annotations based on the current time range
+        # Filter annotations based on the current time range
+        try:
             filtered_annotations_df = gu.get_annotations_df_filtered_on_time(time_range, annotations_df)
+            print("Filtered Annotations DataFrame:", filtered_annotations_df)
+        except Exception as e:
+            print("Error filtering annotations:", e)
+            return dash.no_update, 1
 
-            # Prepare the shapes and annotations for the selected annotations
-            new_shapes = []
-            new_annotations = []
-            for _, row in filtered_annotations_df.iterrows():
-                description = row["description"]
-                if description in annotations_to_show:
-                    new_shapes.append(
-                        dict(
-                            type="line",
-                            x0=row.name,
-                            x1=row.name,
-                            y0=y_min,
-                            y1=y_max,
-                            xref="x",
-                            yref="y",
-                            line=dict(color="red", width=2, dash="dot"),
-                            opacity=0.25
-                        )
-                    )
-                    # Add the label in the margin
-                    new_annotations.append(
-                        dict(
-                            x=row.name,
-                            y=1.05,  # Slightly above the graph in the margin
-                            xref="x",
-                            yref="paper",  # Use paper coordinates for the y-axis (margins)
-                            text=description,  # Annotation text
-                            showarrow=False,  # No arrow needed
-                            font=dict(size=10, color="red"),  # Customize font
-                            align="center",
-                        )
-                    )
+        # Create the annotation graph
+        tick_vals = []
+        tick_labels = []
+        for _, row in filtered_annotations_df.iterrows():
+            if row["description"] in annotations_to_show:
+                tick_vals.append(row.name)  # Use the onset time as the tick position
+                tick_labels.append(row["description"])  # Use the annotation description as the tick label
 
-            # Update the figure with the new shapes and annotations
-            fig_patch["layout"]["shapes"] = new_shapes
-            fig_patch["layout"]["annotations"] = new_annotations
-            # fig_patch["layout"]["xaxis"] = dict(
-            #         rangeslider=dict(
-            #         visible=True,
-            #         thickness=0.02,  # Narrow slider (default is 0.15)
-            #     ),
-            #     )
+        # Update the figure with the new shapes and annotations
+        fig_patch.update_layout(
+            xaxis=dict(
+                showgrid=True,
+                tickmode='array',
+                tickvals=tick_vals,
+                ticktext=tick_labels,
+                showticklabels=True,
+                tickfont=dict(size=10),
+                # ticks="outside",
+                gridcolor="black",
+                # showline=False,  # Hide the axis line if desired
+                # zeroline=False,  # Hide the zero line
+            )
+        )
 
-            return fig_patch, 1
+
+
+        return fig_patch, 1
+    
+# def register_update_annotation_graph():
+#     @dash.callback(
+#         Output("annotation-graph", "figure"),
+#         Output("first-load-store", "data"),
+#         Input("annotation-checkboxes", "value"),
+#         State("annotations-store", "data"),
+#         State("annotation-graph", "figure"),
+#         State("first-load-store", "data"),
+#         prevent_initial_call=True
+#     )
+#     def update_annotation_graph(annotations_to_show, annotations, annotation_fig, first_load):
+#         print("Callback triggered")
+#         print("Annotations to show:", annotations_to_show)
+#         print("Annotations:", annotations)
+#         print("First load:", first_load)
+
+#         if not annotations or not isinstance(annotations, list):
+#             return dash.no_update, 1
+
+#         time_range = [0, 180]
+
+#         fig_patch = Patch()
+
+#         # Convert annotations to DataFrame
+#         try:
+#             annotations_df = pd.DataFrame(annotations).set_index("onset")
+#             print("Annotations DataFrame:", annotations_df)
+#         except Exception as e:
+#             print("Error creating DataFrame:", e)
+#             return dash.no_update, 1
+
+#         # Filter annotations based on the current time range
+#         try:
+#             filtered_annotations_df = gu.get_annotations_df_filtered_on_time(time_range, annotations_df)
+#             print("Filtered Annotations DataFrame:", filtered_annotations_df)
+#         except Exception as e:
+#             print("Error filtering annotations:", e)
+#             return dash.no_update, 1
+
+#         # Create the annotation graph
+#         new_shapes = []
+#         for _, row in filtered_annotations_df.iterrows():
+#             if row["description"] in annotations_to_show:
+#                 new_shapes.append(
+#                     dict(
+#                         type="line",
+#                         x0=row.name,
+#                         x1=row.name,
+#                         y0=1,
+#                         y1=-1,
+#                         xref="x",
+#                         yref="paper",
+#                         line=dict(color="red", width=2)
+#                     )
+#                 )
+#                 print(f"Added shape for annotation at {row.name}")
+
+#         print("Finished creating annotation graph")
+
+#         # Update the figure with the new shapes and annotations
+#         fig_patch["layout"]["shapes"] = new_shapes
+
+
+#         return fig_patch, 1
+
+        
+
 
 def register_manage_channels_checklist():
     @dash.callback(
         Output("channel-region-checkboxes", "value"),
         [Input("check-all-btn", "n_clicks"),
         Input("clear-all-btn", "n_clicks")],
+        prevent_initial_call = False
     )
     def manage_checklist(check_all_clicks, clear_all_clicks):
         # Determine which button was clicked

@@ -65,43 +65,93 @@ def create_sidebar():
         "fontSize": "12px"
     })
 
-# Helper function to create the graph container with relevant styles
+
+
 def create_graph_container():
     return html.Div(
         [
+            # MEG Signal Graph (base graph)
             dcc.Graph(
                 id="meg-signal-graph",
-                figure = {
+                figure={
                     'data': [],
                     'layout': {
                         'xaxis': {
                             'range': [0, 10],  # Initial time range
                             'title': 'Time (s)',
+                            'rangeslider': {
+                                'visible': True, # Enable the range slider
+                                'thickness': 0.02
+                            },
                         },
                         'yaxis': {
                             'title': 'Channels',
                         },
-                        'title': 'MEG Signal Visualization'
-                        # 'height': 600,
+                        'title': 'MEG Signal Visualization',
                     },
                 },
                 config={"responsive": True},
-                style={"height": "85%", "width": "100%"}  # Ensure the graph uses all available space
+                style={
+                    "width": "100%", 
+                    "height": "100%", 
+                    "position": "relative"  # Position relative to allow overlaying
+                },
             ),
-            # Store the current range to be used by clientside callback
-            dcc.Store(id='current-range', data={'min': 0, 'max': 10})
+
+            # Annotation Graph (overlay graph)
+            dcc.Graph(
+                id="annotation-graph",
+                figure={
+                    'data': [],
+                    'layout': {
+                        'xaxis': {
+                            'range': [0, 180],  # Initial time range
+                            'title': '',  # Hide title for overlay
+                            'showgrid': False,  # Hide grid for cleaner look
+                            'zeroline': False,  # Remove zero line
+                            # 'ticks': 'outside',  # Remove ticks
+                            # 'showticklabels': True, # Hide tick labels
+                        },
+                        'yaxis': {
+                            'visible': False,  # Hide y-axis completely
+                            'range': [-5,5]
+                        },
+                        'title': '',  # No title for overlay graph
+                        'margin': {
+                            'l': 0, 'r': 0, 't': 0, 'b': 0  # Minimize margins
+                        },
+                        'paper_bgcolor': 'rgba(0,0,0,0)',  # Transparent background
+                        'plot_bgcolor': 'rgba(0,0,0,0)'  # Transparent plot area
+                    },
+                },
+                config={"staticPlot": True},  # Disable interaction
+                style={
+                    "position": "absolute",  # Overlay on top of MEG graph
+                    "top": "93%",  # Adjust position to be higher (10% from the top)
+                    "left": "0",  # Align to the left
+                    "width": "88%",  # Full width
+                    "height": "3%",  # Set height to 10% of the container
+                    "marginLeft": "7%",  # Align to the right
+                    "marginRight": "0",  # No margin on the right
+                    "pointerEvents": "none"  # Ensure it doesn't block interactions with the MEG graph
+                },
+            )
         ],
         style={
-            "flex": 1,
-            "height": "85%",       # Use the full viewport height
-            "overflow": "hidden",    # Disable any scrolling
-            "display": "flex",       # Enable flexible layout
-            "flexDirection": "column",  # Adjust layout to column if needed
+            "position": "relative",  # Allow absolute positioning within
+            "width": "100%", 
+            "height": "100vh", 
+            "overflow": "hidden",  # Prevent overflow
+            "display": "block",  # Default block layout
             "padding": "0px",
             "margin": "0px",
-            "boxSizing": "border-box"  # Ensure padding and borders are accounted for
+            "boxSizing": "border-box"  # Ensure padding is included in height calculation
         }
     )
+
+
+
+
 
 # Main function that assembles everything into the layout
 def get_graph_layout():

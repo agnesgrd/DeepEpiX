@@ -3,7 +3,7 @@ import dash
 from dash import html, dcc
 from dash_extensions import Keyboard
 import layout.graph_layout as gl
-from callbacks.graph_callbacks import register_update_graph_time_channel, register_update_annotations, register_callbacks_annotation_names, register_manage_channels_checklist, register_move_time_slider
+from callbacks.graph_callbacks import register_update_graph_time_channel, register_update_annotations, register_callbacks_annotation_names, register_manage_channels_checklist, register_move_time_slider, register_update_annotation_graph
 
 
 
@@ -11,8 +11,6 @@ dash.register_page(__name__)
 
 
 layout = html.Div([
-
-    dcc.Store(id='first-page-loading', data=0),
 
     Keyboard(
         captureKeys=["ArrowLeft", "ArrowRight"],  # Captures ArrowLeft and ArrowRight keys
@@ -34,4 +32,6 @@ register_update_annotations()
 register_move_time_slider()
 
 register_manage_channels_checklist()
+
+register_update_annotation_graph()
 

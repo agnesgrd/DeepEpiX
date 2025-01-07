@@ -25,6 +25,7 @@ app.layout = html.Div(
         dcc.Store(id="main-graph-resampler", storage_type="local"),
         dcc.Store(id="frequency-store", storage_type="local"),
         dcc.Store(id="annotations-store", storage_type="local"),
+        dcc.Store(id="first-load-store", data=0, storage_type="local"),
 
         # This will track the URL and switch between pages based on tab selection
         dcc.Location(id='url', refresh=False),
