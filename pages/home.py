@@ -33,7 +33,7 @@ layout = html.Div([
 
     # Input field for folder path
     html.Div([
-        dcc.Input(
+        dbc.Input(
             id="folder-path-input",
             type="text",
             placeholder="Enter folder path here...",
@@ -70,17 +70,17 @@ layout = html.Div([
         # Inputs for frequency parameters
         html.Div([
             html.Label("Resampling Frequency (Hz): "),
-            dcc.Input(id="resample-freq", type="number", value=150, step=50, min=50, style=input_styles["number"]),
+            dbc.Input(id="resample-freq", type="number", value=150, step=50, min=50, style=input_styles["number"]),
         ], style={"padding": "10px"}),
 
         html.Div([
             html.Label("High-pass Frequency (Hz): "),
-            dcc.Input(id="high-pass-freq", type="number", value=0.5, step=0.1, min=0.1, style=input_styles["number"]),
+            dbc.Input(id="high-pass-freq", type="number", value=0.5, step=0.1, min=0.1, style=input_styles["number"]),
         ], style={"padding": "10px"}),
 
         html.Div([
             html.Label("Low-pass Frequency (Hz): "),
-            dcc.Input(id="low-pass-freq", type="number", value=50, step=10, min=10, style=input_styles["number"]),
+            dbc.Input(id="low-pass-freq", type="number", value=50, step=10, min=10, style=input_styles["number"]),
         ], style={"padding": "10px"}),
 
         # Button and status display with loading spinner

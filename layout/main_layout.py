@@ -28,5 +28,16 @@ input_styles = {
         "borderWidth": "1px",
         "borderStyle": "solid",
         "borderRadius": "5px",
-    }
+        "margin": "10px"
+    },
+    "small-number":{
+        "width": "100%",
+        "padding": "10px",
+        "fontSize": "12px",
+        "borderWidth": "1px",
+        "borderStyle": "solid",
+        "borderRadius": "5px",
+        "margin": "10px"
+    },
+
 }
