@@ -197,6 +197,8 @@ def create_rightsidebar():
                 min=0,
                 max=180,
                 size="sm",
+                persistence=True,
+                persistence_type="local",
                 style={**input_styles["small-number"]}
             ),
             dbc.Button(
@@ -221,9 +223,9 @@ def create_rightsidebar():
                     dbc.ModalHeader("Topomap", close_button=True),
                     dbc.ModalBody(
                         html.Img(
-                            id="topomap-popup",
+                            id="topomap-img-1",
                             src="https://via.placeholder.com/150",  # Placeholder image URL
-                            alt="topomap-popup",
+                            alt="topomap-img-1",
                             style={
                                 "width": "100%",
                                 "height": "auto",
@@ -266,6 +268,8 @@ def create_rightsidebar():
                     min=0,
                     max=180,
                     size="sm",
+                    persistence=True,
+                    persistence_type="local",
                     style = {**input_styles["small-number"]}
                     ),
                 dbc.Input(
@@ -276,6 +280,8 @@ def create_rightsidebar():
                     min=0,
                     max=180,
                     size="sm",
+                    persistence=True,
+                    persistence_type="local",
                     style = {**input_styles["small-number"]}
                     ),
                 ],
@@ -318,9 +324,9 @@ def create_rightsidebar():
                     dbc.ModalHeader("Topomap", close_button=True),
                     dbc.ModalBody(
                         html.Img(
-                            id="topomap-popup",
+                            id="topomap-img",
                             src="https://via.placeholder.com/150",  # Placeholder image URL
-                            alt="topomap-popup",
+                            alt="topomap-img",
                             style={
                                 "width": "100%",
                                 "height": "auto",
@@ -333,7 +339,7 @@ def create_rightsidebar():
                         dbc.Button("Close", id="close-topomap-modal", color="secondary")
                     ),
                 ],
-                id="topomap-modal",
+                id="topomap-popup",
                 is_open=False,  # Initially hidden
             ),
         ], style={
@@ -386,9 +392,9 @@ def create_rightsidebar():
                     dbc.ModalHeader("Topomap", close_button=True),
                     dbc.ModalBody(
                         html.Img(
-                            id="topomap-popup",
+                            id="topomap-sth-else",
                             src="https://via.placeholder.com/150",  # Placeholder image URL
-                            alt="topomap-popup",
+                            alt="topomap-sth-else",
                             style={
                                 "width": "100%",
                                 "height": "auto",
@@ -401,7 +407,7 @@ def create_rightsidebar():
                         dbc.Button("Close", id="close-topomap-modal", color="secondary")
                     ),
                 ],
-                id="topomap-popup",
+                id="topomap-sth-else-popup",
                 is_open=False,  # Initially hidden
             ),
         ], style={

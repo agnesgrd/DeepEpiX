@@ -207,7 +207,7 @@ def generate_graph_time_channel(time_range, channel_region, annotations_to_show,
         shifted_filtered_raw_df,
         x="Time",
         y=shifted_filtered_raw_df.columns[:-1],  # Exclude the Time column from y
-        labels={"value": "Signal", "variable": "Channel", "Time": "Time (s)"},
+        labels={"value": "Value", "variable": "Channel", "Time": "Time (s)"},
         color_discrete_map=color_map
     )
     print(f"Step 6: Figure creation completed in {time.time() - fig_start_time:.2f} seconds.")
