@@ -141,7 +141,8 @@ def handle_load_button(n_clicks):
             "border": "1px solid #ddd",  # Grey border
             "borderRadius": "8px",  # Rounded corners
             "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",
-            "marginBottom": "20px","display": "block"}
+            "marginBottom": "20px",
+            "display": "block"}
 
 @dash.callback(
     Output("frequency-store", "data"),

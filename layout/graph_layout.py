@@ -104,9 +104,9 @@ def create_leftsidebar():
         "width": "250px",  # Sidebar width is now fixed
         "boxSizing": "border-box",
         "fontSize": "12px",
-        "backgroundColor": "#f9f9f9",  # Light background color for the sidebar
+        # "backgroundColor": "#f9f9f9",  # Light background color for the sidebar
         "borderRadius": "10px",  # Rounded corners for the sidebar itself
-        "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",  # Subtle shadow for the whole sidebar
+        # "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",  # Subtle shadow for the whole sidebar
         "overflowY": "auto",  # Enable scrolling if content exceeds height
     })
 
