@@ -71,8 +71,7 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-
-![Home_screenshot](https://github.com/user-attachments/assets/2b7f47b9-8e94-4305-b97b-29a007eb2ba7)
+![Screenshot from 2025-01-10 11-12-11](https://github.com/user-attachments/assets/c27b6abe-b7ee-4860-8e35-27428fc1f34d)
 ![View_screenshot](https://github.com/user-attachments/assets/e15ef509-19cf-487a-a3e3-4f9d6f6a29b4)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
