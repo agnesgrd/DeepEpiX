@@ -1,7 +1,7 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 import static.constants as c
-from layout import input_styles
+from layout import input_styles, box_styles, button_styles
 
 # Helper function to create the sidebar with checkboxes
 
@@ -64,14 +64,7 @@ def create_leftsidebar():
                 persistence=True,
                 persistence_type="local"
             ),
-        ], style={
-            "padding": "15px",
-            "backgroundColor": "#fff",
-            "border": "1px solid #ddd",  # Grey border
-            "borderRadius": "8px",  # Rounded corners for the channel section
-            "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",
-            "marginBottom": "20px"  # Space between the sections
-        }),
+        ], style=box_styles["classic"]),
 
         # Annotation Selection
         html.Div([
@@ -86,13 +79,7 @@ def create_leftsidebar():
                 persistence=False,
                 persistence_type="local"
             ),
-        ], style={
-            "padding": "15px",
-            "backgroundColor": "#fff",
-            "border": "1px solid #ddd",  # Grey border for the annotation section
-            "borderRadius": "8px",  # Rounded corners for the annotation section
-            "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)"
-        }),
+        ], style = box_styles["classic"]),
 
     ], style={
         "padding": "20px",
@@ -203,121 +190,20 @@ def create_rightsidebar():
             ),
             dbc.Button(
                 "Plot Topomap",
-                id="plot-topomap-btn-1",  # Unique ID for each button
+                id="plot-topomap-button",  # Unique ID for each button
                 color="info",
                 outline=True,
                 size="sm",
                 n_clicks=0,
                 style={
                     "fontSize": "12px",
-                    "padding": "6px 6px",
+                    "padding": "8px",
                     "borderRadius": "5px",
                     "width": "100%",
-                    "margin": "10px"
+                    "margin": "10px 0"
                 }
             ),
 
-            # Modal (popup) for displaying the topomap image
-            dbc.Modal(
-                [
-                    dbc.ModalHeader("Topomap", close_button=True),
-                    dbc.ModalBody(
-                        html.Img(
-                            id="topomap-img-1",
-                            src="https://via.placeholder.com/150",  # Placeholder image URL
-                            alt="topomap-img-1",
-                            style={
-                                "width": "100%",
-                                "height": "auto",
-                                "borderRadius": "10px",
-                                "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)"  # Light shadow for the image
-                            }
-                        ),
-                    ),
-                    dbc.ModalFooter(
-                        dbc.Button("Close", id="close-topomap-modal", color="secondary")
-                    ),
-                ],
-                id="topomap-modal",
-                is_open=False,  # Initially hidden
-            ),
-        ], style={
-            "marginTop": "20px",
-            "padding": "20px",
-            "borderRadius": "10px",  # Rounded corners for the whole container
-            "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",  # Light shadow for the container
-            "backgroundColor": "#f9f9f9",  # Light background color
-            "width": "100%",
-            "maxWidth": "400px",
-            "margin": "0 auto"  # Center align the container
-        }),
-
-        # Plot topomap on a time interval
-        html.Div([
-            # Label and input field for timepoint entry
-            html.Label(
-                "Please enter a time interval to plot topomap:",
-                style={"fontWeight": "bold", "fontSize": "14px", "marginBottom": "8px"}
-            ),
-            html.Div([
-                dbc.Input(
-                    id="topomap-min-range",  # Unique ID for each input
-                    type="number",
-                    placeholder="min",
-                    step=0.01,
-                    min=0,
-                    max=180,
-                    size="sm",
-                    persistence=True,
-                    persistence_type="local",
-                    style = {**input_styles["small-number"]}
-                    ),
-                dbc.Input(
-                    id="topomap-max-range",  # Unique ID for each input
-                    type="number",
-                    placeholder="max",
-                    step=0.01,
-                    min=0,
-                    max=180,
-                    size="sm",
-                    persistence=True,
-                    persistence_type="local",
-                    style = {**input_styles["small-number"]}
-                    ),
-                ],
-            ),
-            # Button for plotting topomap
-            dbc.Button(
-                "Plot Topomap",
-                id="plot-topomap-btn-2",  # Unique ID for each button
-                color="info",
-                outline=True,
-                size="sm",
-                n_clicks=0,
-                style={
-                    "fontSize": "12px",
-                    "padding": "6px 6px",
-                    "borderRadius": "5px",
-                    "width": "100%",
-                    "margin": "10px"
-                }
-            ),
-            # # Container for the topomap image, initially hidden
-            # html.Div([
-            #     html.Img(
-            #         id="topomap-image-2",
-            #         src="https://via.placeholder.com/150",  # Placeholder image URL
-            #         alt="topomap-image-2",
-            #         style={
-            #             "display": "none",
-            #             "width": "100%",
-            #             "height": "auto",
-            #             "marginTop": "20px",
-            #             "borderRadius": "10px",
-            #             "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)"  # Light shadow for the image
-            #         }
-            #     ),
-            # ]),
             # Modal (popup) for displaying the topomap image
             dbc.Modal(
                 [
@@ -339,93 +225,16 @@ def create_rightsidebar():
                         dbc.Button("Close", id="close-topomap-modal", color="secondary")
                     ),
                 ],
-                id="topomap-popup",
+                id="topomap-modal",
                 is_open=False,  # Initially hidden
             ),
-        ], style={
-            "marginTop": "20px",
-            "padding": "20px",
-            "borderRadius": "10px",  # Rounded corners for the whole container
-            "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",  # Light shadow for the container
-            "backgroundColor": "#f9f9f9",  # Light background color
-            "width": "100%",
-            "maxWidth": "400px",
-            "margin": "0 auto"  # Center align the container
-        }),
-
-        # SOmething else
-        html.Div([
-            # Label and input field for timepoint entry
-            html.Label(
-                "Something else here:",
-                style={"fontWeight": "bold", "fontSize": "14px", "marginBottom": "8px"}
-            ),
-            dbc.Input(
-                id="input-sth-else",  # Unique ID for each input
-                type="number",
-                placeholder="",
-                step=0.01,
-                min=0,
-                max=180,
-                size="sm",
-                style={**input_styles["small-number"]}
-            ),
-            dbc.Button(
-                "Plot Something Else",
-                id="plot-sth-else",  # Unique ID for each button
-                color="info",
-                outline=True,
-                size="sm",
-                n_clicks=0,
-                style={
-                    "fontSize": "12px",
-                    "padding": "6px 6px",
-                    "borderRadius": "5px",
-                    "width": "100%",
-                    "margin": "10px"
-                }
-            ),
-
-            # Modal (popup) for displaying the topomap image
-            dbc.Modal(
-                [
-                    dbc.ModalHeader("Topomap", close_button=True),
-                    dbc.ModalBody(
-                        html.Img(
-                            id="topomap-sth-else",
-                            src="https://via.placeholder.com/150",  # Placeholder image URL
-                            alt="topomap-sth-else",
-                            style={
-                                "width": "100%",
-                                "height": "auto",
-                                "borderRadius": "10px",
-                                "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)"  # Light shadow for the image
-                            }
-                        ),
-                    ),
-                    dbc.ModalFooter(
-                        dbc.Button("Close", id="close-topomap-modal", color="secondary")
-                    ),
-                ],
-                id="topomap-sth-else-popup",
-                is_open=False,  # Initially hidden
-            ),
-        ], style={
-            "marginTop": "20px",
-            "padding": "20px",
-            "borderRadius": "10px",  # Rounded corners for the whole container
-            "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",  # Light shadow for the container
-            "backgroundColor": "#f9f9f9",  # Light background color
-            "width": "100%",
-            "maxWidth": "400px",
-            "margin": "0 auto"  # Center align the container
-        }),
+        ], style=box_styles["classic"]),
 
     ], style={
         "display": "flex",
         "flexDirection": "column",  # Stack the three sections vertically
         "gap": "20px",  # Space between sections
-        "width": "8%",
+        "width": "10%",
         "maxWidth": "450px",  # You can set a max width for the sidebar
         "margin": "0 10px"
     })
@@ -436,11 +245,10 @@ def get_graph_layout():
         create_graph_container(),
         create_rightsidebar(),
     ], style={
-        
         "display": "flex",  # Horizontal layout
         "flexDirection": "row",
         "height": "85vh",  # Use the full height of the viewport
-        "width": "90vw",  # Use the full width of the viewport
+        "width": "95vw",  # Use the full width of the viewport
         "overflow": "hidden",  # Prevent overflow in case of resizing
         "boxSizing": "border-box"
     })

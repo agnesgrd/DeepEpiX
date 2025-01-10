@@ -3,6 +3,9 @@ from dash import Dash, html, dcc, page_container
 import dash_bootstrap_components as dbc
 import uuid
 from flask_caching import Cache
+from dash import Input, Output, State
+import dash
+from layout import box_styles
 
 # Initialize Dash app with use_pages=True
 app = Dash(__name__,
@@ -19,6 +22,10 @@ app = Dash(__name__,
 # Main layout with page container for dynamic content loading
 app.layout = html.Div(
     children=[
+
+        # This will track the URL and switch between pages based on tab selection
+        dcc.Location(id='url', refresh=False),
+
         dcc.Store(id="folder-store", storage_type="local"),
         dcc.Store(id="raw-store", storage_type="local"),
         dcc.Store(id="plotting-data-store", data={}, storage_type="local"),
@@ -27,43 +34,72 @@ app.layout = html.Div(
         dcc.Store(id="annotations-store", storage_type="local"),
         dcc.Store(id="first-load-store", data=0, storage_type="local"),
 
-        # This will track the URL and switch between pages based on tab selection
-        dcc.Location(id='url', refresh=False),
 
-        # Main content
+        # Row for title and links
         html.Div(
             children=[
-                html.H1("DeepEpiX"),
-                page_container,  # This will hold the content of each page
-            ],
-            style={"width": "90vw", "display": "inline-block", "padding": "10px"},
-        ),
+                # Title of the app
+                html.H1("DeepEpiX", style={"text-align": "left", "flex": 1, "padding-top": "10px"}),
 
-        # Navigation (replacing dcc.Tabs with dcc.Link for URL routing)
-        html.Div(
-            children=[
-                html.H3("Navigation"),
+                # Panel with clickable tabs that navigate to different links
                 html.Div(
                     children=[
-                        dcc.Link('Home', href='/', style={'display': 'block', 'margin-bottom': '10px'}),
-                        dcc.Link('View', href='/view', style={'display': 'block', 'margin-bottom': '10px'}),
-                        dcc.Link('Analyze', href='/analyze', style={'display': 'block', 'margin-bottom': '10px'}),
-                        dcc.Link('Predict', href='/predict', style={'display': 'block', 'margin-bottom': '10px'}),
-                        dcc.Link('Save', href='/save', style={'display': 'block', 'margin-bottom': '10px'}),
-                    ]
+                        dcc.Link(
+                            "Home", id="link-home", href="/", style={**box_styles["panel-tabs"]} 
+                        ),
+                        dcc.Link(
+                            "View", id="link-view", href="/view", style={**box_styles["panel-tabs"]} 
+                        ),
+                        dcc.Link(
+                            "Analyze", id="link-analyze", href="/analyze", style={**box_styles["panel-tabs"]} 
+                        ),
+                        dcc.Link(
+                            "Predict", id="link-predict", href="/predict", style={**box_styles["panel-tabs"]} 
+                        ),
+                        dcc.Link(
+                            "Save", id="link-save", href="/save", style={**box_styles["panel-tabs"]} 
+                        ),
+                    ],
+                    style={
+                        "width": "100vw"
+                    },
+                ),
+                # Main content container (display content based on the tab selected)
+                html.Div(
+                    children=[  
+                        page_container,  # Placeholder for dynamically loaded content
+                    ],
+                    style={"width": "100%", "display": "inline-block", "padding": "20px"},  # Main content area
                 ),
             ],
-            style={
-                "width": "10vw",
-                "display": "inline-block",
-                "vertical-align": "top",
-                "padding": "10px",
-                "border-left": "1px solid #ccc",
-            },
+            style={"width": "100%", "padding": "10px"},  # Row layout
         ),
     ],
-    style={"display": "flex"},
+    style={"display": "flex", "flex-direction": "column", "height": "100vh"},  # Full-page flex layout
 )
+
+# Callback to update the style of the active tab
+@dash.callback(
+    [Output("link-home", "style"),
+     Output("link-view", "style"),
+     Output("link-analyze", "style"),
+     Output("link-predict", "style"),
+     Output("link-save", "style")],
+    [Input("url", "pathname")]
+)
+def update_tab_style(pathname):
+
+    # Highlight the active link by changing its background color
+    active_style = {**box_styles["panel-tabs"], "background-color": "blue"}  # Dark Gray for active link
+
+    # Return updated styles based on the current pathname
+    return (
+        active_style if pathname == "/" else {**box_styles["panel-tabs"]},
+        active_style if pathname == "/view" else {**box_styles["panel-tabs"]},
+        active_style if pathname == "/analyze" else {**box_styles["panel-tabs"]} ,
+        active_style if pathname == "/predict" else {**box_styles["panel-tabs"]} ,
+        active_style if pathname == "/save" else {**box_styles["panel-tabs"]},
+    )
 
 
 if __name__ == "__main__":

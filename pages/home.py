@@ -4,7 +4,7 @@ import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
 import os
 import mne
-from layout import input_styles
+from layout import input_styles, box_styles
 from dash.exceptions import PreventUpdate
 from flask_caching import Cache
 from io import StringIO
@@ -23,10 +23,10 @@ cache = Cache(app.server, config={
 })
 
 layout = html.Div([
-    html.H1("HOME: Choose MEG Data Folder"),
-
+    
     # Explanation of what the user needs to do
     html.Div([
+        html.H1("Choose MEG Data Folder"),
         html.P("Please enter the full path to the .ds folder containing the data to analyze."),
         html.P("Example: /home/admin_mel/Code/DeepEpiX/data/berla_Epi-001_20100413_07.ds"),
         html.Div([
@@ -51,8 +51,7 @@ layout = html.Div([
             disabled=True,
             n_clicks=0
         )
-    ], style={"padding": "15px", "backgroundColor": "#fff", "border": "1px solid #ddd", 
-              "borderRadius": "8px", "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)", "marginBottom": "20px"}),
+    ], style={"padding": "15px", "backgroundColor": "#fff", "border": "1px solid #ddd","borderRadius": "8px", "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)", "marginBottom": "20px"}),
 
     # Section for frequency parameters, initially hidden
     html.Div(
@@ -224,6 +223,29 @@ def preprocess_meg_data(n_clicks, folder_path, freq_data):
             return f"Error during preprocessing : {str(e)}", dash.no_update, None
 
     return None, dash.no_update, None
+
+
+# @dash.callback(
+#     [Output("link-home", "style"),
+#      Output("link-view", "style"),
+#      Output("link-analyze", "style"),
+#      Output("link-predict", "style"),
+#      Output("link-save", "style")],
+#     [Input("url", "pathname")]
+# )
+# def update_tab_style(pathname):
+
+#     # Highlight the active link by changing its background color
+#     active_style = {**box_styles["panel-tabs"], "background-color": "blue"}  # Dark Gray for active link
+
+#     # Return updated styles based on the current pathname
+#     return (
+#         active_style if pathname == "/" else {**box_styles["panel-tabs"]},
+#         active_style if pathname == "/view" else {**box_styles["panel-tabs"]},
+#         active_style if pathname == "/analyze" else {**box_styles["panel-tabs"]} ,
+#         active_style if pathname == "/predict" else {**box_styles["panel-tabs"]} ,
+#         active_style if pathname == "/save" else {**box_styles["panel-tabs"]},
+#     )
     
 
 
