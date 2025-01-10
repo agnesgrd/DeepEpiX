@@ -16,11 +16,12 @@
 
 
 <!-- PROJECT LOGO -->
-<br />
 <div align="center">
   <a href="https://github.com/github_username/repo_name">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+    <img src="https://github.com/user-attachments/assets/bbe75d9c-204c-4890-8a9b-f8d5131b0032" alt="Logo" width="200" />
   </a>
+</div>
+
 
 <h3 align="center">DeepEpiX</h3>
 
@@ -132,11 +133,13 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 
 <!-- ROADMAP -->
 ## Roadmap
-
-- [ ] Feature 1
-- [ ] Feature 2
-- [ ] Feature 3
-    - [ ] Nested Feature
+- [ ] Home Page
+  - [ ] Visualize folder navigator (instead of entering full folder path)
+- [ ] View Page
+  - [ ] Plot topomap
+  - [ ] Enable spike annotation
+- [ ] Predict Page
+  - [ ] Run a prediction model
 
 See the [open issues](https://github.com/agnesgrd/DeepEpiX/issues) for a full list of proposed features (and known issues).
 
@@ -159,14 +162,6 @@ Don't forget to give the project a star! Thanks again!
 5. Open a Pull Request
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-### Top contributors:
-
-<a href="https://github.com/agnesgrd/DeepEpiX/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=agnesgrd/DeepEpiX" alt="contrib.rocks image" />
-</a>
-
-
 
 <!-- LICENSE -->
 ## License
