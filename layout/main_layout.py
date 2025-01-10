@@ -38,6 +38,14 @@ input_styles = {
         "borderStyle": "solid",
         "borderRadius": "5px",
         "margin": "10px"
-    },
-
+    }
 }
+
+box_style = {
+    "padding": "15px",
+    "backgroundColor": "#fff",
+    "border": "1px solid #ddd",  # Grey border
+    "borderRadius": "8px",  # Rounded corners for the channel section
+    "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",
+    "marginBottom": "20px"  # Space between the sections
+    }
