@@ -161,8 +161,10 @@ def create_graph_container():
             "height": "100vh",  # Ensure full screen height usage
         }
     )
+
 def create_rightsidebar():
     return html.Div([
+
         # Plot topomap on a unique timepoint
         html.Div([
             # Label and input field for timepoint entry
@@ -216,6 +218,65 @@ def create_rightsidebar():
                 is_open=False,  # Initially hidden
             ),
         ], style=box_styles["classic"]),
+    
+    # Plot topomap on a interval timepoint
+        html.Div([
+            # Label and input field for timepoint entry
+            html.Label(
+                "Please enter a time range to plot topomap:",
+                style={"fontWeight": "bold", "fontSize": "14px", "marginBottom": "8px"}
+            ),
+            dbc.Input(
+                id="topomap-min-range",  # Unique ID for each input
+                type="number",
+                placeholder="",
+                step=0.01,
+                min=0,
+                max=180,
+                size="sm",
+                persistence=True,
+                persistence_type="local",
+                style={**input_styles["small-number"]}
+            ),
+            dbc.Input(
+                id="topomap-max-range",  # Unique ID for each input
+                type="number",
+                placeholder="",
+                step=0.01,
+                min=0,
+                max=180,
+                size="sm",
+                persistence=True,
+                persistence_type="local",
+                style={**input_styles["small-number"]}
+            ),
+            dbc.Button(
+                "Plot Topomap",
+                id="plot-topomap-button-range",  # Unique ID for each button
+                color="info",
+                outline=True,
+                size="sm",
+                n_clicks=0,
+                style=button_styles["plot-topomap"]
+            ),
+            # Modal (popup) for displaying the topomap video
+            dbc.Modal(
+                [
+                    dbc.ModalHeader("Topomap", close_button=False),
+                    dbc.ModalBody(
+                        children=[
+                            html.Div(id="topomap-modal-content"),  # Content dynamically populated
+                        ]
+                    ),
+                    dbc.ModalFooter(
+                        dbc.Button("Close", id="close-topomap-range-modal", color="secondary")
+                    ),
+                ],
+                id="topomap-range-modal",
+                is_open=False,  # Initially hidden
+                size="lg"
+            ),
+        ], style=box_styles["classic"]),
     ], style={
         "display": "flex",
         "flexDirection": "column",  # Stack the three sections vertically
@@ -224,6 +285,7 @@ def create_rightsidebar():
         "maxWidth": "450px",  # You can set a max width for the sidebar
         "margin": "0 10px"
     })
+
 def get_graph_layout():
     return html.Div([
         create_leftsidebar(),

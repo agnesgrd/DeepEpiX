@@ -423,7 +423,7 @@ def register_update_annotations():
             y_min, y_max = fig_dict['layout']['yaxis'].get('range', [0, 1])
 
         # Convert annotations to DataFrame
-        annotations_df = pd.DataFrame(annotations).set_index("onset")
+        annotations_df = pd.DataFrame(annotations)
 
         # Filter annotations based on the current time range
         filtered_annotations_df = gu.get_annotations_df_filtered_on_time(time_range, annotations_df)
