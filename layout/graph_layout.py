@@ -2,9 +2,7 @@ from dash import html, dcc
 import dash_bootstrap_components as dbc
 import static.constants as c
 from layout import input_styles, box_styles, button_styles
-
 # Helper function to create the sidebar with checkboxes
-
 def create_leftsidebar():
     return html.Div([
         # Channel Selection
@@ -65,7 +63,6 @@ def create_leftsidebar():
                 persistence_type="local"
             ),
         ], style=box_styles["classic"]),
-
         # Annotation Selection
         html.Div([
             html.Label(
@@ -80,7 +77,6 @@ def create_leftsidebar():
                 persistence_type="local"
             ),
         ], style = box_styles["classic"]),
-
     ], style={
         "padding": "20px",
         "height": "100%",
@@ -96,7 +92,6 @@ def create_leftsidebar():
         # "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",  # Subtle shadow for the whole sidebar
         "overflowY": "auto",  # Enable scrolling if content exceeds height
     })
-
 def create_graph_container():
     return html.Div(
         [
@@ -166,7 +161,6 @@ def create_graph_container():
             "height": "100vh",  # Ensure full screen height usage
         }
     )
-
 def create_rightsidebar():
     return html.Div([
         # Plot topomap on a unique timepoint
@@ -195,19 +189,12 @@ def create_rightsidebar():
                 outline=True,
                 size="sm",
                 n_clicks=0,
-                style={
-                    "fontSize": "12px",
-                    "padding": "8px",
-                    "borderRadius": "5px",
-                    "width": "100%",
-                    "margin": "10px 0"
-                }
+                style=button_styles["plot-topomap"]
             ),
-
             # Modal (popup) for displaying the topomap image
             dbc.Modal(
                 [
-                    dbc.ModalHeader("Topomap", close_button=True),
+                    dbc.ModalHeader("Topomap", close_button=False),
                     dbc.ModalBody(
                         html.Img(
                             id="topomap-img",
@@ -229,7 +216,6 @@ def create_rightsidebar():
                 is_open=False,  # Initially hidden
             ),
         ], style=box_styles["classic"]),
-
     ], style={
         "display": "flex",
         "flexDirection": "column",  # Stack the three sections vertically
@@ -238,7 +224,6 @@ def create_rightsidebar():
         "maxWidth": "450px",  # You can set a max width for the sidebar
         "margin": "0 10px"
     })
-
 def get_graph_layout():
     return html.Div([
         create_leftsidebar(),
