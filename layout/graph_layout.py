@@ -106,12 +106,16 @@ def create_graph_container():
                             'title': 'Time (s)',
                             'rangeslider': {'visible': True, 'thickness': 0.02},
                         },
-                        'yaxis': {'title': 'Channels'},
+                        'yaxis': {'title': 'Channels', 'fixedrange': True},
                         'title': 'MEG Signal Visualization',
                         'margin': {'l': 0, 'r': 0, 't': 0, 'b': 0},
+                        
                     },
                 },
-                config={"responsive": True},
+                config={
+                    "responsive": True,
+                    'doubleClick': 'reset',  # Reset zoom on double-click
+                    },
                 style={"width": "100%", "height": "100%"}
             ),
             # Annotation Graph (overlay graph)
@@ -196,23 +200,23 @@ def create_rightsidebar():
             # Modal (popup) for displaying the topomap image
             dbc.Modal(
                 [
-                    dbc.ModalHeader("Topomap", close_button=False),
+                    dbc.ModalHeader("Topomap", close_button=True),
                     dbc.ModalBody(
                         html.Img(
                             id="topomap-img",
                             src="https://via.placeholder.com/150",  # Placeholder image URL
                             alt="topomap-img",
                             style={
-                                "width": "100%",
-                                "height": "auto",
+                                "width": "auto",
+                                "height": "20%",
                                 "borderRadius": "10px",
                                 "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)"  # Light shadow for the image
                             }
                         ),
                     ),
-                    dbc.ModalFooter(
-                        dbc.Button("Close", id="close-topomap-modal", color="secondary")
-                    ),
+                    # dbc.ModalFooter(
+                    #     dbc.Button("Close", id="close-topomap-modal", color="secondary")
+                    # ),
                 ],
                 id="topomap-modal",
                 is_open=False,  # Initially hidden
@@ -250,31 +254,38 @@ def create_rightsidebar():
                 persistence_type="local",
                 style={**input_styles["small-number"]}
             ),
-            dbc.Button(
-                "Plot Topomap",
-                id="plot-topomap-button-range",  # Unique ID for each button
-                color="info",
-                outline=True,
-                size="sm",
-                n_clicks=0,
-                style=button_styles["plot-topomap"]
-            ),
+            html.Div([
+                dbc.Button(
+                    "Plot Topomap",
+                    id="plot-topomap-button-range",  # Unique ID for each button
+                    color="info",
+                    outline=True,
+                    size="sm",
+                    n_clicks=0,
+                    disabled=True,
+                    style=button_styles["plot-topomap"]
+                ),
+                # Loading component to show the loading spinner while the long callback is processing
+                dcc.Loading(
+                    id="topomap-loading",
+                    type="dot",  # You can use "circle", "dot", etc. for different spinner styles
+                    children=html.Div(id="topomap-result", style={"marginTop": "20px"})
+                ),
+            ]),
             # Modal (popup) for displaying the topomap video
             dbc.Modal(
                 [
-                    dbc.ModalHeader("Topomap", close_button=False),
+                    dbc.ModalHeader("Topomap", close_button=True),
                     dbc.ModalBody(
                         children=[
                             html.Div(id="topomap-modal-content"),  # Content dynamically populated
                         ]
-                    ),
-                    dbc.ModalFooter(
-                        dbc.Button("Close", id="close-topomap-range-modal", color="secondary")
-                    ),
+                    )
                 ],
                 id="topomap-range-modal",
                 is_open=False,  # Initially hidden
-                size="lg"
+                size = "sm"
+
             ),
         ], style=box_styles["classic"]),
     ], style={

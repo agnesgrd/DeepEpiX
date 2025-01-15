@@ -45,9 +45,21 @@ def register_close_topomap():
         if n_clicks:
             return False
         return is_open
-    
+
+def register_enable_topomap_button():
+    @dash.callback(
+        Output("plot-topomap-button-range", "disabled"),
+        Input("topomap-min-range", "value"),
+        Input("topomap-max-range", "value")
+    )
+    def enable_topomap_button(min_range, max_range):
+        if min_range is not None and max_range is not None:
+            return False  # Enable the button if both inputs are provided
+        return True  # Disable the button if either input is missing
+     
 def register_display_topomap_video():
     @dash.callback(
+        Output("topomap-result", "children"),
         Output("topomap-modal-content", "children"),
         Output("topomap-range-modal", "is_open"),
         [Input("plot-topomap-button-range", "n_clicks")],
@@ -64,7 +76,7 @@ def register_display_topomap_video():
                 # Load raw data (metadata only)
                 raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
 
-                step_size = 1 / freq_data.get("resample_freq")
+                step_size = max(1 / 100, (max_time-min_time)/20)  #freq_data.get("resample_freq")
 
                 time_points = np.arange(float(min_time), float(max_time), step_size)
 
@@ -73,32 +85,44 @@ def register_display_topomap_video():
                 for t in time_points:
                     img_str = tu.create_topomap(raw, t)  # Returns base64-encoded string
                     img_src = f"data:image/png;base64,{img_str}"
-                    images.append(html.Img(src=img_src, style={'width': '300px', 'margin': '10px'}))
+                    images.append(html.Img(src=img_src, style={'width': '200px', 'margin': '0px'}))
 
                 # Add all images to modal content
                 modal_content = html.Div(
                     children=images,
-                    style={'display': 'flex', 'flex-wrap': 'wrap', 'justify-content': 'center'}
+                    style={
+                        'display': 'flex',
+                        'flex-wrap': 'wrap',
+                        'justify-content': 'center',
+                        # 'position': 'fixed',
+                        # 'top': '0',
+                        # 'right': '0',  # Modal slides in
+                        # 'width': '50%',
+                        # 'height': '50%'
+                    }
                 )
 
-                return modal_content, not is_open
+                return True, modal_content, not is_open
 
             except Exception as e:
                 print(f"Error in plot_topomap: {str(e)}")
-                return None, is_open
+                return None, None, is_open
             
         # If no button click or invalid input, return a placeholder image
-        return None, is_open
+        return None, None, is_open
     
-def register_close_topomap_video():
-    # Callback to close the modal when the close button inside the modal is clicked
+def register_range_on_selection():   
     @dash.callback(
-        Output("topomap-range-modal", "is_open", allow_duplicate=True),
-        [Input("close-topomap-range-modal", "n_clicks")],
-        [State("topomap-range-modal", "is_open")],
-        prevent_initial_call=True
+        [Output("topomap-min-range", "value"),
+        Output("topomap-max-range", "value")],
+        [Input("meg-signal-graph", "selectedData")]  # Capture selection data from the graph
     )
-    def close_modal(n_clicks, is_open):
-        if n_clicks:
-            return False
-        return is_open
+    def update_range_on_selection(selectedData):
+        if selectedData:
+            # Get the selected range (from selectedData)
+            x_vals = [point['x'] for point in selectedData['points']]  # Extract the x values (time points)
+            min_range = round(min(x_vals), 3)  # Get the minimum time value from the selection
+            max_range = round(max(x_vals), 3)  # Get the maximum time value from the selection
+            return min_range, max_range  # Update the min and max range for the topomap
+        else:
+            return dash.no_update, dash.no_update  # Default range if no selection has been made

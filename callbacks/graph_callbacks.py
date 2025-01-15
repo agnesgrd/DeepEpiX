@@ -75,7 +75,15 @@ def generate_graph_time_channel(channel_region, annotations_to_show, folder_path
         y=shifted_filtered_raw_df.columns[:-1],  # Exclude the Time column from y
         labels={"value": "Value", "variable": "Channel", "Time": "Time (s)"},
         color_discrete_map=color_map
+    ).add_traces(px.scatter(
+        shifted_filtered_raw_df,
+        x="Time",
+        y=shifted_filtered_raw_df.columns[:-1],  # Exclude the Time column from y
+        labels={"value": "Value", "variable": "Channel", "Time": "Time (s)"},
+        color_discrete_map=color_map,
+        opacity=0).data
     )
+
     print(f"Step 6: Figure creation completed in {time.time() - fig_start_time:.2f} seconds.")
 
     # Update layout with x-axis range and other customizations
@@ -106,6 +114,8 @@ def generate_graph_time_channel(channel_region, annotations_to_show, folder_path
         },
         showlegend=False,
         margin=dict(l=0, r=0, t=0, b=0),
+        dragmode ='select',
+        hovermode ='closest'
     )
     # Update the line width after creation
     for trace in fig.data:
@@ -202,7 +212,7 @@ def register_update_annotations():
                 new_annotations.append(
                     dict(
                         x=row.name,
-                        y=1.05,  # Slightly above the graph in the margin
+                        y=0.98,  # Slightly above the graph in the margin
                         xref="x",
                         yref="paper",  # Use paper coordinates for the y-axis (margins)
                         text=description,  # Annotation text

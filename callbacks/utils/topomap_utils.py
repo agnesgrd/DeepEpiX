@@ -43,7 +43,7 @@ def create_topomap(raw, timepoint):
     )
 
     # Customize the plot appearance
-    ax.set_title(f'Time: {timepoint:.3f}s', fontsize=12)  # Add a title
+    ax.set_title(f'Time: {timepoint:.3f}s', fontsize=13)  # Add a title
     ax.set_facecolor('white')  # Set background color to white
     ax.axis('off')  # Hide axes for a clean look
 
@@ -55,5 +55,7 @@ def create_topomap(raw, timepoint):
     # Encode the image in Base64
     img_str = base64.b64encode(buf.read()).decode('utf-8')
     buf.close()
+
+    plt.close('all')
     
     return img_str
