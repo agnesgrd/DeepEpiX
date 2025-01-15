@@ -51,7 +51,7 @@ app.layout = html.Div(
                             "View", id="link-view", href="/view", style={**box_styles["panel-tabs"]} 
                         ),
                         dcc.Link(
-                            "Analyze", id="link-analyze", href="/analyze", style={**box_styles["panel-tabs"]} 
+                            "Settings", id="link-analyze", href="/analyze", style={**box_styles["panel-tabs"]} 
                         ),
                         dcc.Link(
                             "Predict", id="link-predict", href="/predict", style={**box_styles["panel-tabs"]} 
