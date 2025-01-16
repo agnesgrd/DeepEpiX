@@ -5,6 +5,23 @@ from layout import input_styles, box_styles, button_styles
 # Helper function to create the sidebar with checkboxes
 def create_leftsidebar():
     return html.Div([
+
+        # Montage Selection
+        html.Div([
+            html.Label(
+                "Select Montage:",
+                style={"fontWeight": "bold", "fontSize": "14px", "marginBottom": "8px"}
+            ),
+            dcc.RadioItems(
+                id="montage-radio",
+                options = [],
+                inline=False,
+                style={"margin": "10px 0", "fontSize": "12px"},
+                persistence=True,
+                persistence_type="local"
+            ),
+        ], style = box_styles["classic"]),
+
         # Channel Selection
         html.Div([
             html.Label(
@@ -63,6 +80,7 @@ def create_leftsidebar():
                 persistence_type="local"
             ),
         ], style=box_styles["classic"]),
+
         # Annotation Selection
         html.Div([
             html.Label(

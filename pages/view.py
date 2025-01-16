@@ -3,8 +3,8 @@ import dash
 from dash import html
 from dash_extensions import Keyboard
 import layout.graph_layout as gl
-from callbacks.graph_callbacks import register_update_graph_time_channel, register_update_annotations, register_callbacks_annotation_names, register_manage_channels_checklist, register_move_time_slider, register_update_annotation_graph
-from callbacks.topomap_callbacks import register_display_topomap, register_close_topomap
+from callbacks.graph_callbacks import register_update_graph_time_channel, register_update_annotations, register_callbacks_montage_names, register_callbacks_annotation_names, register_manage_channels_checklist, register_move_time_slider, register_update_annotation_graph
+from callbacks.topomap_callbacks import register_display_topomap
 from callbacks.topomap_callbacks import register_display_topomap_video, register_enable_topomap_button
 from callbacks.topomap_callbacks import register_range_on_selection
 
@@ -26,6 +26,8 @@ layout = html.Div([
 
 register_callbacks_annotation_names()
 
+register_callbacks_montage_names()
+
 register_update_graph_time_channel()
 
 register_update_annotations()
@@ -38,7 +40,7 @@ register_update_annotation_graph()
 
 register_display_topomap()
 
-register_close_topomap()
+# register_close_topomap()
 
 register_display_topomap_video()
 

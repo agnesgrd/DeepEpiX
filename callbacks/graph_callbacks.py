@@ -27,6 +27,31 @@ def register_callbacks_annotation_names():
         options = [{'label': name, 'value': name} for name in annotation_names]
         return options, annotation_names  # Set all annotations as default selected
     
+def register_callbacks_montage_names():
+    # Callback to populate the checklist options and default value dynamically
+    @dash.callback(
+        Output("montage-radio", "options"),
+        Output("montage-radio", "value"),
+        Input("montage-store", "data"),
+        State("montage-radio", "value"),
+        prevent_initial_call=False
+    )
+    def display_annotation_names_checklist(montage_store, value):
+        # Create options for the checklist from the channels in montage_store
+        options = []
+        
+        for key, channels in montage_store.items():
+            options.extend([{'label': key, 'value': key}])
+
+        options.extend([{'label':'channel selection', 'value': 'channel selection'}])
+
+        if montage_store == {} or value is None:
+            return options, 'channel selection'
+
+        else:
+            return options, dash.no_update
+    
+    
 def generate_graph_time_channel(channel_region, annotations_to_show, folder_path, freq_data, annotations):
     """Handles the preprocessing and figure generation for the MEG signal visualization."""
     import time  # For logging execution times
