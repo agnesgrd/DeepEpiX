@@ -50,9 +50,24 @@ def register_callbacks_montage_names():
 
         else:
             return options, dash.no_update
+        
+def register_hide_channel_selection_when_montage():
+    # Callback to populate the checklist options and default value dynamically
+    @dash.callback(
+        Output("channel-region-checkboxes", "options"),
+        Input("montage-radio", "value"),
+        State("channel-region-checkboxes", "options"),
+        prevent_initial_call=False
+    )
+    def display_annotation_names_checklist(montage_value, channel_options):
+        if montage_value != 'channel selection':
+            # Disable all options
+            return [{'label': option['label'], 'value': option['value'], 'disabled': True} for option in channel_options]
+        else:
+            # Enable all options
+            return [{'label': option['label'], 'value': option['value'], 'disabled': False} for option in channel_options]
     
-    
-def generate_graph_time_channel(channel_region, annotations_to_show, folder_path, freq_data, annotations):
+def generate_graph_time_channel(selected_channels, annotations_to_show, folder_path, freq_data, annotations):
     """Handles the preprocessing and figure generation for the MEG signal visualization."""
     import time  # For logging execution times
 
@@ -66,17 +81,7 @@ def generate_graph_time_channel(channel_region, annotations_to_show, folder_path
     filtered_times, filtered_raw_df = gu.get_raw_df_filtered_on_time([0, 180], raw_df)
     print(f"Step 2: Time filtering completed in {time.time() - filter_start_time:.2f} seconds.")
 
-    # Get the selected channels based on region
-    channel_start_time = time.time()
-    selected_channels = [
-        channel
-        for region_code in channel_region
-        if region_code in c.GROUP_CHANNELS_BY_REGION
-        for channel in c.GROUP_CHANNELS_BY_REGION[region_code]
-    ]
-    if not selected_channels:
-        raise ValueError("No channels selected from the given regions.")
-    print(f"Step 3: Channel selection completed in {time.time() - channel_start_time:.2f} seconds.")
+
 
     # Filter the dataframe based on the selected channels
     filter_df_start_time = time.time()
@@ -156,22 +161,49 @@ def register_update_graph_time_channel():
     @dash.callback(
         Output("meg-signal-graph", "figure"),
         Output("python-error", "children"),
+        Input("montage-radio", "value"),
         Input("channel-region-checkboxes", "value"),
         Input("annotation-checkboxes", "value"),
         Input("folder-store", "data"),
         State("frequency-store", "data"),
         State("annotations-store", "data"),
+        State("montage-store", "data"),
         prevent_initial_call=False
     )
-    def update_graph_time_channel(channel_region, annotations_to_show, folder_path, freq_data, annotations):
+    def update_graph_time_channel(montage_selection, channel_selection, annotations_to_show, folder_path, freq_data, annotations, montage_store):
         """Update MEG signal visualization based on time and channel selection."""
+
         try:
-            if not channel_region or not folder_path or not freq_data:  # Check if data is missing
+            if montage_selection == "channel selection" and not channel_selection or not folder_path or not freq_data:  # Check if data is missing
                 return go.Figure(), "Missing data for graph rendering."
             
-            fig = generate_graph_time_channel(channel_region, annotations_to_show, folder_path, freq_data, annotations)
+            else:
 
-            return fig, None
+                if montage_selection == "channel selection":
+                    # Get the selected channels based on region
+                    selected_channels = [
+                        channel
+                        for region_code in channel_selection
+                        if region_code in c.GROUP_CHANNELS_BY_REGION
+                        for channel in c.GROUP_CHANNELS_BY_REGION[region_code]
+                    ]
+
+                    if not selected_channels:
+                        raise ValueError("No channels selected from the given regions.")
+
+                else: 
+
+                    # If montage selection is not "channel selection", use montage's corresponding channels
+                    selected_channels = montage_store.get(montage_selection, [])
+                    
+                    # If there are no channels for the selected montage
+                    if not selected_channels:
+                        raise ValueError(f"No channels available for the selected montage: {montage_selection}")
+                
+                fig = generate_graph_time_channel(selected_channels, annotations_to_show, folder_path, freq_data, annotations)
+
+                return fig, None
+            
         except FileNotFoundError:
             return go.Figure(), f"Error: Folder not found."
         except ValueError as ve:
