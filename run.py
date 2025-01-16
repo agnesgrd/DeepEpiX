@@ -33,35 +33,57 @@ app.layout = html.Div(
         dcc.Store(id="frequency-store", storage_type="local"),
         dcc.Store(id="annotations-store", storage_type="local"),
         dcc.Store(id="first-load-store", data=0, storage_type="local"),
+        dcc.Store(id="montage-store", data={}, storage_type="local"),
 
 
         # Row for title and links
         html.Div(
             children=[
-                # Title of the app
-                html.H1("DeepEpiX", style={"text-align": "left", "flex": 1, "padding-top": "10px"}),
-
-                # Panel with clickable tabs that navigate to different links
+                # Panel with the logo and clickable tabs
                 html.Div(
                     children=[
-                        dcc.Link(
-                            "Home", id="link-home", href="/", style={**box_styles["panel-tabs"]} 
+                        # Logo
+                        html.Img(
+                            src="/assets/deepepix-logo.jpeg",
+                            style={
+                                "border-radius": "10%",  # Bordure arrondie
+                                "padding-top": "0px",
+                                "height": "60px",  # Adjust size as needed
+                                "margin-right": "20px",  # Space between the logo and tabs
+                            }
                         ),
-                        dcc.Link(
-                            "View", id="link-view", href="/view", style={**box_styles["panel-tabs"]} 
-                        ),
-                        dcc.Link(
-                            "Settings", id="link-analyze", href="/analyze", style={**box_styles["panel-tabs"]} 
-                        ),
-                        dcc.Link(
-                            "Predict", id="link-predict", href="/predict", style={**box_styles["panel-tabs"]} 
-                        ),
-                        dcc.Link(
-                            "Save", id="link-save", href="/save", style={**box_styles["panel-tabs"]} 
+                        # Panel tabs (navigation links)
+                        html.Div(
+                            children=[
+                                dcc.Link(
+                                    "Home", id="link-home", href="/", style={**box_styles["panel-tabs"]} 
+                                ),
+                                dcc.Link(
+                                    "View", id="link-view", href="/view", style={**box_styles["panel-tabs"]} 
+                                ),
+                                dcc.Link(
+                                    "Settings", id="link-analyze", href="/analyze", style={**box_styles["panel-tabs"]} 
+                                ),
+                                dcc.Link(
+                                    "Predict", id="link-predict", href="/predict", style={**box_styles["panel-tabs"]} 
+                                ),
+                                dcc.Link(
+                                    "Save", id="link-save", href="/save", style={**box_styles["panel-tabs"]} 
+                                ),
+                            ],
+                            style={
+                                "display": "flex",
+                                "align-items": "center",  # Vertically align the items in the center
+                                "justify-content": "center",  # Horizontally center the items
+                                "gap": "20px",  # Space between the links
+                            }
                         ),
                     ],
                     style={
-                        "width": "100vw"
+                        "display": "flex",
+                        "align-items": "center",  # Vertically center the content
+                        "justify-content": "center",  # Horizontally center the content
+                        "width": "100%",  # Ensure it stretches across the page
                     },
                 ),
                 # Main content container (display content based on the tab selected)
