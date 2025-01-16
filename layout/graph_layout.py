@@ -123,10 +123,12 @@ def create_graph_container():
                             'range': [0, 10],
                             'title': 'Time (s)',
                             'rangeslider': {'visible': True, 'thickness': 0.02},
+                            'showspikes': True
                         },
                         'yaxis': {'title': 'Channels', 'fixedrange': True},
                         'title': 'MEG Signal Visualization',
                         'margin': {'l': 0, 'r': 0, 't': 0, 'b': 0},
+                        'hovermode': 'closest'
                         
                     },
                 },
@@ -191,7 +193,7 @@ def create_rightsidebar():
         html.Div([
             # Label and input field for timepoint entry
             html.Label(
-                "Please enter a timepoint to plot topomap:",
+                "Timestep (s) :",
                 style={"fontWeight": "bold", "fontSize": "14px", "marginBottom": "8px"}
             ),
             dbc.Input(
@@ -245,7 +247,7 @@ def create_rightsidebar():
         html.Div([
             # Label and input field for timepoint entry
             html.Label(
-                "Please enter a time range to plot topomap:",
+                "Time Range (s) :",
                 style={"fontWeight": "bold", "fontSize": "14px", "marginBottom": "8px"}
             ),
             dbc.Input(
@@ -306,6 +308,70 @@ def create_rightsidebar():
 
             ),
         ], style=box_styles["classic"]),
+
+        # Add a spike
+        html.Div([
+            # Label and input field for timepoint entry
+            html.Label(
+                "Spike:",
+                style={"fontWeight": "bold", "fontSize": "14px", "marginBottom": "8px"}
+            ),
+            dbc.Input(
+                id="spike-name",  # Unique ID for each input
+                type="text",
+                placeholder="Spike name...",
+                size="sm",
+                persistence=True,
+                persistence_type="local",
+                style={**input_styles["small-number"]}
+            ),
+            dbc.Input(
+                id="spike-timestep",  # Unique ID for each input
+                type="number",
+                placeholder="Timestep (s)...",
+                step=0.01,
+                min=0,
+                max=180,
+                size="sm",
+                persistence=True,
+                persistence_type="local",
+                style={**input_styles["small-number"]}
+            ),
+            dbc.Button(
+                "Add new spike",
+                id="add-spike-button",  # Unique ID for each button
+                color="info",
+                outline=True,
+                size="sm",
+                n_clicks=0,
+                style=button_styles["plot-topomap"]
+            ),
+            # Modal (popup) for displaying the topomap image
+            dbc.Modal(
+                [
+                    dbc.ModalHeader("Topomap", close_button=True),
+                    dbc.ModalBody(
+                        html.Img(
+                            id="topomap-img",
+                            src="https://via.placeholder.com/150",  # Placeholder image URL
+                            alt="topomap-img",
+                            style={
+                                "width": "auto",
+                                "height": "20%",
+                                "borderRadius": "10px",
+                                "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)"  # Light shadow for the image
+                            }
+                        ),
+                    ),
+                    # dbc.ModalFooter(
+                    #     dbc.Button("Close", id="close-topomap-modal", color="secondary")
+                    # ),
+                ],
+                id="topomap-modal",
+                is_open=False,  # Initially hidden
+            ),
+        ], style=box_styles["classic"]),
+
     ], style={
         "display": "flex",
         "flexDirection": "column",  # Stack the three sections vertically

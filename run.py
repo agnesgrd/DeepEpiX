@@ -10,7 +10,7 @@ from layout import box_styles
 # Initialize Dash app with use_pages=True
 app = Dash(__name__,
            use_pages=True, 
-           external_stylesheets=[dbc.themes.BOOTSTRAP])
+           external_stylesheets=[dbc.themes.BOOTSTRAP, 'my_style.css'])
 
 # cache = Cache(app.server, config={
 #     'CACHE_TYPE': 'filesystem',

@@ -7,6 +7,7 @@ from callbacks.graph_callbacks import register_update_graph_time_channel, regist
 from callbacks.topomap_callbacks import register_display_topomap
 from callbacks.topomap_callbacks import register_display_topomap_video, register_enable_topomap_button
 from callbacks.topomap_callbacks import register_range_on_selection
+from callbacks.spike_callbacks import register_middle_time_on_selection, register_plot_potential_spike
 
 dash.register_page(__name__)
 
@@ -47,6 +48,10 @@ register_enable_topomap_button()
 register_range_on_selection()
 
 register_hide_channel_selection_when_montage()
+
+register_middle_time_on_selection()
+
+register_plot_potential_spike()
 
 
 

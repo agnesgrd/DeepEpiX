@@ -33,18 +33,6 @@ def register_display_topomap():
         # If no button click or invalid input, return a placeholder image
         return "https://via.placeholder.com/150", is_open
     
-# def register_close_topomap():
-#     # Callback to close the modal when the close button inside the modal is clicked
-#     @dash.callback(
-#         Output("topomap-modal", "is_open", allow_duplicate=True),
-#         [Input("close-topomap-modal", "n_clicks")],
-#         [State("topomap-modal", "is_open")],
-#         prevent_initial_call=True
-#     )
-#     def close_modal(n_clicks, is_open):
-#         if n_clicks:
-#             return False
-#         return is_open
 
 def register_enable_topomap_button():
     @dash.callback(
@@ -126,3 +114,4 @@ def register_range_on_selection():
             return min_range, max_range  # Update the min and max range for the topomap
         else:
             return dash.no_update, dash.no_update  # Default range if no selection has been made
+        

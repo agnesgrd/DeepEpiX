@@ -125,6 +125,8 @@ def generate_graph_time_channel(selected_channels, annotations_to_show, folder_p
             range=[0,10],
             fixedrange=False,
             rangeslider=dict(visible=True, thickness=0.02),
+            showspikes=True,
+            spikemode="across+marker"
         ),
         yaxis=dict(
             title='Channels',
