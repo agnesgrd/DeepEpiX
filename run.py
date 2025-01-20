@@ -31,7 +31,7 @@ app.layout = html.Div(
         dcc.Store(id="plotting-data-store", data={}, storage_type="local"),
         dcc.Store(id="main-graph-resampler", storage_type="local"),
         dcc.Store(id="frequency-store", storage_type="local"),
-        dcc.Store(id="annotations-store", storage_type="local"),
+        dcc.Store(id="annotations-store", data = [], storage_type="local"),
         dcc.Store(id="first-load-store", data=0, storage_type="local"),
         dcc.Store(id="montage-store", data={}, storage_type="local"),
 

@@ -198,6 +198,7 @@ def get_annotations_dataframe(folder_path):
     origin_time = pd.Timestamp(raw.annotations.orig_time)
     annotations_df['onset'] = (annotations_df['onset'] - origin_time).dt.total_seconds()
     annotations_dict = annotations_df.to_dict(orient="records")
+    print("get annotations df", annotations_dict)
     return annotations_dict
     
 @dash.callback(
@@ -223,29 +224,6 @@ def preprocess_meg_data(n_clicks, folder_path, freq_data):
             return f"Error during preprocessing : {str(e)}", dash.no_update, None
 
     return None, dash.no_update, None
-
-
-# @dash.callback(
-#     [Output("link-home", "style"),
-#      Output("link-view", "style"),
-#      Output("link-analyze", "style"),
-#      Output("link-predict", "style"),
-#      Output("link-save", "style")],
-#     [Input("url", "pathname")]
-# )
-# def update_tab_style(pathname):
-
-#     # Highlight the active link by changing its background color
-#     active_style = {**box_styles["panel-tabs"], "background-color": "blue"}  # Dark Gray for active link
-
-#     # Return updated styles based on the current pathname
-#     return (
-#         active_style if pathname == "/" else {**box_styles["panel-tabs"]},
-#         active_style if pathname == "/view" else {**box_styles["panel-tabs"]},
-#         active_style if pathname == "/analyze" else {**box_styles["panel-tabs"]} ,
-#         active_style if pathname == "/predict" else {**box_styles["panel-tabs"]} ,
-#         active_style if pathname == "/save" else {**box_styles["panel-tabs"]},
-#     )
     
 
 

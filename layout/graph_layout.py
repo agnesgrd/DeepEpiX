@@ -346,30 +346,14 @@ def create_rightsidebar():
                 n_clicks=0,
                 style=button_styles["plot-topomap"]
             ),
-            # Modal (popup) for displaying the topomap image
-            dbc.Modal(
-                [
-                    dbc.ModalHeader("Topomap", close_button=True),
-                    dbc.ModalBody(
-                        html.Img(
-                            id="topomap-img",
-                            src="https://via.placeholder.com/150",  # Placeholder image URL
-                            alt="topomap-img",
-                            style={
-                                "width": "auto",
-                                "height": "20%",
-                                "borderRadius": "10px",
-                                "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)"  # Light shadow for the image
-                            }
-                        ),
-                    ),
-                    # dbc.ModalFooter(
-                    #     dbc.Button("Close", id="close-topomap-modal", color="secondary")
-                    # ),
-                ],
-                id="topomap-modal",
-                is_open=False,  # Initially hidden
-            ),
+            # Loading spinner wraps only the elements that require loading
+            dcc.Loading(
+                id="loading",
+                type="default", 
+                children=[
+                    html.Div(id="spike-saving-status", style={"margin-top": "10px"})
+                ]
+            )
         ], style=box_styles["classic"]),
 
     ], style={

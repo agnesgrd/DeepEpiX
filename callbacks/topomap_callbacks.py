@@ -105,12 +105,12 @@ def register_range_on_selection():
         Output("topomap-max-range", "value")],
         [Input("meg-signal-graph", "selectedData")]  # Capture selection data from the graph
     )
-    def update_range_on_selection(selectedData):
-        if selectedData:
+    def update_range_on_selection(selected_data):
+        if selected_data:
             # Get the selected range (from selectedData)
-            x_vals = [point['x'] for point in selectedData['points']]  # Extract the x values (time points)
-            min_range = round(min(x_vals), 3)  # Get the minimum time value from the selection
-            max_range = round(max(x_vals), 3)  # Get the maximum time value from the selection
+            x_range = selected_data['range']['x']   # Extract the x values (time points)
+            min_range = round(x_range[0], 3)  # Get the minimum time value from the selection
+            max_range = round(x_range[1], 3)  # Get the maximum time value from the selection
             return min_range, max_range  # Update the min and max range for the topomap
         else:
             return dash.no_update, dash.no_update  # Default range if no selection has been made

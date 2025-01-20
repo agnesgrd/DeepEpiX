@@ -105,13 +105,6 @@ def generate_graph_time_channel(selected_channels, annotations_to_show, folder_p
         y=shifted_filtered_raw_df.columns[:-1],  # Exclude the Time column from y
         labels={"value": "Value", "variable": "Channel", "Time": "Time (s)"},
         color_discrete_map=color_map
-    ).add_traces(px.scatter(
-        shifted_filtered_raw_df,
-        x="Time",
-        y=shifted_filtered_raw_df.columns[:-1],  # Exclude the Time column from y
-        labels={"value": "Value", "variable": "Channel", "Time": "Time (s)"},
-        color_discrete_map=color_map,
-        opacity=0).data
     )
 
     print(f"Step 6: Figure creation completed in {time.time() - fig_start_time:.2f} seconds.")
@@ -126,7 +119,8 @@ def generate_graph_time_channel(selected_channels, annotations_to_show, folder_p
             fixedrange=False,
             rangeslider=dict(visible=True, thickness=0.02),
             showspikes=True,
-            spikemode="across+marker"
+            spikemode="across+marker",
+            spikethickness = 1,
         ),
         yaxis=dict(
             title='Channels',
@@ -136,6 +130,7 @@ def generate_graph_time_channel(selected_channels, annotations_to_show, folder_p
             ticklabelposition="outside right",
             side="right",
             automargin=True,
+            spikethickness = 0
         ),
         title={
             'text': folder_path if folder_path else 'Select a folder path in Home Page',
@@ -146,8 +141,9 @@ def generate_graph_time_channel(selected_channels, annotations_to_show, folder_p
         },
         showlegend=False,
         margin=dict(l=0, r=0, t=0, b=0),
-        dragmode ='select',
-        hovermode ='closest'
+        dragmode =  'select',
+        selectdirection = 'h',
+        hovermode = 'closest'
     )
     # Update the line width after creation
     for trace in fig.data:
@@ -228,8 +224,6 @@ def register_update_annotations():
         """Update annotations visibility based on the checklist selection."""
         # Default time range in case the figure doesn't contain valid x-axis range data
         time_range = [0, 180]
-        
-        print('updating annotations')
 
         # Create a Patch for the figure
         fig_patch = Patch()
@@ -243,7 +237,9 @@ def register_update_annotations():
             y_min, y_max = fig_dict['layout']['yaxis'].get('range', [0, 1])
 
         # Convert annotations to DataFrame
+        print("dict", annotations)
         annotations_df = pd.DataFrame(annotations).set_index('onset')
+        print('df', annotations_df)
 
         # Filter annotations based on the current time range
         filtered_annotations_df = gu.get_annotations_df_filtered_on_time(time_range, annotations_df)
@@ -285,8 +281,6 @@ def register_update_annotations():
         fig_patch["layout"]["shapes"] = new_shapes
         fig_patch["layout"]["annotations"] = new_annotations
 
-        print("finished adding annotations on main graph")
-
         return fig_patch, 1
         
 def register_update_annotation_graph():
@@ -300,10 +294,6 @@ def register_update_annotation_graph():
         prevent_initial_call=True
     )
     def update_annotation_graph(annotations_to_show, annotations, annotation_fig, first_load):
-        print("Callback triggered")
-        print("Annotations to show:", annotations_to_show)
-        print("Annotations:", annotations)
-        print("First load:", first_load)
 
         if not annotations or not isinstance(annotations, list):
             return dash.no_update, 1
@@ -313,7 +303,6 @@ def register_update_annotation_graph():
         # Convert annotations to DataFrame
         try:
             annotations_df = pd.DataFrame(annotations).set_index("onset")
-            print("Annotations DataFrame:", annotations_df)
         except Exception as e:
             print("Error creating DataFrame:", e)
             return dash.no_update, 1
@@ -321,7 +310,6 @@ def register_update_annotation_graph():
         # Filter annotations based on the current time range
         try:
             filtered_annotations_df = gu.get_annotations_df_filtered_on_time(time_range, annotations_df)
-            print("Filtered Annotations DataFrame:", filtered_annotations_df)
         except Exception as e:
             print("Error filtering annotations:", e)
             return dash.no_update, 1
@@ -384,7 +372,6 @@ def register_move_time_slider():
         supress_callback_exceptions=True
     )
     def move_time_slider(keydown, fig):
-        print(f'Key Pressed: {keydown}')
 
         # Get the current x-axis range
         xaxis_range = fig["layout"]["xaxis"]["range"]
@@ -396,17 +383,14 @@ def register_move_time_slider():
 
         # Update the range based on the key press
         if keydown["key"] == "ArrowLeft":
-            print("left")
             new_range = [xaxis_range[0] - move_amount, xaxis_range[1] - move_amount]
             if new_range[0] < min_bound:
                 new_range = [min_bound, min_bound + move_amount]
         elif keydown["key"] == "ArrowRight":
             new_range = [xaxis_range[0] + move_amount, xaxis_range[1] + move_amount]
-            print('right')
             if new_range[1] > max_bound:
                 new_range = [max_bound - move_amount, max_bound]
         else:
-            print("problem")
             return fig  # Return the figure unchanged if the key is not handled
 
         fig_patch = Patch()

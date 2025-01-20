@@ -6,6 +6,7 @@ import dash
 from dash.dependencies import Input, Output, State
 from dash import Patch
 import callbacks.utils.graph_utils as gu
+import pandas as pd
 
 
 
@@ -15,11 +16,12 @@ def register_middle_time_on_selection():
         Output("spike-timestep", "value"),
         [Input("meg-signal-graph", "selectedData")]  # Capture selection data from the graph
     )
-    def update_range_on_selection(selectedData):
-        if selectedData:
+    def update_range_on_selection(selected_data):
+        print(selected_data)
+        if selected_data:
             # Get the selected range (from selectedData)
-            x_vals = [point['x'] for point in selectedData['points']]  # Extract the x values (time points)
-            middle = round((max(x_vals) + min(x_vals))/2, 3)  # Get the middletime value from the selection
+            x_range = selected_data['range']['x']  # Extract the x values (time points)
+            middle = round((x_range[1] + x_range[0])/2, 3)  # Get the middletime value from the selection
             return middle, middle  # Update the min and max range for the topomap
         else:
             return dash.no_update, dash.no_update  # Default range if no selection has been made
@@ -82,3 +84,33 @@ def register_plot_potential_spike():
         print("finished adding annotations on main graph")
 
         return fig_patch
+    
+def register_add_spike_to_annotation():
+    @dash.callback(
+        Output("annotations-store", "data", allow_duplicate=True),
+        Output("spike-saving-status", "children"),
+        Input("add-spike-button", "n_clicks"),
+        State("spike-name", "value"),
+        State("spike-timestep", "value"),
+        State("annotations-store", "data"),
+        prevent_initial_call=True
+    )
+    def add_spike_to_annotation(n_clicks, spike_name, spike_timestep, annotations_data):
+        # Validate input
+        if n_clicks is None or n_clicks == 0:
+            return dash.no_update, ""
+        if not spike_name or spike_timestep is None:
+            return dash.no_update, "Error: Missing name or timestep value."
+
+        # Convert annotations data to DataFrame if not empty
+        if not annotations_data:
+
+            # Initialize empty DataFrame if no data exists
+            annotations_data = []
+
+        # Create a new row for the spike annotation
+        annotations_data.append({"onset": spike_timestep, "duration": 0, "description": spike_name})
+
+        # Convert the updated DataFrame back to a records-based format
+        return annotations_data, "Success: New spike added!"
+
