@@ -3,11 +3,13 @@ import dash
 from dash import html
 from dash_extensions import Keyboard
 import layout.graph_layout as gl
+import layout.rightsidebar_layout as rsl
+import layout.leftsidebar_layout as lsl
 from callbacks.graph_callbacks import register_update_graph_time_channel, register_update_annotations, register_callbacks_montage_names, register_callbacks_annotation_names, register_manage_channels_checklist, register_move_time_slider, register_update_annotation_graph, register_hide_channel_selection_when_montage
 from callbacks.topomap_callbacks import register_display_topomap
 from callbacks.topomap_callbacks import register_display_topomap_video, register_enable_topomap_button
 from callbacks.topomap_callbacks import register_range_on_selection
-from callbacks.spike_callbacks import register_middle_time_on_selection, register_plot_potential_spike, register_add_spike_to_annotation
+from callbacks.spike_callbacks import register_middle_time_on_selection, register_plot_potential_spike, register_add_spike_to_annotation, register_delete_selected_spike
 
 dash.register_page(__name__)
 
@@ -19,7 +21,18 @@ layout = html.Div([
         id="keyboard"
     ),
 
-    gl.get_graph_layout(),
+    html.Div([
+        lsl.create_leftsidebar(),
+        gl.create_graph_container(),
+        rsl.create_rightsidebar(),
+    ], style={
+        "display": "flex",  # Horizontal layout
+        "flexDirection": "row",
+        "height": "85vh",  # Use the full height of the viewport
+        "width": "95vw",  # Use the full width of the viewport
+        "overflow": "hidden",  # Prevent overflow in case of resizing
+        "boxSizing": "border-box"
+    }),
     
     html.Div(id="python-error", style={"padding": "10px", "font-style": "italic", "color": "#555"})
 
@@ -53,8 +66,9 @@ register_middle_time_on_selection()
 
 register_plot_potential_spike()
 
-
 register_add_spike_to_annotation()
+
+register_delete_selected_spike()
 
 
 

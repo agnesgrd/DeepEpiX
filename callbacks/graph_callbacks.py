@@ -3,7 +3,7 @@ import traceback
 import plotly.graph_objects as go
 import dash
 from dash.dependencies import Input, Output, State
-from dash import Patch
+from dash import Patch, ctx
 from pages.home import get_preprocessed_dataframe
 import static.constants as c
 import callbacks.utils.graph_utils as gu
@@ -55,11 +55,12 @@ def register_hide_channel_selection_when_montage():
     # Callback to populate the checklist options and default value dynamically
     @dash.callback(
         Output("channel-region-checkboxes", "options"),
+        Input("montage-radio", "options"),
         Input("montage-radio", "value"),
         State("channel-region-checkboxes", "options"),
         prevent_initial_call=False
     )
-    def display_annotation_names_checklist(montage_value, channel_options):
+    def display_annotation_names_checklist(montage_option, montage_value, channel_options):
         if montage_value != 'channel selection':
             # Disable all options
             return [{'label': option['label'], 'value': option['value'], 'disabled': True} for option in channel_options]
@@ -170,7 +171,7 @@ def register_update_graph_time_channel():
     )
     def update_graph_time_channel(montage_selection, channel_selection, annotations_to_show, folder_path, freq_data, annotations, montage_store):
         """Update MEG signal visualization based on time and channel selection."""
-
+        print("graph triggered", ctx.triggered_id)
         try:
             if montage_selection == "channel selection" and not channel_selection or not folder_path or not freq_data:  # Check if data is missing
                 return go.Figure(), "Missing data for graph rendering."

@@ -107,11 +107,22 @@ def register_range_on_selection():
     )
     def update_range_on_selection(selected_data):
         if selected_data:
+            
             # Get the selected range (from selectedData)
-            x_range = selected_data['range']['x']   # Extract the x values (time points)
-            min_range = round(x_range[0], 3)  # Get the minimum time value from the selection
-            max_range = round(x_range[1], 3)  # Get the maximum time value from the selection
-            return min_range, max_range  # Update the min and max range for the topomap
+            try:
+                x_range = selected_data.get('range', {}).get('x')
+                if x_range and len(x_range) == 2:  # Validate that x_range exists and has two elements
+                    min_range = round(x_range[0], 3)  # Get the minimum time value from the selection
+                    max_range = round(x_range[1], 3)  # Get the maximum time value from the selection
+                    return min_range, max_range  # Update the min and max range for the topomap
+                else:
+                    # Handle case where x_range is invalid
+                    print("x_range is missing or invalid:", x_range)
+                    return dash.no_update, dash.no_update
+            except Exception as e:
+                # Log any unexpected exceptions
+                print(f"Error processing selected data: {e}")
+                return dash.no_update, dash.no_update
         else:
             return dash.no_update, dash.no_update  # Default range if no selection has been made
         

@@ -17,12 +17,14 @@ def register_middle_time_on_selection():
         [Input("meg-signal-graph", "selectedData")]  # Capture selection data from the graph
     )
     def update_range_on_selection(selected_data):
-        print(selected_data)
         if selected_data:
-            # Get the selected range (from selectedData)
-            x_range = selected_data['range']['x']  # Extract the x values (time points)
-            middle = round((x_range[1] + x_range[0])/2, 3)  # Get the middletime value from the selection
-            return middle, middle  # Update the min and max range for the topomap
+        # Get the selected range (from selectedData)
+            try:
+                x_range = selected_data['range']['x']  # Extract the x values (time points)
+                middle = round((x_range[1] + x_range[0])/2, 3)  # Get the middletime value from the selection
+                return middle, middle  # Update the min and max range for the topomap
+            except (KeyError, TypeError, IndexError):
+                return dash.no_update, dash.no_update
         else:
             return dash.no_update, dash.no_update  # Default range if no selection has been made
         
@@ -81,8 +83,6 @@ def register_plot_potential_spike():
         fig_patch["layout"]["shapes"] = new_shapes
         fig_patch["layout"]["annotations"] = new_annotations
 
-        print("finished adding annotations on main graph")
-
         return fig_patch
     
 def register_add_spike_to_annotation():
@@ -97,6 +97,7 @@ def register_add_spike_to_annotation():
     )
     def add_spike_to_annotation(n_clicks, spike_name, spike_timestep, annotations_data):
         # Validate input
+        print(spike_timestep)
         if n_clicks is None or n_clicks == 0:
             return dash.no_update, ""
         if not spike_name or spike_timestep is None:
@@ -113,4 +114,51 @@ def register_add_spike_to_annotation():
 
         # Convert the updated DataFrame back to a records-based format
         return annotations_data, "Success: New spike added!"
+    
+def register_delete_selected_spike():
+    @dash.callback(
+        Output("annotations-store", "data", allow_duplicate=True),
+        Output("spike-saving-status", "children", allow_duplicate=True),
+        Input("delete-spike-button", "n_clicks"),
+        State("meg-signal-graph", "selectedData"),
+        State("annotations-store", "data"),
+        prevent_initial_call=True
+    )
+    def delete_selected_spike(n_clicks, selected_data, annotations_data):
+        # Validate input
+        if n_clicks is None or n_clicks == 0:
+            return dash.no_update, ""
+        if selected_data is None:
+            return dash.no_update, "Error: Select spike before."
+        
+        # Get the selected range (from selectedData)
+        try:
+            x_range = selected_data['range']['x']  # Extract the x values (time points)
+            x_min, x_max = x_range[0], x_range[1]
+        except (KeyError, TypeError, IndexError):
+            return dash.no_update, "Error: Invalid selection range."
+
+        # Convert annotations data to DataFrame
+        if annotations_data:
+            annotations_df = pd.DataFrame.from_records(annotations_data)
+        else:
+            return dash.no_update, "Error: No annotations data available."
+
+        # Validate the 'onset' column
+        if "onset" not in annotations_df.columns:
+            return dash.no_update, "Error: Annotations data missing 'onset' column."
+        
+        # Filter out rows where 'onset' falls within the x_range
+        annotations_df = annotations_df[
+            ~((annotations_df['onset'] >= x_min) & (annotations_df['onset'] <= x_max))
+        ]
+
+        # Convert the updated DataFrame back to a records-based format
+        updated_annotations = annotations_df.to_dict(orient="records")
+
+        return updated_annotations, "Success: Spike(s) deleted!"
+
+
+    
+
 

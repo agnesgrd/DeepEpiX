@@ -1,0 +1,207 @@
+from dash import html, dcc
+import dash_bootstrap_components as dbc
+import static.constants as c
+from layout import input_styles, box_styles, button_styles
+
+def create_rightsidebar():
+    return html.Div([
+
+        # Plot topomap on a unique timepoint
+        html.Div([
+            # Label and input field for timepoint entry
+            # html.Label(
+            #     "Timestep (s) :",
+            #     style={"fontWeight": "bold", "fontSize": "14px", "marginBottom": "8px"}
+            # ),
+            dbc.Input(
+                id="topomap-timepoint",  # Unique ID for each input
+                type="number",
+                placeholder="Timestep (s) ...",
+                step=0.01,
+                min=0,
+                max=180,
+                size="sm",
+                persistence=True,
+                persistence_type="local",
+                style={**input_styles["small-number"]}
+            ),
+            dbc.Button(
+                "Plot Topomap",
+                id="plot-topomap-button",  # Unique ID for each button
+                color="info",
+                outline=True,
+                size="sm",
+                n_clicks=0,
+                style=button_styles["plot-topomap"]
+            ),
+            # Modal (popup) for displaying the topomap image
+            dbc.Modal(
+                [
+                    dbc.ModalHeader("Topomap", close_button=True),
+                    dbc.ModalBody(
+                        html.Img(
+                            id="topomap-img",
+                            src="https://via.placeholder.com/150",  # Placeholder image URL
+                            alt="topomap-img",
+                            style={
+                                "width": "auto",
+                                "height": "20%",
+                                "borderRadius": "10px",
+                                "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)"  # Light shadow for the image
+                            }
+                        ),
+                    ),
+                    # dbc.ModalFooter(
+                    #     dbc.Button("Close", id="close-topomap-modal", color="secondary")
+                    # ),
+                ],
+                id="topomap-modal",
+                is_open=False,  # Initially hidden
+            ),
+        ], style=box_styles["classic"]),
+    
+    # Plot topomap on a interval timepoint
+        html.Div([
+            # Label and input field for timepoint entry
+            # html.Label(
+            #     "Time Range (s) :",
+            #     style={"fontWeight": "bold", "fontSize": "14px", "marginBottom": "8px"}
+            # ),
+            dbc.Input(
+                id="topomap-min-range",  # Unique ID for each input
+                type="number",
+                placeholder="Minimum range (s) ...",
+                step=0.01,
+                min=0,
+                max=180,
+                size="sm",
+                persistence=True,
+                persistence_type="local",
+                style={**input_styles["small-number"]}
+            ),
+            dbc.Input(
+                id="topomap-max-range",  # Unique ID for each input
+                type="number",
+                placeholder="Maximum range (s) ...",
+                step=0.01,
+                min=0,
+                max=180,
+                size="sm",
+                persistence=True,
+                persistence_type="local",
+                style={**input_styles["small-number"]}
+            ),
+            html.Div([
+                dbc.Button(
+                    "Plot Topomap",
+                    id="plot-topomap-button-range",  # Unique ID for each button
+                    color="info",
+                    outline=True,
+                    size="sm",
+                    n_clicks=0,
+                    disabled=True,
+                    style=button_styles["plot-topomap"]
+                ),
+                # Loading component to show the loading spinner while the long callback is processing
+                dcc.Loading(
+                    id="topomap-loading",
+                    type="dot",  # You can use "circle", "dot", etc. for different spinner styles
+                    children=html.Div(id="topomap-result", style={"marginTop": "0px"})
+                ),
+            ]),
+            # Modal (popup) for displaying the topomap video
+            dbc.Modal(
+                [
+                    dbc.ModalHeader("Topomap", close_button=True),
+                    dbc.ModalBody(
+                        children=[
+                            html.Div(id="topomap-modal-content"),  # Content dynamically populated
+                        ]
+                    )
+                ],
+                id="topomap-range-modal",
+                is_open=False,  # Initially hidden
+                size = "sm"
+
+            ),
+        ], style=box_styles["classic"]),
+
+        # Add a spike
+        html.Div([
+            # Label and input field for timepoint entry
+            # html.Label(
+            #     "Spike:",
+            #     style={"fontWeight": "bold", "fontSize": "14px", "marginBottom": "8px"}
+            # ),
+            dbc.Input(
+                id="spike-name",  # Unique ID for each input
+                type="text",
+                placeholder="Spike name ...",
+                size="sm",
+                persistence=True,
+                persistence_type="local",
+                style={**input_styles["small-number"]}
+            ),
+            dbc.Input(
+                id="spike-timestep",  # Unique ID for each input
+                type="number",
+                placeholder="Timestep (s) ...",
+                step=0.01,
+                min=0,
+                max=180,
+                size="sm",
+                persistence=True,
+                persistence_type="local",
+                style={**input_styles["small-number"]}
+            ),
+            dbc.Button(
+                "Add new spike",
+                id="add-spike-button",  # Unique ID for each button
+                color="success",
+                outline=True,
+                size="sm",
+                n_clicks=0,
+                style=button_styles["plot-topomap"]
+            ),
+            dbc.Button(
+                "Delete selected spike",
+                id="delete-spike-button",  # Unique ID for each button
+                color="danger",
+                outline=True,
+                size="sm",
+                n_clicks=0,
+                style=button_styles["plot-topomap"]
+            ),
+            # Loading spinner wraps only the elements that require loading
+            dcc.Loading(
+                id="loading",
+                type="default", 
+                children=[
+                    html.Div(id="spike-saving-status", style={"margin-top": "0px"})
+                ]
+            )
+        ], style=box_styles["classic"]),
+
+    ], style={
+        #"padding": "20px",
+        "height": "100%",
+        "display": "flex",
+        "flexDirection": "column",
+        "justifyContent": "flex-start",  # Align content at the top
+        "gap": "20px",  # Space between elements
+        "width": "250px",  # Sidebar width is now fixed
+        "boxSizing": "border-box",
+        "fontSize": "12px",
+        # "backgroundColor": "#f9f9f9",  # Light background color for the sidebar
+        "borderRadius": "10px",  # Rounded corners for the sidebar itself
+        # "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",  # Subtle shadow for the whole sidebar
+        "overflowY": "auto",  # Enable scrolling if content exceeds height
+        # "display": "flex",
+        # "flexDirection": "column",  # Stack the three sections vertically
+        # "gap": "20px",  # Space between sections
+        # "width": "10%",
+        # "maxWidth": "450px",  # You can set a max width for the sidebar
+        # "margin": "0 10px"
+    })
+
+        
