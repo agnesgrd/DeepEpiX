@@ -92,7 +92,7 @@ def create_leftsidebar():
                 id="annotation-checkboxes",
                 inline=False,
                 style={"margin": "10px 0", "fontSize": "12px"},
-                persistence=False,
+                persistence=True,
                 persistence_type="local"
             ),
         ], style = box_styles["classic"]),

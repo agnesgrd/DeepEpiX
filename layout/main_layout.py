@@ -42,7 +42,7 @@ input_styles = {
 }
 
 button_styles = {
-    "plot-topomap": {
+    "big": {
         "fontSize": "12px",
         "padding": "8px",
         "borderRadius": "5px",

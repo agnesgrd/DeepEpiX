@@ -1,4 +1,4 @@
-
+from collections import Counter
 
 def get_annotation_descriptions(annotations_store):
         """
@@ -16,5 +16,9 @@ def get_annotation_descriptions(annotations_store):
 
         # Extract descriptions
         descriptions = [annotation.get('description') for annotation in annotations_store if 'description' in annotation]
+
+        # Count occurrences of each description
+        description_counts = Counter(descriptions)
+
         # Return unique descriptions
-        return list(set(descriptions))
+        return description_counts

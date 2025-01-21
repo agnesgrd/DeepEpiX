@@ -23,9 +23,11 @@ def register_callbacks_annotation_names():
         prevent_initial_call = False
     )
     def display_annotation_names_checklist(annotations_store):
-        annotation_names = au.get_annotation_descriptions(annotations_store)
-        options = [{'label': name, 'value': name} for name in annotation_names]
-        return options, annotation_names  # Set all annotations as default selected
+        description_counts = au.get_annotation_descriptions(annotations_store)
+
+        options = [{'label': f"{name} ({count})", 'value': f"{name}"} for name, count in description_counts.items()]
+        value = [f"{name}" for name in description_counts.keys()]
+        return options, dash.no_update  # Set all annotations as default selected
     
 def register_callbacks_montage_names():
     # Callback to populate the checklist options and default value dynamically
@@ -215,17 +217,17 @@ def register_update_graph_time_channel():
 def register_update_annotations():
     @dash.callback(
         Output("meg-signal-graph", "figure", allow_duplicate=True),
-        Output("first-load-store", "data", allow_duplicate=True),
         Input("meg-signal-graph", "figure"),  # Current figure to update
         Input("annotation-checkboxes", "value"),  # Annotations to show based on the checklist
+        Input("annotation-checkboxes", "options"),
         State("annotations-store", "data"),
-        State("first-load-store", "data"),
         prevent_initial_call=True,
         supress_callback_exceptions=True
     )
-    def update_annotations(fig_dict, annotations_to_show, annotations, first_load):
+    def update_annotations(fig_dict, annotations_to_show, annotation_options, annotations):
         """Update annotations visibility based on the checklist selection."""
         # Default time range in case the figure doesn't contain valid x-axis range data
+        print(ctx.triggered_id)
         time_range = [0, 180]
 
         # Create a Patch for the figure
@@ -282,38 +284,37 @@ def register_update_annotations():
         fig_patch["layout"]["shapes"] = new_shapes
         fig_patch["layout"]["annotations"] = new_annotations
 
-        return fig_patch, 1
+        return fig_patch
         
 def register_update_annotation_graph():
     @dash.callback(
         Output("annotation-graph", "figure"),
-        Output("first-load-store", "data"),
+        Input("annotation-checkboxes", "options"),
         Input("annotation-checkboxes", "value"),
         State("annotations-store", "data"),
         State("annotation-graph", "figure"),
-        State("first-load-store", "data"),
         prevent_initial_call=True
     )
-    def update_annotation_graph(annotations_to_show, annotations, annotation_fig, first_load):
+    def update_annotation_graph(annotation_options, annotations_to_show, annotations_data, annotation_fig):
 
-        if not annotations or not isinstance(annotations, list):
-            return dash.no_update, 1
+        if not annotations_data or not isinstance(annotations_data, list):
+            return dash.no_update
 
         time_range = [0, 180]
 
         # Convert annotations to DataFrame
         try:
-            annotations_df = pd.DataFrame(annotations).set_index("onset")
+            annotations_df = pd.DataFrame(annotations_data).set_index("onset")
         except Exception as e:
             print("Error creating DataFrame:", e)
-            return dash.no_update, 1
+            return dash.no_update
 
         # Filter annotations based on the current time range
         try:
             filtered_annotations_df = gu.get_annotations_df_filtered_on_time(time_range, annotations_df)
         except Exception as e:
             print("Error filtering annotations:", e)
-            return dash.no_update, 1
+            return dash.no_update
 
         # Create the annotation graph
         tick_vals = []
@@ -338,7 +339,7 @@ def register_update_annotation_graph():
             )
         )
 
-        return fig_patch, 1
+        return fig_patch
     
 def register_manage_channels_checklist():
     @dash.callback(

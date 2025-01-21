@@ -10,14 +10,13 @@ from layout import box_styles
 # Initialize Dash app with use_pages=True
 app = Dash(__name__,
            use_pages=True, 
-           external_stylesheets=[dbc.themes.BOOTSTRAP, 'my_style.css'])
+           external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 # cache = Cache(app.server, config={
 #     'CACHE_TYPE': 'filesystem',
 #     'CACHE_DIR': 'cache-directory',
 #     'CACHE_THRESHOLD': 10 # should be equal to maximum number of users on the app at a single time
 # })
-
 
 # Main layout with page container for dynamic content loading
 app.layout = html.Div(
@@ -32,9 +31,8 @@ app.layout = html.Div(
         dcc.Store(id="main-graph-resampler", storage_type="local"),
         dcc.Store(id="frequency-store", storage_type="local"),
         dcc.Store(id="annotations-store", data = [], storage_type="local"),
-        dcc.Store(id="first-load-store", data=0, storage_type="local"),
         dcc.Store(id="montage-store", data={}, storage_type="local"),
-
+        dcc.Store(id="history-store", data=[], storage_type="local"),
 
         # Row for title and links
         html.Div(

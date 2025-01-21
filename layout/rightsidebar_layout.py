@@ -6,59 +6,59 @@ from layout import input_styles, box_styles, button_styles
 def create_rightsidebar():
     return html.Div([
 
-        # Plot topomap on a unique timepoint
-        html.Div([
-            # Label and input field for timepoint entry
-            # html.Label(
-            #     "Timestep (s) :",
-            #     style={"fontWeight": "bold", "fontSize": "14px", "marginBottom": "8px"}
-            # ),
-            dbc.Input(
-                id="topomap-timepoint",  # Unique ID for each input
-                type="number",
-                placeholder="Timestep (s) ...",
-                step=0.01,
-                min=0,
-                max=180,
-                size="sm",
-                persistence=True,
-                persistence_type="local",
-                style={**input_styles["small-number"]}
-            ),
-            dbc.Button(
-                "Plot Topomap",
-                id="plot-topomap-button",  # Unique ID for each button
-                color="info",
-                outline=True,
-                size="sm",
-                n_clicks=0,
-                style=button_styles["plot-topomap"]
-            ),
-            # Modal (popup) for displaying the topomap image
-            dbc.Modal(
-                [
-                    dbc.ModalHeader("Topomap", close_button=True),
-                    dbc.ModalBody(
-                        html.Img(
-                            id="topomap-img",
-                            src="https://via.placeholder.com/150",  # Placeholder image URL
-                            alt="topomap-img",
-                            style={
-                                "width": "auto",
-                                "height": "20%",
-                                "borderRadius": "10px",
-                                "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)"  # Light shadow for the image
-                            }
-                        ),
-                    ),
-                    # dbc.ModalFooter(
-                    #     dbc.Button("Close", id="close-topomap-modal", color="secondary")
-                    # ),
-                ],
-                id="topomap-modal",
-                is_open=False,  # Initially hidden
-            ),
-        ], style=box_styles["classic"]),
+        # # Plot topomap on a unique timepoint
+        # html.Div([
+        #     # Label and input field for timepoint entry
+        #     # html.Label(
+        #     #     "Timestep (s) :",
+        #     #     style={"fontWeight": "bold", "fontSize": "14px", "marginBottom": "8px"}
+        #     # ),
+        #     dbc.Input(
+        #         id="topomap-timepoint",  # Unique ID for each input
+        #         type="number",
+        #         placeholder="Timestep (s) ...",
+        #         step=0.01,
+        #         min=0,
+        #         max=180,
+        #         size="sm",
+        #         persistence=True,
+        #         persistence_type="local",
+        #         style={**input_styles["small-number"]}
+        #     ),
+        #     dbc.Button(
+        #         "Plot Topomap",
+        #         id="plot-topomap-button",  # Unique ID for each button
+        #         color="info",
+        #         outline=True,
+        #         size="sm",
+        #         n_clicks=0,
+        #         style=button_styles["big"]
+        #     ),
+        #     # Modal (popup) for displaying the topomap image
+        #     dbc.Modal(
+        #         [
+        #             dbc.ModalHeader("Topomap", close_button=True),
+        #             dbc.ModalBody(
+        #                 html.Img(
+        #                     id="topomap-img",
+        #                     src="https://via.placeholder.com/150",  # Placeholder image URL
+        #                     alt="topomap-img",
+        #                     style={
+        #                         "width": "auto",
+        #                         "height": "20%",
+        #                         "borderRadius": "10px",
+        #                         "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)"  # Light shadow for the image
+        #                     }
+        #                 ),
+        #             ),
+        #             # dbc.ModalFooter(
+        #             #     dbc.Button("Close", id="close-topomap-modal", color="secondary")
+        #             # ),
+        #         ],
+        #         id="topomap-modal",
+        #         is_open=False,  # Initially hidden
+        #     ),
+        # ], style=box_styles["classic"]),
     
     # Plot topomap on a interval timepoint
         html.Div([
@@ -100,7 +100,7 @@ def create_rightsidebar():
                     size="sm",
                     n_clicks=0,
                     disabled=True,
-                    style=button_styles["plot-topomap"]
+                    style=button_styles["big"]
                 ),
                 # Loading component to show the loading spinner while the long callback is processing
                 dcc.Loading(
@@ -161,7 +161,7 @@ def create_rightsidebar():
                 outline=True,
                 size="sm",
                 n_clicks=0,
-                style=button_styles["plot-topomap"]
+                style=button_styles["big"]
             ),
             dbc.Button(
                 "Delete selected spike",
@@ -170,7 +170,7 @@ def create_rightsidebar():
                 outline=True,
                 size="sm",
                 n_clicks=0,
-                style=button_styles["plot-topomap"]
+                style=button_styles["big"]
             ),
             # Loading spinner wraps only the elements that require loading
             dcc.Loading(
@@ -180,6 +180,32 @@ def create_rightsidebar():
                     html.Div(id="spike-saving-status", style={"margin-top": "0px"})
                 ]
             )
+        ], style=box_styles["classic"]),
+
+        # History Section
+        html.Div([
+            html.H6("History", style={"fontWeight": "bold", "marginBottom": "10px"}),  # Title for the history section
+            html.Div(
+                id="history-log",  # Dynamic log area
+                style={
+                    "height": "150px",  # Adjust the height as needed
+                    "overflowY": "auto",  # Scrollable if content exceeds height
+                    "border": "1px solid #ccc",  # Light border for clarity
+                    "borderRadius": "5px",
+                    "padding": "5px",
+                    "backgroundColor": "#f9f9f9",  # Light background
+                    "fontSize": "12px",
+                }
+            ),
+            dbc.Button(
+                "Clean",
+                id="clean-history-button",
+                color="danger",
+                outline=True,
+                size="sm",
+                n_clicks=0,
+                style=button_styles["big"]
+            ),
         ], style=box_styles["classic"]),
 
     ], style={

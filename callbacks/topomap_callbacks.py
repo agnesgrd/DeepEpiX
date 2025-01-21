@@ -50,15 +50,17 @@ def register_display_topomap_video():
         Output("topomap-result", "children"),
         Output("topomap-modal-content", "children"),
         Output("topomap-range-modal", "is_open"),
+        Output("history-store", "data", allow_duplicate=True),
         [Input("plot-topomap-button-range", "n_clicks")],
         [State("topomap-min-range", "value"),
         State("topomap-max-range", "value"),
         State("folder-store", "data"),
         State("frequency-store", "data") ,
         State("topomap-range-modal", "is_open")],
+        State("history-store", "data"),
         prevent_initial_call=True
     )
-    def plot_topomap(n_clicks, min_time, max_time, folder_path, freq_data, is_open):
+    def plot_topomap(n_clicks, min_time, max_time, folder_path, freq_data, is_open, history_data):
         if n_clicks>0 and min_time is not None and max_time is not None:
             try:
                 # Load raw data (metadata only)
@@ -90,14 +92,18 @@ def register_display_topomap_video():
                     }
                 )
 
-                return True, modal_content, not is_open
+                action = f"Plotted topomap on [{min_time}, {max_time}].\n"
+                
+                history_data = [action] + history_data
+
+                return True, modal_content, not is_open, history_data
 
             except Exception as e:
                 print(f"Error in plot_topomap: {str(e)}")
-                return None, None, is_open
+                return None, None, is_open, dash.no_update
             
         # If no button click or invalid input, return a placeholder image
-        return None, None, is_open
+        return None, None, is_open, dash.no_update
     
 def register_range_on_selection():   
     @dash.callback(
