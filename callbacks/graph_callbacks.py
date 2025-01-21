@@ -68,7 +68,7 @@ def register_hide_channel_selection_when_montage():
             # Enable all options
             return [{'label': option['label'], 'value': option['value'], 'disabled': False} for option in channel_options]
     
-def generate_graph_time_channel(selected_channels, annotations_to_show, folder_path, freq_data, annotations):
+def generate_graph_time_channel(selected_channels, folder_path, freq_data):
     """Handles the preprocessing and figure generation for the MEG signal visualization."""
     import time  # For logging execution times
 
@@ -162,16 +162,18 @@ def register_update_graph_time_channel():
         Output("python-error", "children"),
         Input("montage-radio", "value"),
         Input("channel-region-checkboxes", "value"),
-        Input("annotation-checkboxes", "value"),
+        #Input("annotation-checkboxes", "value"),
         Input("folder-store", "data"),
         State("frequency-store", "data"),
-        State("annotations-store", "data"),
+        #State("annotations-store", "data"),
         State("montage-store", "data"),
+        State("meg-signal-graph", "figure"),
         prevent_initial_call=False
     )
-    def update_graph_time_channel(montage_selection, channel_selection, annotations_to_show, folder_path, freq_data, annotations, montage_store):
+    def update_graph_time_channel(montage_selection, channel_selection, folder_path, freq_data, montage_store, graph):
         """Update MEG signal visualization based on time and channel selection."""
         print("graph triggered", ctx.triggered_id)
+        print(graph)
         try:
             if montage_selection == "channel selection" and not channel_selection or not folder_path or not freq_data:  # Check if data is missing
                 return go.Figure(), "Missing data for graph rendering."
@@ -199,7 +201,7 @@ def register_update_graph_time_channel():
                     if not selected_channels:
                         raise ValueError(f"No channels available for the selected montage: {montage_selection}")
                 
-                fig = generate_graph_time_channel(selected_channels, annotations_to_show, folder_path, freq_data, annotations)
+                fig = generate_graph_time_channel(selected_channels, folder_path, freq_data)
 
                 return fig, None
             
@@ -238,9 +240,7 @@ def register_update_annotations():
             y_min, y_max = fig_dict['layout']['yaxis'].get('range', [0, 1])
 
         # Convert annotations to DataFrame
-        print("dict", annotations)
         annotations_df = pd.DataFrame(annotations).set_index('onset')
-        print('df', annotations_df)
 
         # Filter annotations based on the current time range
         filtered_annotations_df = gu.get_annotations_df_filtered_on_time(time_range, annotations_df)
