@@ -2,6 +2,8 @@
 import dash
 from dash import html
 from dash_extensions import Keyboard
+from dash.dependencies import Input, Output, State
+
 
 # Layout imports
 import layout.graph_layout as gl
@@ -30,23 +32,29 @@ from callbacks.spike_callbacks import (
     register_plot_potential_spike,
     register_add_spike_to_annotation,
     register_delete_selected_spike,
+    register_enable_add_spike_button,
+    register_enable_delete_spike_button
 )
 from callbacks.history_callbacks import (
     register_update_history,
     register_clean_history
 )
 
+from callbacks.utils import history_utils
+
 dash.register_page(__name__)
 
 
 layout = html.Div([
+    
 
     Keyboard(
         captureKeys=["ArrowLeft", "ArrowRight"],  # Captures ArrowLeft and ArrowRight keys
         id="keyboard"
     ),
 
-    html.Div([
+    html.Div(
+        [
         lsl.create_leftsidebar(),
         gl.create_graph_container(),
         rsl.create_rightsidebar(),
@@ -98,6 +106,10 @@ register_delete_selected_spike()
 register_update_history()
 
 register_clean_history()
+
+register_enable_add_spike_button()
+
+register_enable_delete_spike_button()
 
 
 

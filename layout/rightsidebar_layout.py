@@ -121,8 +121,10 @@ def create_rightsidebar():
                 ],
                 id="topomap-range-modal",
                 is_open=False,  # Initially hidden
-                size = "sm"
-
+                size="lg",
+                style={
+                    "maxWidth": "90vw"
+                }
             ),
         ], style=box_styles["classic"]),
 
@@ -161,7 +163,8 @@ def create_rightsidebar():
                 outline=True,
                 size="sm",
                 n_clicks=0,
-                style=button_styles["big"]
+                style=button_styles["big"],
+                disabled=True
             ),
             dbc.Button(
                 "Delete selected spike",
@@ -170,7 +173,8 @@ def create_rightsidebar():
                 outline=True,
                 size="sm",
                 n_clicks=0,
-                style=button_styles["big"]
+                style=button_styles["big"],
+                disabled=True
             )
         ], style=box_styles["classic"]),
 

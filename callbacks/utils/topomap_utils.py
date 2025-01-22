@@ -1,6 +1,7 @@
 import matplotlib
 matplotlib.use('Agg')
 import mne
+import io
 from io import BytesIO
 import base64
 import matplotlib.pyplot as plt
@@ -16,8 +17,7 @@ def create_topomap(raw, timepoint):
     Returns:
     - Base64-encoded string of the topomap image
     """
-    raw.pick_types(meg=True, ref_meg=False)
-  
+      
     # Extract the sampling frequency and calculate the time index
     timepoint = float(timepoint)
     sfreq = raw.info['sfreq']
@@ -57,5 +57,34 @@ def create_topomap(raw, timepoint):
     buf.close()
 
     plt.close('all')
+    
+    return img_str
+
+def create_signal_plot(raw, min_time, max_time):
+    # Extract signal data between min_time and max_time
+
+    start, stop = raw.time_as_index([min_time, max_time])
+    signal, times = raw[:, start:stop]
+    channel_offset = 0.0000000000001
+    y_axis_ticks = np.arange(signal.shape[0]) * channel_offset
+    signal = signal + y_axis_ticks[:, np.newaxis] 
+    
+    # Create the plot
+    plt.figure(figsize=(12, 10))
+    plt.plot(times, signal.T, lw=0.2)  # Transpose for correct plotting
+    plt.xlabel("Time (s)")
+    plt.ylabel("Amplitude")
+    plt.title("Selected Signal")
+    plt.tight_layout()
+
+    # Save plot to a BytesIO buffer
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format="png")
+    plt.close()
+    buffer.seek(0)
+
+    # Encode image to base64
+    img_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
+    buffer.close()
     
     return img_str

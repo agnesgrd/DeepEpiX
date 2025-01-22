@@ -9,7 +9,27 @@ import callbacks.utils.graph_utils as gu
 import pandas as pd
 from callbacks.utils import history_utils as hu
 
-
+def register_enable_delete_spike_button():
+    @dash.callback(
+        Output("delete-spike-button", "disabled"),
+        Input("meg-signal-graph", "selectedData"),
+        prevent_initial_call=True
+    )
+    def enable_delete_spike_button(selected_data):
+        if selected_data['range']['x'] is not None:
+            return False  # Enable the button if both inputs are provided
+        return True  # Disable the button if either input is missing
+    
+def register_enable_add_spike_button():
+    @dash.callback(
+        Output("add-spike-button", "disabled"),
+        Input("spike-name", "value"),
+        Input("spike-timestep", "value")
+    )
+    def enable_add_spike_button(name, timestep):
+        if name is not None and timestep is not None:
+            return False  # Enable the button if both inputs are provided
+        return True  # Disable the button if either input is missing
 
 def register_middle_time_on_selection():   
     @dash.callback(

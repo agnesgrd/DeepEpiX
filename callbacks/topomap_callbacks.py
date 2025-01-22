@@ -3,6 +3,7 @@ from dash import Input, Output, State, html
 import mne
 from callbacks.utils import topomap_utils as tu
 import numpy as np
+from callbacks.utils import history_utils as hu
 
 
 # Callback to handle the plotting of the topomap
@@ -65,36 +66,46 @@ def register_display_topomap_video():
             try:
                 # Load raw data (metadata only)
                 raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
+                raw.pick_types(meg=True, ref_meg=False)
 
                 step_size = max(1 / 100, (max_time-min_time)/20)  #freq_data.get("resample_freq")
 
                 time_points = np.arange(float(min_time), float(max_time), step_size)
 
+                # Generate signal image (selected signal visualization)
+                signal_img_str = tu.create_signal_plot(raw, min_time, max_time)  # Returns base64-encoded string
+                signal_img_src = f"data:image/png;base64,{signal_img_str}"
+                signal_image = html.Img(src=signal_img_src, style={
+                    'width': '100%',  # Full width
+                    'height': '100%',  # Consistent height
+                    'marginBottom': '10px',  # Space between rows
+                })
+
                 # Generate images
-                images = []
+                topomap_images = []
                 for t in time_points:
                     img_str = tu.create_topomap(raw, t)  # Returns base64-encoded string
                     img_src = f"data:image/png;base64,{img_str}"
-                    images.append(html.Img(src=img_src, style={'width': '200px', 'margin': '0px'}))
+                    topomap_images.append(html.Img(src=img_src, style={
+                        'height': '200px',  # Consistent height
+                        'margin': '0 5px',  # Horizontal spacing between images
+                    }))
 
-                # Add all images to modal content
+                # Combine signal image and topomap images
                 modal_content = html.Div(
-                    children=images,
-                    style={
-                        'display': 'flex',
-                        'flex-wrap': 'wrap',
-                        'justify-content': 'center',
-                        # 'position': 'fixed',
-                        # 'top': '0',
-                        # 'right': '0',  # Modal slides in
-                        # 'width': '50%',
-                        # 'height': '50%'
-                    }
+                    children=[
+                        html.Div(signal_image, style={"textAlign": "center"}),  # Row 1: Signal
+                        html.Div(  # Row 2: Topomap images
+                            children=topomap_images, style={
+                                "display": "flex",  # Horizontal alignment
+                                "justifyContent": "center", # Center horizontally
+                                "overflowX": "auto",  # Enable horizontal scrolling
+                            } 
+                        )
+                    ],
                 )
-
-                action = f"Plotted topomap on [{min_time}, {max_time}].\n"
                 
-                history_data = [action] + history_data
+                history_data = hu.fill_history_data(history_data, f"Plotted topomap on [{min_time}, {max_time}].\n")
 
                 return True, modal_content, not is_open, history_data
 

@@ -33,7 +33,7 @@ app.layout = html.Div(
         dcc.Store(id="frequency-store", storage_type="local"),
         dcc.Store(id="annotations-store", data = [], storage_type="local"),
         dcc.Store(id="montage-store", data={}, storage_type="local"),
-        dcc.Store(id="history-store", data=[], storage_type="local"),
+        dcc.Store(id="history-store", storage_type="local"),
 
         # Row for title and links
         html.Div(

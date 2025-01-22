@@ -110,14 +110,6 @@ layout = html.Div([
 ])
 
 @dash.callback(
-    Output("history-store", "data"),
-    Input("history-store", "data"),
-)
-def initialize_history(history_data):
-    return hu.fill_history_data(history_data, "User logged in")
-
-
-@dash.callback(
     Output("entered-folder", "children"),
     Output("folder-store", "data"),
     Output("load-button", "disabled"),
