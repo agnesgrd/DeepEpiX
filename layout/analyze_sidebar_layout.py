@@ -3,7 +3,8 @@ import dash_bootstrap_components as dbc
 import static.constants as c
 from layout import input_styles, box_styles, button_styles
 
-def create_rightsidebar():
+
+def create_analyze():
     return html.Div([
 
         # # Plot topomap on a unique timepoint
@@ -203,27 +204,4 @@ def create_rightsidebar():
                 style=button_styles["big"]
             ),
         ], style=box_styles["classic"]),
-
-    ], style={
-        #"padding": "20px",
-        "height": "100%",
-        "display": "flex",
-        "flexDirection": "column",
-        "justifyContent": "flex-start",  # Align content at the top
-        "gap": "20px",  # Space between elements
-        "width": "250px",  # Sidebar width is now fixed
-        "boxSizing": "border-box",
-        "fontSize": "12px",
-        # "backgroundColor": "#f9f9f9",  # Light background color for the sidebar
-        "borderRadius": "10px",  # Rounded corners for the sidebar itself
-        # "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",  # Subtle shadow for the whole sidebar
-        "overflowY": "auto",  # Enable scrolling if content exceeds height
-        # "display": "flex",
-        # "flexDirection": "column",  # Stack the three sections vertically
-        # "gap": "20px",  # Space between sections
-        # "width": "10%",
-        # "maxWidth": "450px",  # You can set a max width for the sidebar
-        # "margin": "0 10px"
-    })
-
-        
+    ])     

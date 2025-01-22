@@ -40,18 +40,41 @@ def register_callbacks_montage_names():
     )
     def display_annotation_names_checklist(montage_store, value):
         # Create options for the checklist from the channels in montage_store
-        options = []
+        options = [{'label': key, 'value': key} for key in montage_store.keys()]
+        options.append({'label': 'channel selection', 'value': 'channel selection'})
+
+        # If montage_store is empty or the current value is not valid, select the first option
+        valid_values = [option['value'] for option in options]
+        if not montage_store or value not in valid_values:
+            # Return the first option as default
+            return options, options[0]['value']
+
+        # If value is valid, keep the current selection
+        return options, value
+    
+# def register_callbacks_montage_names():
+#     # Callback to populate the checklist options and default value dynamically
+#     @dash.callback(
+#         Output("montage-radio", "options"),
+#         Output("montage-radio", "value"),
+#         Input("montage-store", "data"),
+#         State("montage-radio", "value"),
+#         prevent_initial_call=False
+#     )
+#     def display_annotation_names_checklist(montage_store, value):
+#         # Create options for the checklist from the channels in montage_store
+#         options = []
         
-        for key, channels in montage_store.items():
-            options.extend([{'label': key, 'value': key}])
+#         for key, channels in montage_store.items():
+#             options.extend([{'label': key, 'value': key}])
 
-        options.extend([{'label':'channel selection', 'value': 'channel selection'}])
+#         options.extend([{'label':'channel selection', 'value': 'channel selection'}])
 
-        if montage_store == {} or value is None:
-            return options, 'channel selection'
+#         if montage_store == {} or value is None:
+#             return options, 'channel selection'
 
-        else:
-            return options, dash.no_update
+#         else:
+#             return options, dash.no_update
         
 def register_hide_channel_selection_when_montage():
     # Callback to populate the checklist options and default value dynamically

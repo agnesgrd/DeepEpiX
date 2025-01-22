@@ -186,7 +186,7 @@ layout = html.Div([
     Output("saved-montages-table", "data"),  # Update the DataTable with new montage data
     Input("refresh-button", "n_clicks"),  # Triggered by clicking the refresh button
     Input("save-button", "n_clicks"),
-    State("montage-store", "data"),  # Get the data from the montage-store component
+    Input("montage-store", "data"),  # Get the data from the montage-store component
     prevent_initial_call=False
 )
 def display_montage(n_clicks_refresh, n_clicks_save, montage_store_data):

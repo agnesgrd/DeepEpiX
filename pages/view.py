@@ -7,8 +7,7 @@ from dash.dependencies import Input, Output, State
 
 # Layout imports
 import layout.graph_layout as gl
-import layout.rightsidebar_layout as rsl
-import layout.leftsidebar_layout as lsl
+from layout.sidebar_layout import create_sidebar
 
 # Callback imports
 from callbacks.graph_callbacks import (
@@ -55,9 +54,8 @@ layout = html.Div([
 
     html.Div(
         [
-        lsl.create_leftsidebar(),
-        gl.create_graph_container(),
-        rsl.create_rightsidebar(),
+        create_sidebar(),
+        gl.create_graph_container()
     ], style={
         "display": "flex",  # Horizontal layout
         "flexDirection": "row",
