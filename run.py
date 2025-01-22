@@ -7,6 +7,7 @@ from dash import Input, Output, State
 import dash
 from layout import box_styles
 
+
 # Initialize Dash app with use_pages=True
 app = Dash(__name__,
            use_pages=True, 

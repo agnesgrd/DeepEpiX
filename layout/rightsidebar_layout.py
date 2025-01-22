@@ -171,14 +171,6 @@ def create_rightsidebar():
                 size="sm",
                 n_clicks=0,
                 style=button_styles["big"]
-            ),
-            # Loading spinner wraps only the elements that require loading
-            dcc.Loading(
-                id="loading",
-                type="default", 
-                children=[
-                    html.Div(id="spike-saving-status", style={"margin-top": "0px"})
-                ]
             )
         ], style=box_styles["classic"]),
 

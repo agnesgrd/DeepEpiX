@@ -345,8 +345,6 @@ def save_montage(n_clicks, new_montage_name, montage_store_data, *selected_value
 
             })
 
-        print(montage_store_data)
-
         # Return the success message and updated montage store data
         return "Montage saved successfully!", montage_store_data, {"display": "none"}, saved_montages
 

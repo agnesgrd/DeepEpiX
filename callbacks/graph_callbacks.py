@@ -174,8 +174,7 @@ def register_update_graph_time_channel():
     )
     def update_graph_time_channel(montage_selection, channel_selection, folder_path, freq_data, montage_store, graph):
         """Update MEG signal visualization based on time and channel selection."""
-        print("graph triggered", ctx.triggered_id)
-        print(graph)
+
         try:
             if montage_selection == "channel selection" and not channel_selection or not folder_path or not freq_data:  # Check if data is missing
                 return go.Figure(), "Missing data for graph rendering."
@@ -227,7 +226,7 @@ def register_update_annotations():
     def update_annotations(fig_dict, annotations_to_show, annotation_options, annotations):
         """Update annotations visibility based on the checklist selection."""
         # Default time range in case the figure doesn't contain valid x-axis range data
-        print(ctx.triggered_id)
+
         time_range = [0, 180]
 
         # Create a Patch for the figure

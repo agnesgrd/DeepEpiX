@@ -11,6 +11,7 @@ from io import StringIO
 import pandas as pd
 from dash import get_app
 from sklearn.preprocessing import StandardScaler
+from callbacks.utils import history_utils as hu
 
 # Register the page
 dash.register_page(__name__, path = "/")
@@ -108,6 +109,13 @@ layout = html.Div([
     )
 ])
 
+@dash.callback(
+    Output("history-store", "data"),
+    Input("history-store", "data"),
+)
+def initialize_history(history_data):
+    return hu.fill_history_data(history_data, "User logged in")
+
 
 @dash.callback(
     Output("entered-folder", "children"),
@@ -198,7 +206,6 @@ def get_annotations_dataframe(folder_path):
     origin_time = pd.Timestamp(raw.annotations.orig_time)
     annotations_df['onset'] = (annotations_df['onset'] - origin_time).dt.total_seconds()
     annotations_dict = annotations_df.to_dict(orient="records")
-    print("get annotations df", annotations_dict)
     return annotations_dict
     
 @dash.callback(

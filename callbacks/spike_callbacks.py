@@ -7,6 +7,7 @@ from dash.dependencies import Input, Output, State
 from dash import Patch
 import callbacks.utils.graph_utils as gu
 import pandas as pd
+from callbacks.utils import history_utils as hu
 
 
 
@@ -88,8 +89,7 @@ def register_plot_potential_spike():
 def register_add_spike_to_annotation():
     @dash.callback(
         Output("annotations-store", "data", allow_duplicate=True),
-        Output("spike-saving-status", "children"),
-        Output("history-store", "data"),
+        Output("history-store", "data", allow_duplicate=True),
         Input("add-spike-button", "n_clicks"),
         State("spike-name", "value"),
         State("spike-timestep", "value"),
@@ -100,9 +100,9 @@ def register_add_spike_to_annotation():
     def add_spike_to_annotation(n_clicks, spike_name, spike_timestep, annotations_data, history_data):
         # Validate input
         if n_clicks is None or n_clicks == 0:
-            return dash.no_update, "", dash.no_update
+            return dash.no_update, dash.no_update
         if not spike_name or spike_timestep is None:
-            return dash.no_update, "Error: Missing name or timestep value.", dash.no_update
+            return dash.no_update, dash.no_update
 
         # Convert annotations data to DataFrame if not empty
         if not annotations_data:
@@ -114,16 +114,14 @@ def register_add_spike_to_annotation():
         annotations_data.append({"onset": spike_timestep, "duration": 0, "description": spike_name})
 
         action = f"Added a spike <{spike_name}> at {spike_timestep} (s).\n"
-
-        history_data = [action] + history_data
+        history_data = hu.fill_history_data(history_data, action)
 
         # Convert the updated DataFrame back to a records-based format
-        return annotations_data, "Success: New spike added!", history_data
+        return annotations_data, history_data
     
 def register_delete_selected_spike():
     @dash.callback(
         Output("annotations-store", "data", allow_duplicate=True),
-        Output("spike-saving-status", "children", allow_duplicate=True),
         Output("history-store", "data", allow_duplicate=True),
         Input("delete-spike-button", "n_clicks"),
         State("meg-signal-graph", "selectedData"),
@@ -135,26 +133,26 @@ def register_delete_selected_spike():
     def delete_selected_spike(n_clicks, selected_data, annotations_data, visible_annotations, history_data):
         # Validate input
         if n_clicks is None or n_clicks == 0:
-            return dash.no_update, "", dash.no_update
+            return dash.no_update, dash.no_update
         if selected_data is None:
-            return dash.no_update, "Error: Select spike before.", dash.no_update
+            return dash.no_update, dash.no_update
         
         # Get the selected range (from selectedData)
         try:
             x_range = selected_data['range']['x']  # Extract the x values (time points)
             x_min, x_max = x_range[0], x_range[1]
         except (KeyError, TypeError, IndexError):
-            return dash.no_update, "Error: Invalid selection range.", dash.no_update
+            return dash.no_update, dash.no_update
 
         # Convert annotations data to DataFrame
         if annotations_data:
             annotations_df = pd.DataFrame.from_records(annotations_data)
         else:
-            return dash.no_update, "Error: No annotations data available.", dash.no_update
+            return dash.no_update, dash.no_update
 
         # Validate the 'onset' column
         if "onset" not in annotations_df.columns:
-            return dash.no_update, "Error: Annotations data missing 'onset' column.", dash.no_update
+            return dash.no_update, dash.no_update
         
         # Identify rows to be deleted (spikes that fall within x_range and match visible annotations)
         spikes_to_delete = annotations_df[
@@ -164,15 +162,11 @@ def register_delete_selected_spike():
         ]
 
         # Log actions for each deleted spike
-        action = []
-        if not isinstance(history_data, list):
-            history_data = []
         for _, spike_deleted in spikes_to_delete.iterrows():
             spike_description = spike_deleted.get('description', 'Unknown description')  # Safely retrieve 'description'
             spike_timestep = spike_deleted.get('onset', 'Unknown timestep')  # Safely retrieve 'onset'
-            action.append(f"Deleted a spike <{spike_description}> at {spike_timestep} (s).\n") # Log or store the action as needed
-
-        history_data = action + history_data
+            action = f"Deleted a spike <{spike_description}> at {spike_timestep} (s).\n" # Log or store the action as needed
+            history_data = hu.fill_history_data(history_data, action)
 
         # Filter out the identified rows from the original DataFrame
         annotations_df = annotations_df.drop(spikes_to_delete.index)
@@ -180,9 +174,7 @@ def register_delete_selected_spike():
         # Convert the updated DataFrame back to a records-based format
         updated_annotations = annotations_df.to_dict(orient="records")
 
-    
-
-        return updated_annotations, "Success: Spike(s) deleted!", history_data
+        return updated_annotations, history_data
 
 
     
