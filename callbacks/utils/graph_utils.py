@@ -1,9 +1,8 @@
 import numpy as np
-
 import static.constants as c
-import pandas as pd
-from io import StringIO
 from sklearn.preprocessing import StandardScaler
+from pages.home import get_preprocessed_dataframe
+import plotly.express as px
 
 
 def calculate_channel_offset(num_channels, plot_height=900, min_gap=50):
@@ -59,4 +58,164 @@ def get_annotations_df_filtered_on_time(time_range, annotations_df):
     filtered_annotations_df = annotations_df[time_mask]
     
     return filtered_annotations_df
+
+def generate_graph_time_channel(selected_channels, time_range, folder_path, freq_data):
+    """Handles the preprocessing and figure generation for the MEG signal visualization."""
+    import time  # For logging execution times
+
+    start_time = time.time()
+    # Preprocess data
+    raw_df = get_preprocessed_dataframe(folder_path, freq_data)
+    print(f"Step 1: Preprocessing completed in {time.time() - start_time:.2f} seconds.")
+
+    # Filter time range
+    filter_start_time = time.time()
+    filtered_times, filtered_raw_df = get_raw_df_filtered_on_time(time_range, raw_df)
+    print(f"Step 2: Time filtering completed in {time.time() - filter_start_time:.2f} seconds.")
+
+
+
+    # Filter the dataframe based on the selected channels
+    filter_df_start_time = time.time()
+    filtered_raw_df = filtered_raw_df[selected_channels]
+    print(f"Step 4: Dataframe filtering completed in {time.time() - filter_df_start_time:.2f} seconds.")
+
+    # Offset channel traces along the y-axis
+    offset_start_time = time.time()
+    channel_offset = calculate_channel_offset(len(selected_channels)) / 12
+    y_axis_ticks = get_y_axis_ticks(selected_channels, channel_offset)
+    shifted_filtered_raw_df = filtered_raw_df + np.tile(y_axis_ticks, (len(filtered_raw_df), 1))
+    print(f"Step 5: Channel offset calculation completed in {time.time() - offset_start_time:.2f} seconds.")
+    # Create a dictionary mapping channels to their colors
+    color_map = {channel: c.CHANNEL_TO_COLOR[channel] for channel in selected_channels}
+    # Use Plotly Express for efficient figure generation
+    fig_start_time = time.time()
+    shifted_filtered_raw_df["Time"] = filtered_times  # Add time as a column for Plotly Express
+    fig = px.line(
+        shifted_filtered_raw_df,
+        x="Time",
+        y=shifted_filtered_raw_df.columns[:-1],  # Exclude the Time column from y
+        labels={"value": "Value", "variable": "Channel", "Time": "Time (s)"},
+        color_discrete_map=color_map
+    )
+
+    print(f"Step 6: Figure creation completed in {time.time() - fig_start_time:.2f} seconds.")
+
+    # Update layout with x-axis range and other customizations
+    layout_start_time = time.time()
+    fig.update_layout(
+        autosize=True,
+        xaxis=dict(
+            title='Time (s)',
+            range=[0,10],
+            fixedrange=False,
+            rangeslider=dict(visible=True, thickness=0.02),
+            showspikes=True,
+            spikemode="across+marker",
+            spikethickness = 1,
+        ),
+        yaxis=dict(
+            title='Channels',
+            showgrid=True,
+            tickvals=y_axis_ticks,
+            ticktext=[f'{selected_channels[i]}' for i in range(len(selected_channels))],
+            ticklabelposition="outside right",
+            side="right",
+            automargin=True,
+            spikethickness = 0
+        ),
+        title={
+            'text': folder_path if folder_path else 'Select a folder path in Home Page',
+            'x': 0.5,
+            'font': {'size': 12},
+            'automargin': True,
+            'yref': 'paper',
+        },
+        showlegend=False,
+        margin=dict(l=0, r=0, t=0, b=0),
+        dragmode =  'select',
+        selectdirection = 'h',
+        hovermode = 'closest'
+    )
+    # Update the line width after creation
+    for trace in fig.data:
+        trace.update(line=dict(width=1))
+    print(f"Step 7: Layout update completed in {time.time() - layout_start_time:.2f} seconds.")
+
+    # Total execution time
+    print(f"Total execution time: {time.time() - start_time:.2f} seconds.")
+
+    return fig
+
+def generate_small_graph_time_channel(selected_channels, time_range, folder_path, freq_data, time_points):
+    """Handles the preprocessing and figure generation for the MEG signal visualization."""
+    import time  # For logging execution times
+
+    start_time = time.time()
+    # Preprocess data
+    raw_df = get_preprocessed_dataframe(folder_path, freq_data)
+    print(f"Step 1: Preprocessing completed in {time.time() - start_time:.2f} seconds.")
+
+    # Filter time range
+    filter_start_time = time.time()
+    filtered_times, filtered_raw_df = get_raw_df_filtered_on_time(time_range, raw_df)
+    print(f"Step 2: Time filtering completed in {time.time() - filter_start_time:.2f} seconds.")
+
+    # Filter the dataframe based on the selected channels
+    filter_df_start_time = time.time()
+    filtered_raw_df = filtered_raw_df[selected_channels]
+    print(f"Step 4: Dataframe filtering completed in {time.time() - filter_df_start_time:.2f} seconds.")
+
+    # Offset channel traces along the y-axis
+    offset_start_time = time.time()
+    channel_offset = calculate_channel_offset(len(selected_channels)) / 12
+    y_axis_ticks = get_y_axis_ticks(selected_channels, channel_offset)
+    shifted_filtered_raw_df = filtered_raw_df + np.tile(y_axis_ticks, (len(filtered_raw_df), 1))
+    print(f"Step 5: Channel offset calculation completed in {time.time() - offset_start_time:.2f} seconds.")
+    # Create a dictionary mapping channels to their colors
+    color_map = {channel: c.CHANNEL_TO_COLOR[channel] for channel in selected_channels}
+    # Use Plotly Express for efficient figure generation
+    fig_start_time = time.time()
+    shifted_filtered_raw_df["Time"] = filtered_times  # Add time as a column for Plotly Express
+    fig = px.line(
+        shifted_filtered_raw_df,
+        x="Time",
+        y=shifted_filtered_raw_df.columns[:-1],  # Exclude the Time column from y
+        labels={"value": "Value", "variable": "Channel", "Time": "Time (s)"},
+        color_discrete_map=color_map
+    )
+
+    print(f"Step 6: Figure creation completed in {time.time() - fig_start_time:.2f} seconds.")
+
+    # Update layout with x-axis range and other customizations
+    layout_start_time = time.time()
+    fig.update_layout(
+        autosize=True,
+        xaxis=dict(
+            title='Time (s)',
+            tickvals=time_points,
+            ticktext=[f'Img {i}' for i in range(len(time_points))]
+        ),
+        yaxis=dict(
+            title='Channels',
+            showgrid=True,
+            tickvals=y_axis_ticks,
+            ticktext=[f'{selected_channels[i]}' for i in range(len(selected_channels))],
+            ticklabelposition="outside right",
+            side="right",
+            automargin=True
+        ),
+        showlegend=False,
+        margin=dict(l=0, r=0, t=0, b=0)
+    )
+    # Update the line width after creation
+    for trace in fig.data:
+        trace.update(line=dict(width=1))
+    print(f"Step 7: Layout update completed in {time.time() - layout_start_time:.2f} seconds.")
+
+    # Total execution time
+    print(f"Total execution time: {time.time() - start_time:.2f} seconds.")
+
+    return fig
+
 
