@@ -11,7 +11,7 @@ from layout import box_styles
 # Initialize Dash app with use_pages=True
 app = Dash(__name__,
            use_pages=True, 
-           external_stylesheets=[dbc.themes.BOOTSTRAP])
+           external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP])
 
 # cache = Cache(app.server, config={
 #     'CACHE_TYPE': 'filesystem',
@@ -48,41 +48,43 @@ app.layout = html.Div(
                                 "border-radius": "10%",  # Bordure arrondie
                                 "padding-top": "0px",
                                 "height": "60px",  # Adjust size as needed
-                                "margin-right": "20px",  # Space between the logo and tabs
                             }
                         ),
                         # Panel tabs (navigation links)
-                        html.Div(
+                        html.I(dbc.DropdownMenu(
+                            toggle_style={
+                                "border": "none",  # No border for the button
+                                "background": "none",  # Transparent background
+                                "font-size": "30px",  # Larger icon size
+                                "color": "black",  # Icon color
+                            },
                             children=[
-                                dcc.Link(
-                                    "Home", id="link-home", href="/", style={**box_styles["panel-tabs"]} 
+                                dbc.DropdownMenuItem(
+                                    "Home", id="link-home", href="/"
                                 ),
-                                dcc.Link(
-                                    "View", id="link-view", href="/view", style={**box_styles["panel-tabs"]} 
+                                dbc.DropdownMenuItem(
+                                    "View", id="link-view", href="/view"
                                 ),
-                                dcc.Link(
-                                    "Settings", id="link-analyze", href="/analyze", style={**box_styles["panel-tabs"]} 
+                                dbc.DropdownMenuItem(
+                                    "Settings", id="link-analyze", href="/analyze"
                                 ),
-                                dcc.Link(
-                                    "Predict", id="link-predict", href="/predict", style={**box_styles["panel-tabs"]} 
+                                dbc.DropdownMenuItem(
+                                    "Predict", id="link-predict", href="/predict"
                                 ),
-                                dcc.Link(
-                                    "Save", id="link-save", href="/save", style={**box_styles["panel-tabs"]} 
+                                dbc.DropdownMenuItem(
+                                    "Save", id="link-save", href="/save"
                                 ),
-                            ],
+                            ], 
                             style={
-                                "display": "flex",
-                                "align-items": "center",  # Vertically align the items in the center
-                                "justify-content": "center",  # Horizontally center the items
-                                "gap": "20px",  # Space between the links
-                            }
+                            "display": "flex"
+                            },
+                            className = "bi bi-list")
                         ),
                     ],
                     style={
                         "display": "flex",
-                        "align-items": "center",  # Vertically center the content
-                        "justify-content": "center",  # Horizontally center the content
-                        "width": "100%",  # Ensure it stretches across the page
+                        "font-size": "60px",  # Make the icon bigger
+                        "padding-bottom": "20px"
                     },
                 ),
                 # Main content container (display content based on the tab selected)
@@ -90,37 +92,37 @@ app.layout = html.Div(
                     children=[  
                         page_container,  # Placeholder for dynamically loaded content
                     ],
-                    style={"width": "100%", "display": "inline-block", "padding": "20px"},  # Main content area
+                    style={"width": "100%", "display": "inline-block"}  # Main content area
                 ),
             ],
-            style={"width": "100%", "padding": "10px"},  # Row layout
+            style={"width": "100%", "padding": "20px"},  # Row layout
         ),
     ],
     style={"display": "flex", "flex-direction": "column", "height": "100vh"},  # Full-page flex layout
 )
 
-# Callback to update the style of the active tab
-@dash.callback(
-    [Output("link-home", "style"),
-     Output("link-view", "style"),
-     Output("link-analyze", "style"),
-     Output("link-predict", "style"),
-     Output("link-save", "style")],
-    [Input("url", "pathname")]
-)
-def update_tab_style(pathname):
+# # Callback to update the style of the active tab
+# @dash.callback(
+#     [Output("link-home", "style"),
+#      Output("link-view", "style"),
+#      Output("link-analyze", "style"),
+#      Output("link-predict", "style"),
+#      Output("link-save", "style")],
+#     [Input("url", "pathname")]
+# )
+# def update_tab_style(pathname):
 
-    # Highlight the active link by changing its background color
-    active_style = {**box_styles["panel-tabs"], "background-color": "blue"}  # Dark Gray for active link
+#     # Highlight the active link by changing its background color
+#     active_style = {**box_styles["panel-tabs"], "background-color": "blue"}  # Dark Gray for active link
 
-    # Return updated styles based on the current pathname
-    return (
-        active_style if pathname == "/" else {**box_styles["panel-tabs"]},
-        active_style if pathname == "/view" else {**box_styles["panel-tabs"]},
-        active_style if pathname == "/analyze" else {**box_styles["panel-tabs"]} ,
-        active_style if pathname == "/predict" else {**box_styles["panel-tabs"]} ,
-        active_style if pathname == "/save" else {**box_styles["panel-tabs"]},
-    )
+#     # Return updated styles based on the current pathname
+#     return (
+#         active_style if pathname == "/" else {**box_styles["panel-tabs"]},
+#         active_style if pathname == "/view" else {**box_styles["panel-tabs"]},
+#         active_style if pathname == "/analyze" else {**box_styles["panel-tabs"]} ,
+#         active_style if pathname == "/predict" else {**box_styles["panel-tabs"]} ,
+#         active_style if pathname == "/save" else {**box_styles["panel-tabs"]},
+#     )
 
 
 if __name__ == "__main__":
