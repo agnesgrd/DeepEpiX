@@ -96,7 +96,7 @@ def register_display_topomap_video():
                     img_str = tu.create_topomap(raw, t)  # Returns base64-encoded string
                     img_src = f"data:image/png;base64,{img_str}"
                     topomap_images.append(html.Img(src=img_src, style={
-                        'height': '200px',  # Consistent height
+                        'height': '180px',  # Consistent height
                         'margin': '0 5px',  # Horizontal spacing between images
                     }))
 

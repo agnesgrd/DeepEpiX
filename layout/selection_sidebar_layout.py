@@ -96,6 +96,26 @@ def create_selection():
                 persistence_type="local"
             ),
         ], style = box_styles["classic"]),
+
+        # Offset Selection
+        html.Div([
+            html.Label(
+                "Select Offset:",
+                style={"fontWeight": "bold", "fontSize": "14px", "marginBottom": "8px"}
+            ),
+            dbc.Input(
+                id="offset-selection",  # Unique ID for each input
+                type="number",
+                placeholder="Offset ...",
+                step=1,
+                min=1,
+                max=50,
+                size="sm",
+                persistence=True,
+                persistence_type="local",
+                style={**input_styles["small-number"]}
+            ),
+        ], style = box_styles["classic"]),
     ])
 # , style={
 #         # "padding": "20px",

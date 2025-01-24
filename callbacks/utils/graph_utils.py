@@ -5,7 +5,7 @@ from pages.home import get_preprocessed_dataframe
 import plotly.express as px
 
 
-def calculate_channel_offset(num_channels, plot_height=900, min_gap=50):
+def calculate_channel_offset(num_channels, plot_height=900, min_gap=40):
     """
     Calculate the optimal channel offset to avoid overlap of traces in the plot.
     
@@ -59,7 +59,7 @@ def get_annotations_df_filtered_on_time(time_range, annotations_df):
     
     return filtered_annotations_df
 
-def generate_graph_time_channel(selected_channels, time_range, folder_path, freq_data):
+def generate_graph_time_channel(selected_channels, offset_selection, time_range, folder_path, freq_data):
     """Handles the preprocessing and figure generation for the MEG signal visualization."""
     import time  # For logging execution times
 
@@ -82,7 +82,7 @@ def generate_graph_time_channel(selected_channels, time_range, folder_path, freq
 
     # Offset channel traces along the y-axis
     offset_start_time = time.time()
-    channel_offset = calculate_channel_offset(len(selected_channels)) / 12
+    channel_offset = calculate_channel_offset(len(selected_channels)) / offset_selection #/ 12
     y_axis_ticks = get_y_axis_ticks(selected_channels, channel_offset)
     shifted_filtered_raw_df = filtered_raw_df + np.tile(y_axis_ticks, (len(filtered_raw_df), 1))
     print(f"Step 5: Channel offset calculation completed in {time.time() - offset_start_time:.2f} seconds.")
@@ -192,17 +192,14 @@ def generate_small_graph_time_channel(selected_channels, time_range, folder_path
     fig.update_layout(
         autosize=True,
         xaxis=dict(
-            title='Time (s)',
             tickvals=time_points,
-            ticktext=[f'Img {i}' for i in range(len(time_points))]
+            ticks="outside", 
+            tickwidth=2, 
+            tickcolor='crimson', 
+            ticklen=10
         ),
         yaxis=dict(
-            title='Channels',
             showgrid=True,
-            tickvals=y_axis_ticks,
-            ticktext=[f'{selected_channels[i]}' for i in range(len(selected_channels))],
-            ticklabelposition="outside right",
-            side="right",
             automargin=True
         ),
         showlegend=False,

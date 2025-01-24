@@ -96,15 +96,14 @@ def register_update_graph_time_channel():
         Output("python-error", "children"),
         Input("montage-radio", "value"),
         Input("channel-region-checkboxes", "value"),
-        #Input("annotation-checkboxes", "value"),
+        Input("offset-selection", "value"),
         Input("folder-store", "data"),
         State("frequency-store", "data"),
-        #State("annotations-store", "data"),
         State("montage-store", "data"),
         State("meg-signal-graph", "figure"),
         prevent_initial_call=False
     )
-    def update_graph_time_channel(montage_selection, channel_selection, folder_path, freq_data, montage_store, graph):
+    def update_graph_time_channel(montage_selection, channel_selection, offset_selection, folder_path, freq_data, montage_store, graph):
         """Update MEG signal visualization based on time and channel selection."""
 
         time_range = [0,180]
@@ -136,7 +135,10 @@ def register_update_graph_time_channel():
                     if not selected_channels:
                         raise ValueError(f"No channels available for the selected montage: {montage_selection}")
                 
-                fig = gu.generate_graph_time_channel(selected_channels, time_range, folder_path, freq_data)
+                    if offset_selection is None:
+                        offset_selection = 12
+                        
+                fig = gu.generate_graph_time_channel(selected_channels, offset_selection, time_range, folder_path, freq_data)
 
                 return fig, None
             

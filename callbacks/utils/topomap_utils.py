@@ -48,7 +48,7 @@ def create_topomap(raw, timepoint):
     )
 
     # Customize the plot appearance
-    ax.set_title(f'Time: {timepoint:.3f}s', fontsize=13)  # Add a title
+    #ax.set_title(f'Time: {timepoint:.3f}s', fontsize=13)  # Add a title
     ax.set_facecolor('white')  # Set background color to white
     ax.axis('off')  # Hide axes for a clean look
 
@@ -106,7 +106,7 @@ def create_small_graph_time_channel(min_time, max_time, folder_path, freq_data, 
 
     if max_time - min_time < 4:
         min_time = (min_time + max_time)/2 - 2
-        max_time = (min_time + max_time)/2 + 2
+        max_time = (min_time + max_time)/2 + 3
 
     fig = gu.generate_small_graph_time_channel(selected_channels, [min_time, max_time], folder_path, freq_data, time_points)
 

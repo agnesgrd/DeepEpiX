@@ -17,10 +17,15 @@ from callbacks.utils import history_utils as hu
 dash.register_page(__name__, path = "/")
 app=get_app()
 cache = Cache(app.server, config={
+    # 'CACHE_TYPE': 'redis',
+    # 'CACHE_REDIS_HOST': 'localhost',    # Redis server hostname
+    # 'CACHE_REDIS_PORT': 6379,          # Redis server port
+    # 'CACHE_REDIS_DB': 0,               # Redis database index
+    # 'CACHE_REDIS_URL': 'redis://localhost:6379/0',  # Redis connection URL
     'CACHE_TYPE': 'filesystem',
     'CACHE_DIR': 'cache-directory',
-    'CACHE_DEFAULT_TIMEOUT': 1000,
-    'CACHE_THRESHOLD': 10 # higher numbers will store more data in the filesystem / redis cache
+    'CACHE_DEFAULT_TIMEOUT': 86400,
+    'CACHE_THRESHOLD': 50 # higher numbers will store more data in the filesystem / redis cache
 })
 
 layout = html.Div([
