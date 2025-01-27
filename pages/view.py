@@ -19,6 +19,7 @@ from callbacks.graph_callbacks import (
     register_move_time_slider,
     register_update_annotation_graph,
     register_hide_channel_selection_when_montage,
+    register_offset_display
 )
 from callbacks.topomap_callbacks import (
     register_display_topomap,
@@ -108,6 +109,8 @@ register_clean_history()
 register_enable_add_spike_button()
 
 register_enable_delete_spike_button()
+
+register_offset_display()
 
 
 

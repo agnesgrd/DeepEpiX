@@ -103,32 +103,25 @@ def create_selection():
                 "Select Offset:",
                 style={"fontWeight": "bold", "fontSize": "14px", "marginBottom": "8px"}
             ),
-            dbc.Input(
-                id="offset-selection",  # Unique ID for each input
-                type="number",
-                placeholder="Offset ...",
-                step=1,
-                min=1,
-                max=50,
-                size="sm",
-                persistence=True,
-                persistence_type="local",
-                style={**input_styles["small-number"]}
+            html.Div(
+                children=[
+                    dbc.Button("-", id="offset-decrement", color="primary", size="sm", n_clicks=0),
+                    html.Span(
+                        id="offset-display", 
+                        children="15",  # Default offset value
+                        style={
+                            "margin": "0 10px",  # Space between buttons
+                            "fontWeight": "bold",
+                            "fontSize": "12px"
+                        }
+                    ),
+                    dbc.Button("+", id="offset-increment", color="primary", size="sm", n_clicks=0),
+                ],
+                style={
+                    "display": "flex", 
+                    "alignItems": "center", 
+                    "gap": "12px"  # Space between elements
+                }
             ),
-        ], style = box_styles["classic"]),
+        ], style=box_styles["classic"])
     ])
-# , style={
-#         # "padding": "20px",
-#         "height": "100%",
-#         "display": "flex",
-#         "flexDirection": "column",
-#         "justifyContent": "flex-start",  # Align content at the top
-#         "gap": "20px",  # Space between elements
-#         "width": "250px",  # Sidebar width is now fixed
-#         "boxSizing": "border-box",
-#         "fontSize": "12px",
-#         # "backgroundColor": "#f9f9f9",  # Light background color for the sidebar
-#         "borderRadius": "10px",  # Rounded corners for the sidebar itself
-#         # "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",  # Subtle shadow for the whole sidebar
-#         "overflowY": "auto",  # Enable scrolling if content exceeds height
-#     })

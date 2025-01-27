@@ -28,6 +28,7 @@ app.layout = html.Div(
 
         dcc.Store(id="folder-store", storage_type="local"),
         dcc.Store(id="raw-store", storage_type="local"),
+        dcc.Store(id="raw-info", data={}, storage_type="local"),
         dcc.Store(id="plotting-data-store", data={}, storage_type="local"),
         dcc.Store(id="main-graph-resampler", storage_type="local"),
         dcc.Store(id="frequency-store", storage_type="local"),

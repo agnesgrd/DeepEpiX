@@ -96,17 +96,18 @@ def register_update_graph_time_channel():
         Output("python-error", "children"),
         Input("montage-radio", "value"),
         Input("channel-region-checkboxes", "value"),
-        Input("offset-selection", "value"),
         Input("folder-store", "data"),
+        State("offset-display", "children"),
         State("frequency-store", "data"),
         State("montage-store", "data"),
+        State("raw-info", "data"),
         State("meg-signal-graph", "figure"),
         prevent_initial_call=False
     )
-    def update_graph_time_channel(montage_selection, channel_selection, offset_selection, folder_path, freq_data, montage_store, graph):
+    def update_graph_time_channel(montage_selection, channel_selection, folder_path, offset_selection, freq_data, montage_store, raw_info, graph):
         """Update MEG signal visualization based on time and channel selection."""
 
-        time_range = [0,180]
+        time_range = [0,float(raw_info["max_length"])]
 
         try:
             if montage_selection == "channel selection" and not channel_selection or not folder_path or not freq_data:  # Check if data is missing
@@ -138,7 +139,7 @@ def register_update_graph_time_channel():
                     if offset_selection is None:
                         offset_selection = 12
                         
-                fig = gu.generate_graph_time_channel(selected_channels, offset_selection, time_range, folder_path, freq_data)
+                fig = gu.generate_graph_time_channel(selected_channels, int(offset_selection), time_range, folder_path, freq_data)
 
                 return fig, None
             
@@ -156,14 +157,15 @@ def register_update_annotations():
         Input("annotation-checkboxes", "value"),  # Annotations to show based on the checklist
         Input("annotation-checkboxes", "options"),
         State("annotations-store", "data"),
+        State("raw-info", "data"),
         prevent_initial_call=True,
         supress_callback_exceptions=True
     )
-    def update_annotations(fig_dict, annotations_to_show, annotation_options, annotations):
+    def update_annotations(fig_dict, annotations_to_show, annotation_options, annotations, raw_info):
         """Update annotations visibility based on the checklist selection."""
         # Default time range in case the figure doesn't contain valid x-axis range data
 
-        time_range = [0, 180]
+        time_range = [0, float(raw_info["max_length"])]
 
         # Create a Patch for the figure
         fig_patch = Patch()
@@ -227,15 +229,16 @@ def register_update_annotation_graph():
         Input("annotation-checkboxes", "options"),
         Input("annotation-checkboxes", "value"),
         State("annotations-store", "data"),
+        State("raw-info", "data"),
         State("annotation-graph", "figure"),
         prevent_initial_call=True
     )
-    def update_annotation_graph(annotation_options, annotations_to_show, annotations_data, annotation_fig):
+    def update_annotation_graph(annotation_options, annotations_to_show, annotations_data, raw_info, annotation_fig):
 
         if not annotations_data or not isinstance(annotations_data, list):
             return dash.no_update
 
-        time_range = [0, 180]
+        time_range = [0, float(raw_info["max_length"])]
 
         # Convert annotations to DataFrame
         try:
@@ -304,11 +307,12 @@ def register_move_time_slider():
     @dash.callback(
         Output("meg-signal-graph", "figure", allow_duplicate = True),
         Input("keyboard", "keydown"),
+        State("raw-info", "data"),
         State("meg-signal-graph", "figure"),
         prevent_initial_call=True,
         supress_callback_exceptions=True
     )
-    def move_time_slider(keydown, fig):
+    def move_time_slider(keydown, raw_info, fig):
 
         # Get the current x-axis range
         xaxis_range = fig["layout"]["xaxis"]["range"]
@@ -316,7 +320,7 @@ def register_move_time_slider():
 
         # Define the bounds for the x-axis (adjust based on your data)
         min_bound = 0
-        max_bound = 180
+        max_bound = float(raw_info["max_length"])
 
         # Update the range based on the key press
         if keydown["key"] == "ArrowLeft":
@@ -335,3 +339,28 @@ def register_move_time_slider():
         fig_patch["layout"]["xaxis"]["range"] = new_range
 
         return fig_patch
+    
+def register_offset_display():
+    @dash.callback(
+        Output("offset-display", "children", allow_duplicate=True),  # Update displayed offset value
+        Input("offset-decrement", "n_clicks"),  # `-` button clicks
+        Input("offset-increment", "n_clicks"),  # `+` button clicks
+        State("offset-display", "children"),    # Current offset value
+        prevent_initial_call=True
+    )
+    def update_offset(decrement_clicks, increment_clicks, current_offset):
+        # Step value and range constraints
+        step = 5
+        min_value = 5
+        max_value = 50
+
+        # Convert current offset to integer
+        offset = int(current_offset)
+
+        # Calculate new offset based on button clicks
+        offset += (increment_clicks - decrement_clicks) * step
+
+        # Enforce boundaries
+        offset = max(min_value, min(max_value, offset))
+
+        return str(offset)  # Return updated offset as a string

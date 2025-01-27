@@ -13,6 +13,7 @@ from dash import get_app
 from sklearn.preprocessing import StandardScaler
 from callbacks.utils import history_utils as hu
 
+
 # Register the page
 dash.register_page(__name__, path = "/")
 app=get_app()
@@ -199,16 +200,27 @@ def get_preprocessed_dataframe(folder_path, freq_data):
 def get_annotations_dataframe(folder_path):
     raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
     annotations_df = raw.annotations.to_data_frame()
+    
+    # Convert the 'onset' column to datetime and localize it to UTC
     annotations_df['onset'] = pd.to_datetime(annotations_df['onset']).dt.tz_localize('UTC')
+    
+    # Calculate onset relative to origin_time in seconds
     origin_time = pd.Timestamp(raw.annotations.orig_time)
     annotations_df['onset'] = (annotations_df['onset'] - origin_time).dt.total_seconds()
+    
+    # Convert to dictionary format
     annotations_dict = annotations_df.to_dict(orient="records")
-    return annotations_dict
+    
+    # Calculate the max length (assuming max value in 'onset' corresponds to this)
+    max_length = annotations_df['onset'].max()
+    
+    return annotations_dict, max_length
     
 @dash.callback(
     Output("preprocess-status", "children"),
     Output("url", "pathname"),
     Output("annotations-store", "data"),
+    Output("raw-info", "data"),
     Input("preprocess-display-button", "n_clicks"),
     State("folder-store", "data"),
     State("frequency-store", "data"),
@@ -221,13 +233,14 @@ def preprocess_meg_data(n_clicks, folder_path, freq_data):
     if n_clicks > 0:
         try:
             raw_df = get_preprocessed_dataframe(folder_path, freq_data)
-            annotations_dict = get_annotations_dataframe(folder_path)
-            return "Preprocessed and saved data", "/view", annotations_dict
+            annotations_dict, max_length = get_annotations_dataframe(folder_path)
+            print(max_length)
+            return "Preprocessed and saved data", "/view", annotations_dict, {'max_length': max_length}
         
         except Exception as e:
-            return f"Error during preprocessing : {str(e)}", dash.no_update, None
+            return f"Error during preprocessing : {str(e)}", dash.no_update, None, None
 
-    return None, dash.no_update, None
+    return None, dash.no_update, None, None
     
 
 
