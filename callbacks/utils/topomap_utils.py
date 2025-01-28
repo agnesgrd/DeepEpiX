@@ -48,7 +48,7 @@ def create_topomap(raw, timepoint):
     )
 
     # Customize the plot appearance
-    #ax.set_title(f'Time: {timepoint:.3f}s', fontsize=13)  # Add a title
+    ax.set_title(f'Time: {timepoint:.3f}s', fontsize=13)  # Add a title
     ax.set_facecolor('white')  # Set background color to white
     ax.axis('off')  # Hide axes for a clean look
 
@@ -64,41 +64,6 @@ def create_topomap(raw, timepoint):
     plt.close('all')
     
     return img_str
-
-# def create_signal_plot(raw, min_time, max_time):
-#     # Extract signal data between min_time and max_time
-
-
-#     step_size = max(1 / 100, (max_time-min_time)/3)  #freq_data.get("resample_freq")
-
-#     time_points = np.arange(float(min_time), float(max_time)+step_size, step_size)
-
-#     start, stop = raw.time_as_index([min_time, max_time])
-#     signal, times = raw[::5, start:stop]
-#     channel_offset = 0.0000000000003
-#     y_axis_ticks = np.arange(signal.shape[0]) * channel_offset
-#     signal = signal + y_axis_ticks[:, np.newaxis] 
-    
-#     # Create the plot
-#     plt.figure(figsize=(12, 10))
-#     plt.plot(times, signal.T, lw=0.5)  # Transpose for correct plotting
-#     plt.xticks(time_points)
-#     plt.xlabel("Time (s)")
-#     plt.ylabel("Amplitude")
-#     plt.title("Selected Signal")
-#     plt.tight_layout()
-
-#     # Save plot to a BytesIO buffer
-#     buffer = io.BytesIO()
-#     plt.savefig(buffer, format="png")
-#     plt.close()
-#     buffer.seek(0)
-
-#     # Encode image to base64
-#     img_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
-#     buffer.close()
-    
-#     return img_str
 
 def create_small_graph_time_channel(min_time, max_time, folder_path, freq_data, time_points, page_selection, chunk_limits):
 

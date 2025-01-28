@@ -68,39 +68,39 @@ def create_analyze():
             #     "Time Range (s) :",
             #     style={"fontWeight": "bold", "fontSize": "14px", "marginBottom": "8px"}
             # ),
-            dbc.Input(
-                id="topomap-min-range",  # Unique ID for each input
-                type="number",
-                placeholder="Minimum range (s) ...",
-                step=0.01,
-                min=0,
-                max=180,
-                size="sm",
-                persistence=True,
-                persistence_type="local",
-                style={**input_styles["small-number"]}
-            ),
-            dbc.Input(
-                id="topomap-max-range",  # Unique ID for each input
-                type="number",
-                placeholder="Maximum range (s) ...",
-                step=0.01,
-                min=0,
-                max=180,
-                size="sm",
-                persistence=True,
-                persistence_type="local",
-                style={**input_styles["small-number"]}
-            ),
+            # dbc.Input(
+            #     id="topomap-min-range",  # Unique ID for each input
+            #     type="number",
+            #     placeholder="Minimum range (s) ...",
+            #     step=0.01,
+            #     min=0,
+            #     max=180,
+            #     size="sm",
+            #     persistence=True,
+            #     persistence_type="local",
+            #     style={**input_styles["small-number"]}
+            # ),
+            # dbc.Input(
+            #     id="topomap-max-range",  # Unique ID for each input
+            #     type="number",
+            #     placeholder="Maximum range (s) ...",
+            #     step=0.01,
+            #     min=0,
+            #     max=180,
+            #     size="sm",
+            #     persistence=True,
+            #     persistence_type="local",
+            #     style={**input_styles["small-number"]}
+            # ),
             html.Div([
                 dbc.Button(
                     "Plot Topomap",
-                    id="plot-topomap-button-range",  # Unique ID for each button
+                    id="plot-topomap-button",  # Unique ID for each button
                     color="info",
                     outline=True,
                     size="sm",
                     n_clicks=0,
-                    disabled=True,
+                    disabled=False,
                     style=button_styles["big"]
                 ),
                 # Loading component to show the loading spinner while the long callback is processing
@@ -110,6 +110,7 @@ def create_analyze():
                     children=html.Div(id="topomap-result", style={"marginTop": "0px"})
                 ),
             ]),
+            html.Div(id="topomap-picture"),
             # Modal (popup) for displaying the topomap video
             dbc.Modal(
                 [

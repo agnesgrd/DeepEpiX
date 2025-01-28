@@ -27,10 +27,8 @@ from callbacks.graph_callbacks import (
     register_offset_display
 )
 from callbacks.topomap_callbacks import (
-    register_display_topomap,
-    register_display_topomap_video,
-    register_enable_topomap_button,
-    register_range_on_selection,
+    register_display_topomap_on_click,
+    register_activate_deactivate_topomap_button
 )
 from callbacks.spike_callbacks import (
     register_middle_time_on_selection,
@@ -94,14 +92,6 @@ register_manage_channels_checklist()
 
 register_update_annotation_graph()
 
-# register_display_topomap()
-
-register_display_topomap_video()
-
-register_enable_topomap_button()
-
-register_range_on_selection()
-
 register_hide_channel_selection_when_montage()
 
 register_middle_time_on_selection()
@@ -122,5 +112,8 @@ register_enable_delete_spike_button()
 
 register_offset_display()
 
+register_display_topomap_on_click()
+
+register_activate_deactivate_topomap_button()
 
 
