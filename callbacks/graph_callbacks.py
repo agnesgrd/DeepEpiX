@@ -48,31 +48,7 @@ def register_callbacks_montage_names():
 
         # If value is valid, keep the current selection
         return options, value
-    
-# def register_callbacks_montage_names():
-#     # Callback to populate the checklist options and default value dynamically
-#     @dash.callback(
-#         Output("montage-radio", "options"),
-#         Output("montage-radio", "value"),
-#         Input("montage-store", "data"),
-#         State("montage-radio", "value"),
-#         prevent_initial_call=False
-#     )
-#     def display_annotation_names_checklist(montage_store, value):
-#         # Create options for the checklist from the channels in montage_store
-#         options = []
-        
-#         for key, channels in montage_store.items():
-#             options.extend([{'label': key, 'value': key}])
-
-#         options.extend([{'label':'channel selection', 'value': 'channel selection'}])
-
-#         if montage_store == {} or value is None:
-#             return options, 'channel selection'
-
-#         else:
-#             return options, dash.no_update
-        
+            
 def register_hide_channel_selection_when_montage():
     # Callback to populate the checklist options and default value dynamically
     @dash.callback(
@@ -94,27 +70,28 @@ def register_update_graph_time_channel():
     @dash.callback(
         Output("meg-signal-graph", "figure"),
         Output("python-error", "children"),
+        Input("page-selector", "value"),
         Input("montage-radio", "value"),
         Input("channel-region-checkboxes", "value"),
         Input("folder-store", "data"),
+        State("chunk-limits-store", "data"),
         State("offset-display", "children"),
         State("frequency-store", "data"),
         State("montage-store", "data"),
-        State("raw-info", "data"),
+        State("raw-info-store", "data"),
         State("meg-signal-graph", "figure"),
         prevent_initial_call=False
     )
-    def update_graph_time_channel(montage_selection, channel_selection, folder_path, offset_selection, freq_data, montage_store, raw_info, graph):
+    def update_graph_time_channel(page_selection, montage_selection, channel_selection, folder_path, chunk_limits, offset_selection, freq_data, montage_store, raw_info, graph):
         """Update MEG signal visualization based on time and channel selection."""
 
-        time_range = [0,float(raw_info["max_length"])]
+        time_range = chunk_limits[int(page_selection)]
 
         try:
             if montage_selection == "channel selection" and not channel_selection or not folder_path or not freq_data:  # Check if data is missing
                 return go.Figure(), "Missing data for graph rendering."
             
             else:
-
                 if montage_selection == "channel selection":
                     # Get the selected channels based on region
                     selected_channels = [
@@ -156,16 +133,18 @@ def register_update_annotations():
         Input("meg-signal-graph", "figure"),  # Current figure to update
         Input("annotation-checkboxes", "value"),  # Annotations to show based on the checklist
         Input("annotation-checkboxes", "options"),
+        Input("page-selector", "value"),
         State("annotations-store", "data"),
-        State("raw-info", "data"),
+        State("raw-info-store", "data"),
+        State("chunk-limits-store", "data"),
         prevent_initial_call=True,
         supress_callback_exceptions=True
     )
-    def update_annotations(fig_dict, annotations_to_show, annotation_options, annotations, raw_info):
+    def update_annotations(fig_dict, annotations_to_show, annotation_options, page_selection, annotations, raw_info, chunk_limits):
         """Update annotations visibility based on the checklist selection."""
         # Default time range in case the figure doesn't contain valid x-axis range data
 
-        time_range = [0, float(raw_info["max_length"])]
+        time_range = chunk_limits[int(page_selection)]
 
         # Create a Patch for the figure
         fig_patch = Patch()
@@ -228,17 +207,19 @@ def register_update_annotation_graph():
         Output("annotation-graph", "figure"),
         Input("annotation-checkboxes", "options"),
         Input("annotation-checkboxes", "value"),
+        Input("page-selector", "value"),
         State("annotations-store", "data"),
-        State("raw-info", "data"),
+        State("raw-info-store", "data"),
         State("annotation-graph", "figure"),
+        State("chunk-limits-store", "data"),
         prevent_initial_call=True
     )
-    def update_annotation_graph(annotation_options, annotations_to_show, annotations_data, raw_info, annotation_fig):
+    def update_annotation_graph(annotation_options, annotations_to_show, page_selection, annotations_data, raw_info, annotation_fig, chunk_limits):
 
         if not annotations_data or not isinstance(annotations_data, list):
             return dash.no_update
 
-        time_range = [0, float(raw_info["max_length"])]
+        time_range = chunk_limits[int(page_selection)]
 
         # Convert annotations to DataFrame
         try:
@@ -247,35 +228,62 @@ def register_update_annotation_graph():
             print("Error creating DataFrame:", e)
             return dash.no_update
 
-        # Filter annotations based on the current time range
-        try:
-            filtered_annotations_df = gu.get_annotations_df_filtered_on_time(time_range, annotations_df)
-        except Exception as e:
-            print("Error filtering annotations:", e)
-            return dash.no_update
-
         # Create the annotation graph
         tick_vals = []
         tick_labels = []
-        for _, row in filtered_annotations_df.iterrows():
+        # Calculate ticks every 10 seconds within the page's time range
+        # tick_interval = 10  # Interval in seconds
+        # start_time, end_time = time_range
+        # tick_vals = list(range(int(start_time), int(end_time) + 1, tick_interval))
+        # tick_labels = [str(t) for t in tick_vals]
+        for _, row in annotations_df.iterrows():
             if row["description"] in annotations_to_show:
                 tick_vals.append(row.name)  # Use the onset time as the tick position
-                tick_labels.append(row["description"])  # Use the annotation description as the tick label
+                tick_labels.append(round(row.name, 2))
+                # tick_labels.append(row["description"])  # Use the annotation description as the tick label
 
         # Update the figure with the new shapes and annotations
         fig_patch = go.Figure(annotation_fig)
-    
+        # print(tick_labels)
+        # fig_patch.update_layout(
+        #     xaxis=dict(
+        #         range = time_range,
+        #         showgrid=True,
+        #         tickmode='array',
+        #         tickvals=tick_vals,
+        #         ticktext=tick_labels,
+        #         showticklabels=True,
+        #         tickfont=dict(size=10),
+        #         gridcolor="red"
+        #     ),
+        #     yaxis=dict(
+        #         range=[0.99,1]
+        #     )
+        # )
+
+                # Add styling improvements
         fig_patch.update_layout(
             xaxis=dict(
+                range=time_range,
                 showgrid=True,
                 tickmode='array',
                 tickvals=tick_vals,
                 ticktext=tick_labels,
+                # ticklen=0.1,  # Shorter ticks
+                tickfont=dict(size=10),  # Smaller font size
                 showticklabels=True,
-                tickfont=dict(size=10),
-                gridcolor="red"
-            )
+                gridcolor="red",  # Subtle grid color
+                tickangle=0  # Angle for better readability
+            ),
+            yaxis=dict(
+                range=[0, 1],  # More generous y-axis range
+                showgrid=False
+            ),
+            paper_bgcolor="white",  # Light background for clarity
+            plot_bgcolor= "rgba(0,0,0,0)",  # Keep the plot transparent
+            margin=dict(l=10, r=0, t=10, b=100)  # Adjust margins for better spacing
         )
+
 
         return fig_patch
     
@@ -307,7 +315,7 @@ def register_move_time_slider():
     @dash.callback(
         Output("meg-signal-graph", "figure", allow_duplicate = True),
         Input("keyboard", "keydown"),
-        State("raw-info", "data"),
+        State("raw-info-store", "data"),
         State("meg-signal-graph", "figure"),
         prevent_initial_call=True,
         supress_callback_exceptions=True

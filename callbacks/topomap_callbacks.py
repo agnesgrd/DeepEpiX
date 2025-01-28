@@ -65,9 +65,11 @@ def register_display_topomap_video():
         State("frequency-store", "data") ,
         State("topomap-range-modal", "is_open")],
         State("history-store", "data"),
+        State("page-selector", "value"),
+        State("chunk-limits-store", "data"),
         prevent_initial_call=True
     )
-    def plot_topomap(n_clicks, min_time, max_time, channel_region, folder_path, freq_data, is_open, history_data):
+    def plot_topomap(n_clicks, min_time, max_time, channel_region, folder_path, freq_data, is_open, history_data, page_selection, chunk_limits):
         if n_clicks>0 and min_time is not None and max_time is not None:
             try:
 
@@ -87,7 +89,7 @@ def register_display_topomap_video():
                 step_size = max(1 / 100, (max_time-min_time)/3)  #freq_data.get("resample_freq")
                 time_points = np.arange(float(min_time), float(max_time)+step_size, step_size)
 
-                signal_graph = tu.create_small_graph_time_channel(min_time, max_time, folder_path, freq_data, time_points)
+                signal_graph = tu.create_small_graph_time_channel(min_time, max_time, folder_path, freq_data, time_points, page_selection, chunk_limits)
 
                 # Generate images
                 topomap_images = []

@@ -10,6 +10,11 @@ import layout.graph_layout as gl
 from layout.sidebar_layout import create_sidebar
 
 # Callback imports
+from callbacks.selection_callbacks import (
+    register_page_buttons_display,
+    register_update_page_button_styles
+)
+
 from callbacks.graph_callbacks import (
     register_update_graph_time_channel,
     register_update_annotations,
@@ -70,6 +75,11 @@ layout = html.Div([
 
 ])
 
+
+register_page_buttons_display()
+
+register_update_page_button_styles()
+
 register_callbacks_annotation_names()
 
 register_callbacks_montage_names()
@@ -111,7 +121,6 @@ register_enable_add_spike_button()
 register_enable_delete_spike_button()
 
 register_offset_display()
-
 
 
 

@@ -3,9 +3,15 @@ import dash_bootstrap_components as dbc
 import static.constants as c
 from layout import input_styles, box_styles, button_styles
 
-
 def create_selection():
     return html.Div([
+        html.Div(id="page-buttons-container", 
+            style=box_styles["classic"], 
+            children=[dcc.RadioItems(
+                id="page-selector",
+                options=[],  # Initially empty
+                value=0  # Default to the first page
+            )]),
 
         # Montage Selection
         html.Div([

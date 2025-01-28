@@ -11,7 +11,8 @@ from io import StringIO
 import pandas as pd
 from dash import get_app
 from sklearn.preprocessing import StandardScaler
-from callbacks.utils import history_utils as hu
+import numpy as np
+from callbacks.utils import preprocessing_utils as pu
 
 
 # Register the page
@@ -170,32 +171,84 @@ def handle_frequency_parameters(resample_freq, high_pass_freq, low_pass_freq):
         }
         return frequency_values, False
   
-def get_preprocessed_dataframe(folder_path, freq_data):
-    @cache.memoize()
-    def preprocess_meg_data(folder_path, freq_data):
+# def get_preprocessed_dataframe(folder_path, freq_data):
+#     @cache.memoize()
+#     def preprocess_meg_data(folder_path, freq_data):
+#         try:
+#             resample_freq = freq_data.get("resample_freq")
+#             low_pass_freq = freq_data.get("low_pass_freq")
+#             high_pass_freq = freq_data.get("high_pass_freq")
+
+#             raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
+#             raw.filter(l_freq=high_pass_freq, h_freq=low_pass_freq, n_jobs=8)
+#             raw.resample(resample_freq)
+
+#             # Transform the raw data into a serializable format
+#             raw_df = raw.to_data_frame(picks="meg", index="time")  # Get numerical data (channels × time)
+#             # Standardisation des données channel par channel
+#             scaler = StandardScaler()
+
+#             # Appliquer la standardisation à chaque canal (les colonnes de raw_df sont les canaux)
+#             raw_df_standardized = raw_df.apply(lambda x: scaler.fit_transform(x.values.reshape(-1, 1)).flatten(), axis=0)
+            
+#             return raw_df_standardized.to_json()
+            
+#         except Exception as e:
+#             return f"Error during preprocessing : {str(e)}"
+    
+#     return pd.read_json(StringIO(preprocess_meg_data(folder_path, freq_data)))
+
+def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw=None):
+    """
+    Preprocess the MEG data in chunks and cache them.
+
+    :param folder_path: Path to the raw data file.
+    :param freq_data: Dictionary containing frequency parameters for preprocessing.
+    :param chunk_duration: Duration of each chunk in seconds (default is 3 minutes).
+    :param cache: Cache object to store preprocessed chunks.
+    :return: Processed dataframe in JSON format.
+    """
+    # Helper function to preprocess a chunk of the data
+    def preprocess_chunk(start_time, end_time, raw, freq_data):
         try:
-            resample_freq = freq_data.get("resample_freq")
-            low_pass_freq = freq_data.get("low_pass_freq")
-            high_pass_freq = freq_data.get("high_pass_freq")
+            if raw is None:
+                raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
+                resample_freq = freq_data.get("resample_freq")
+                low_pass_freq = freq_data.get("low_pass_freq")
+                high_pass_freq = freq_data.get("high_pass_freq")
+                # Apply filtering and resampling
+                raw.filter(l_freq=high_pass_freq, h_freq=low_pass_freq, n_jobs=8)
+                raw.resample(resample_freq)
 
-            raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
-            raw.filter(l_freq=high_pass_freq, h_freq=low_pass_freq, n_jobs=8)
-            raw.resample(resample_freq)
+            # Crop the raw data to the chunk's time range
+            raw_chunk = raw.copy().crop(tmin=start_time, tmax=end_time)
+            print("yesss")
 
-            # Transform the raw data into a serializable format
-            raw_df = raw.to_data_frame(picks="meg", index="time")  # Get numerical data (channels × time)
-            # Standardisation des données channel par channel
+            # Transform the raw data into a dataframe
+            raw_df = raw_chunk.to_data_frame(picks="meg", index="time")  # Get numerical data (channels × time)
+            print('yup')
+            # Standardization per channel
             scaler = StandardScaler()
-
-            # Appliquer la standardisation à chaque canal (les colonnes de raw_df sont les canaux)
             raw_df_standardized = raw_df.apply(lambda x: scaler.fit_transform(x.values.reshape(-1, 1)).flatten(), axis=0)
             
-            return raw_df_standardized.to_json()
-            
+            print(raw_df_standardized)
+            return raw_df_standardized
+
         except Exception as e:
-            return f"Error during preprocessing : {str(e)}"
-    
-    return pd.read_json(StringIO(preprocess_meg_data(folder_path, freq_data)))
+            return f"Error during preprocessing chunk: {str(e)}"
+
+    # Function to load and process the data in chunks, caching each piece
+    @cache.memoize()
+    def process_data_in_chunks(folder_path, freq_data, start_time, end_time):
+        try:
+            chunk_df = preprocess_chunk(start_time, end_time, raw, freq_data)
+            return chunk_df.to_json()
+
+        except Exception as e:
+            return f"Error during processing: {str(e)}"
+
+    # Process and return the result in JSON format
+    return pd.read_json(StringIO(process_data_in_chunks(folder_path, freq_data, start_time, end_time)))
 
 def get_annotations_dataframe(folder_path):
     raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
@@ -220,7 +273,8 @@ def get_annotations_dataframe(folder_path):
     Output("preprocess-status", "children"),
     Output("url", "pathname"),
     Output("annotations-store", "data"),
-    Output("raw-info", "data"),
+    Output("raw-info-store", "data"),
+    Output("chunk-limits-store", "data"),
     Input("preprocess-display-button", "n_clicks"),
     State("folder-store", "data"),
     State("frequency-store", "data"),
@@ -231,16 +285,28 @@ def preprocess_meg_data(n_clicks, folder_path, freq_data):
     if n_clicks is None:
         raise PreventUpdate
     if n_clicks > 0:
+        cache.clear()
         try:
-            raw_df = get_preprocessed_dataframe(folder_path, freq_data)
             annotations_dict, max_length = get_annotations_dataframe(folder_path)
-            print(max_length)
-            return "Preprocessed and saved data", "/view", annotations_dict, {'max_length': max_length}
+            chunk_limits = pu.update_chunk_limits(max_length)
+
+            raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
+            resample_freq = freq_data.get("resample_freq")
+            low_pass_freq = freq_data.get("low_pass_freq")
+            high_pass_freq = freq_data.get("high_pass_freq")
+            # Apply filtering and resampling
+            raw.filter(l_freq=high_pass_freq, h_freq=low_pass_freq, n_jobs=8)
+            raw.resample(resample_freq)
+
+            for chunk_idx in chunk_limits:
+                start_time, end_time = chunk_idx
+                raw_df = get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw)
+            return "Preprocessed and saved data", "/view", annotations_dict, {'max_length': max_length}, chunk_limits
         
         except Exception as e:
-            return f"Error during preprocessing : {str(e)}", dash.no_update, None, None
+            return f"Error during preprocessing : {str(e)}", dash.no_update, None, None, None
 
-    return None, dash.no_update, None, None
+    return None, dash.no_update, None, None, None
     
 
 

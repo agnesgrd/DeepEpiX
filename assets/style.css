@@ -1,0 +1,30 @@
+/* Add this CSS to your assets folder as a .css file (e.g., assets/style.css) */
+
+/* Style the radio group container */
+.radio-group {
+    display: flex;
+    gap: 5px; /* Space between buttons */
+}
+
+/* Hide the default radio buttons */
+.radio-group input[type="radio"] {
+    display: none;
+}
+
+/* Style the labels to look like buttons */
+.radio-group label {
+    padding: 8px 12px;
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    background-color: transparent;
+    color: #007bff;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Change the style of the selected button */
+.radio-group input[type="radio"]:checked + label {
+    background-color: #007bff;
+    color: white;
+}

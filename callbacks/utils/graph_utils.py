@@ -59,25 +59,45 @@ def get_annotations_df_filtered_on_time(time_range, annotations_df):
     
     return filtered_annotations_df
 
+def get_shifted_time_axis(time_range, raw_df):
+    """
+    Adjusts the time axis of a DataFrame to include an offset based on the given time range.
+    
+    Parameters:
+        time_range (tuple): The (start_time, end_time) range to apply as an offset.
+        raw_df (pd.DataFrame): A DataFrame with a time-based index.
+
+    Returns:
+        pd.Series: A series of adjusted times in seconds, with the offset applied.
+    """
+    # Calculate elapsed time in seconds from the first timestamp in the DataFrame
+    times = (raw_df.index - raw_df.index[0]).total_seconds()
+    
+    # Add the starting time of the given range as an offset
+    adjusted_times = times + time_range[0]
+    
+    return adjusted_times
+
 def generate_graph_time_channel(selected_channels, offset_selection, time_range, folder_path, freq_data):
     """Handles the preprocessing and figure generation for the MEG signal visualization."""
     import time  # For logging execution times
 
     start_time = time.time()
     # Preprocess data
-    raw_df = get_preprocessed_dataframe(folder_path, freq_data)
+
+    raw_df = get_preprocessed_dataframe(folder_path, freq_data, time_range[0], time_range[1])
     print(f"Step 1: Preprocessing completed in {time.time() - start_time:.2f} seconds.")
 
     # Filter time range
     filter_start_time = time.time()
-    filtered_times, filtered_raw_df = get_raw_df_filtered_on_time(time_range, raw_df)
-    print(f"Step 2: Time filtering completed in {time.time() - filter_start_time:.2f} seconds.")
+    shifted_times = get_shifted_time_axis(time_range, raw_df)
+    print(f"Step 2: Time shifting completed in {time.time() - filter_start_time:.2f} seconds.")
 
 
 
     # Filter the dataframe based on the selected channels
     filter_df_start_time = time.time()
-    filtered_raw_df = filtered_raw_df[selected_channels]
+    filtered_raw_df = raw_df[selected_channels]
     print(f"Step 4: Dataframe filtering completed in {time.time() - filter_df_start_time:.2f} seconds.")
 
     # Offset channel traces along the y-axis
@@ -90,7 +110,7 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
     color_map = {channel: c.CHANNEL_TO_COLOR[channel] for channel in selected_channels}
     # Use Plotly Express for efficient figure generation
     fig_start_time = time.time()
-    shifted_filtered_raw_df["Time"] = filtered_times  # Add time as a column for Plotly Express
+    shifted_filtered_raw_df["Time"] = shifted_times  # Add time as a column for Plotly Express
     fig = px.line(
         shifted_filtered_raw_df,
         x="Time",
@@ -107,7 +127,7 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
         autosize=True,
         xaxis=dict(
             title='Time (s)',
-            range=[0,10],
+            range=[time_range[0],time_range[0]+10],
             fixedrange=False,
             rangeslider=dict(visible=True, thickness=0.02),
             showspikes=True,
@@ -147,13 +167,14 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
 
     return fig
 
-def generate_small_graph_time_channel(selected_channels, time_range, folder_path, freq_data, time_points):
+def generate_small_graph_time_channel(selected_channels, time_range, folder_path, freq_data, time_points, page_selector, chunk_limits):
     """Handles the preprocessing and figure generation for the MEG signal visualization."""
     import time  # For logging execution times
 
     start_time = time.time()
     # Preprocess data
-    raw_df = get_preprocessed_dataframe(folder_path, freq_data)
+    chunk_start_time, chunk_end_time = chunk_limits[int(page_selector)]
+    raw_df = get_preprocessed_dataframe(folder_path, freq_data, chunk_start_time, chunk_end_time)
     print(f"Step 1: Preprocessing completed in {time.time() - start_time:.2f} seconds.")
 
     # Filter time range
