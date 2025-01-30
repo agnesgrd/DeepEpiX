@@ -74,3 +74,11 @@ box_styles = {
         "marginBottom": "20px"  # Space between the sections
     }
 }
+
+label_styles = {
+    "classic": {
+        "fontWeight": "bold",
+        "fontSize": "14px",
+        "marginBottom": "5px",
+    }
+}

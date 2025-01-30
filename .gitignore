@@ -22,3 +22,6 @@ data/
 # Cache
 cache-directory/
 file_system_backend/
+
+# Model prediction results
+results/
