@@ -30,7 +30,7 @@ def create_graph_container():
                     "responsive": True,
                     'doubleClick': 'reset',  # Reset zoom on double-click
                     },
-                style={"width": "100%", "height": "75vh"}
+                style={"width": "100%", "height": "80vh"}
             ),
             # Annotation Graph (overlay graph)
             dcc.Graph(
@@ -66,7 +66,7 @@ def create_graph_container():
                 config={"staticPlot": True},  # Disable interaction
                 style={
                     "width": "100%",  # Ensure full width for both graphs
-                    "height": "15vh",  # Set height to 20% of the screen height
+                    "height": "8vh",  # Set height to 20% of the screen height
                     "pointerEvents": "none",  # Allow interactions with the MEG graph
                 }
             )

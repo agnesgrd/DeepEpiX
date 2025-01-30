@@ -37,7 +37,7 @@ def create_predict():
         # Detected spike name input
     html.Div([
         html.Label("Threshold:", style={**label_styles["classic"]}),
-        dbc.Input(id="threshold", type="number", value=0.5, step=0.1, min=0, max=1, style=input_styles["small-number"]),
+        dbc.Input(id="threshold", type="number", value=0.5, step=0.01, min=0, max=1, style=input_styles["small-number"]),
     ], style={"marginBottom": "20px"}),
 
 
@@ -65,11 +65,10 @@ def create_predict():
         ]),
 
     # Prediction Output
-    html.Div(id="prediction-output", style={"marginTop": "20px", "textAlign": "center"}),
-
-
-
     html.Div(id = "store-display-div", children = [
+
+        html.Div(id="prediction-output", style={"marginTop": "20px", "textAlign": "center"}),
+
         dbc.Button(
             "Store & Display",
             id="store-display-button",
@@ -102,46 +101,6 @@ def update_selected_model(selected_value):
         environment = "Unknown"
 
     return environment
-
-# def run_predict_script(param1, param2, param3, param4, param5, param6, param7):
-#     process = subprocess.Popen(
-#         ['python', '/home/admin_mel/Documents/DeepEpi/pipeline/main.py', 
-#         str(param1), str(param2), str(param3), str(param4), 
-#         str(param5), str(param6), str(param7)],
-#         stdout=subprocess.PIPE,  
-#         stderr=subprocess.PIPE,  
-#         text=True,  
-#         bufsize=1,  
-#         universal_newlines=True
-#     )
-
-#     output_lines = []  # Store stdout
-#     error_lines = []  # Store stderr
-
-#     # Read and collect output in real-time
-#     for line in process.stdout:
-#         print(line, end="")  
-#         output_lines.append(line.strip())  
-
-#     # for line in process.stderr:
-#     #     print("ERROR:", line, end="")  
-#     #     error_lines.append(line.strip())  
-
-#     process.wait()  # Ensure process finishes
-
-#     # The last printed line should be the CSV file path
-#     csv_path = "/home/admin_mel/Code/DeepEpiX/results/model_predictions.csv"
-
-#     if csv_path and csv_path.endswith(".csv"):
-#         try:
-#             # Read the CSV file
-#             df = pd.read_csv(csv_path)
-#             timepoints = df['Timepoint'].tolist()
-#             return timepoints  # Return the list of timepoints
-#         except Exception as e:
-#             return f"Error reading CSV: {e}"
-#     else:
-#         return "No valid output received from main.py."
 
 # Dash callback
 @dash.callback(
@@ -200,6 +159,7 @@ def execute_predict_script(n_clicks, subject_folder_path, model_path, spike_name
 @dash.callback(
     Output('annotations-store', 'data', allow_duplicate=True),
     Output('sidebar-tabs', 'active_tab'),
+    Output('store-display-div', 'style', allow_duplicate=True),
     Input('store-display-button', 'n_clicks'),
     State('annotations-store', 'data'),
     State('prediction-output', 'children'),
@@ -208,7 +168,7 @@ def execute_predict_script(n_clicks, subject_folder_path, model_path, spike_name
 )
 def store_display_prediction(n_clicks, annotation_data, prediction_table, spike_name):
     if not n_clicks or n_clicks == 0:
-        return dash.no_update, dash.no_update
+        return dash.no_update, dash.no_update, dash.no_update
     
     # Ensure annotation_data is initialized
     if annotation_data is None:
@@ -220,7 +180,7 @@ def store_display_prediction(n_clicks, annotation_data, prediction_table, spike_
     if isinstance(prediction, list):  # Data is already a list of dicts
         prediction_df = pd.DataFrame(prediction)
     else:
-        return dash.no_update, dash.no_update  # Invalid format
+        return dash.no_update, dash.no_update, dash.no_update  # Invalid format
 
     # Convert predictions to annotation format
     new_annotations = prediction_df[['onset', 'duration']].copy()
@@ -233,7 +193,7 @@ def store_display_prediction(n_clicks, annotation_data, prediction_table, spike_
     annotation_data.extend(new_annotations_dict)
 
     # Return updated annotations and switch tab
-    return annotation_data, "selection-tab"
+    return annotation_data, "selection-tab", {"display": "none"}
     
     
 

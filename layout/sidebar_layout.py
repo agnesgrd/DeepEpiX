@@ -16,8 +16,9 @@ def create_sidebar():
                 dbc.Tab(create_analyze(), label='Analyze', tab_id='analyzing-tab'), # create_analyze()
                 dbc.Tab(create_predict(), label='Predict', tab_id='prediction-tab'), #create_prediction()
             ],
-            id="sidebar-tabs", 
-            active_tab="selection-tab"
+            id="sidebar-tabs",
+            persistence = True,
+            persistence_type = "local"
         ),
 
     ], style={

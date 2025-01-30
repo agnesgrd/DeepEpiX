@@ -8,8 +8,8 @@ def run_model_pipeline(
         subject,
         output_path,
         threshold):
-
-    tf_model = "features"
+    
+    tf_model = None
 
     # Model Selection
     if model_type == "TensorFlow":
