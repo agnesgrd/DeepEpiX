@@ -179,6 +179,10 @@ class DataGenerator_memeff(tf.keras.utils.Sequence):
 
             sample_augmented = sample
 
+            mean = np.mean(sample_augmented)
+            std = np.std(sample_augmented)
+            sample_augmented = (sample_augmented - mean)/std
+
             X_batch[i,] = sample_augmented
 
             # Store class
@@ -324,12 +328,15 @@ def test_model_dash(model_name, testing_generator, X_test_ids, output_path, thre
     y_pred_probas = model.predict(testing_generator)
     y_test = X_test_ids[:,2]
 
+    print(y_pred_probas)
+
     y_pred = (y_pred_probas > threshold).astype("int32")
 
     y_timing_data = load_obj("data_raw_"+str(params.subject_number)+'_timing.pkl', output_path)
     
     # Ensure y_pred is 1D
     y_pred = y_pred.flatten()
+
 
     # Extract relevant timing values and convert to seconds
     new_annotation_timing = (y_timing_data[y_pred == 1] / 150).round(3).tolist()

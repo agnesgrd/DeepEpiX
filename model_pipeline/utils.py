@@ -81,11 +81,11 @@ def save_data_matrices(good_channels_file, subject, path_output):
 		print("###############################################################RAWFILE")
 		print(raw_file)
 		raw = mne.io.read_raw_ctf(raw_file, preload=True, verbose=False)
-		#keep only meg channels
-		# 
+
 		#Resample the data
 		raw.resample(params.sfreq)
 		raw.pick_types(meg=True, ref_meg=False)#, exclude=[]
+		#keep only meg channels
 		# raw.pick_channels(ch_names=good_channels)
 		raw=interpolate_missing_channels(raw, good_channels, loc_meg_channels)
 		

@@ -7,6 +7,29 @@ from layout import input_styles, box_styles, button_styles
 def create_graph_container():
     return html.Div(
         [
+            # Page selector (positioned on top-left)
+            html.Div(
+                id="page-buttons-container",
+                style={
+                    "position": "absolute",
+                    "top": "15px",
+                    "left": "15px",
+                    "background-color": "white",
+                    # "padding": "5px",
+                    "border-radius": "5px",
+                    "box-shadow": "2px 2px 5px rgba(0,0,0,0.2)",
+                    "z-index": "1000",
+                    "opacity": 0.9  # Slight transparency
+                },
+                children=[
+                    dcc.RadioItems(
+                        id="page-selector",
+                        options=[],  # Initially empty
+                        value=0  # Default to the first page
+                    )
+                ]
+            ),
+
             # MEG Signal Graph (base graph)
             dcc.Graph(
                 id="meg-signal-graph",
@@ -72,9 +95,18 @@ def create_graph_container():
             )
         ],
         style={
+            "position": "relative",  # Ensures absolute positioning inside this container
             "display": "flex",
             "flexDirection": "column",
             "width": "100%",
-            "height": "100vh",  # Ensure full screen height usage
+            "height": "100vh",  # Full screen height
         }
     )
+
+        # html.Div(id="page-buttons-container", 
+        #     style=box_styles["classic"], 
+        #     children=[dcc.RadioItems(
+        #         id="page-selector",
+        #         options=[],  # Initially empty
+        #         value=0  # Default to the first page
+        #     )]),
