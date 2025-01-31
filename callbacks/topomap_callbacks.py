@@ -16,7 +16,7 @@ def register_display_topomap_on_click():
         Output("topomap-result", "children"),
         Output("topomap-picture", "children"),
         Output("history-store", "data", allow_duplicate=True),
-        Input('meg-signal-graph', 'hoverData'),
+        Input('meg-signal-graph', 'clickData'),
         State('folder-store', 'data'),
         State('plot-topomap-button', 'outline'),
         prevent_initial_call=True

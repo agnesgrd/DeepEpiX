@@ -9,7 +9,10 @@ def run_model_pipeline(
         output_path,
         threshold):
     
-    tf_model = None
+    if "features" in model_name:
+        tf_model = "features"
+    else:
+        tf_model = None
 
     # Model Selection
     if model_type == "TensorFlow":

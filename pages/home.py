@@ -1,18 +1,18 @@
 import dash
-from dash import html, dcc
+from dash import html, dcc, get_app
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
 import os
 import mne
+import math
 from layout import input_styles, box_styles
 from dash.exceptions import PreventUpdate
 from flask_caching import Cache
 from io import StringIO
 import pandas as pd
-from dash import get_app
 from sklearn.preprocessing import StandardScaler
-import numpy as np
 from callbacks.utils import preprocessing_utils as pu
+from callbacks.utils import folder_path_utils as fpu
 
 
 # Register the page
@@ -35,30 +35,32 @@ layout = html.Div([
     # Explanation of what the user needs to do
     html.Div([
         html.H1("Choose MEG Data Folder"),
-        html.P("Please enter the full path to the .ds folder containing the data to analyze."),
-        html.P("Example: /home/admin_mel/Code/DeepEpiX/data/berla_Epi-001_20100413_07.ds"),
         html.Div([
-            dbc.Input(
-                id="folder-path-input",
-                type="text",
-                placeholder="Enter folder path here...",
-                style=input_styles["path"]
-            )
+            dbc.Row([
+                dbc.Col(
+                    dbc.Button("📂 Open Folder", id="open-folder-button", color="primary", className="me-2"),
+                    width="auto"
+                ),
+                dbc.Col(
+                    dcc.Dropdown(
+                        id="folder-path-dropdown",
+                        options=fpu.get_folder_path_options(),
+                        placeholder="Select ...",
+                    ),
+                    width=4
+                ),
+                dbc.Col(
+                    dbc.Button(
+                        "Load",
+                        id="load-button",
+                        color="success",
+                        disabled=True,
+                        n_clicks=0
+                    )
+                )
+            ])
         ], style={"padding": "10px"}),
 
-        # Display the entered folder path
-        html.Div([
-            html.H4("Entered Folder Path:"),
-            html.Div(id="entered-folder", style={"font-style": "italic", "color": "#555"}),
-        ], style={"padding": "10px"}),
-
-        dbc.Button(
-            "Load",
-            id="load-button",
-            color="success",
-            disabled=True,
-            n_clicks=0
-        )
     ], style={"padding": "15px", "backgroundColor": "#fff", "border": "1px solid #ddd","borderRadius": "8px", "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)", "marginBottom": "20px"}),
 
     # Section for frequency parameters, initially hidden
@@ -116,11 +118,29 @@ layout = html.Div([
     )
 ])
 
+# Callback to update dropdown when button is clicked
+@app.callback(
+    Output("folder-path-dropdown", "options"),
+    Output("folder-path-dropdown", "value"),  # Set selected folder
+    Input("open-folder-button", "n_clicks"),
+    State("folder-path-dropdown", "options"),
+    prevent_initial_call=True
+)
+def update_dropdown(n_clicks, folder_path_list):
+    if n_clicks > 0:
+        folder_path = fpu.browse_folder()
+        if folder_path:
+            if fpu.test_ds_folder(folder_path):
+                print(folder_path)
+                folder_path_list.append({"label": fpu.get_ds_folder(folder_path), "value": folder_path})
+                return folder_path_list, folder_path
+    return dash.no_update, dash.no_update
+
+
 @dash.callback(
-    Output("entered-folder", "children"),
     Output("folder-store", "data"),
     Output("load-button", "disabled"),
-    Input("folder-path-input", "value"),
+    Input("folder-path-dropdown", "value"),
     prevent_initial_call=True
 )
 def handle_valid_folder_path(folder_path):
@@ -129,10 +149,10 @@ def handle_valid_folder_path(folder_path):
         # Check if folder exists and finish by .ds, then make "load" button clickable
         if os.path.isdir(folder_path):            
             if folder_path.endswith(".ds"):
-                return f"{folder_path} (valid)", folder_path, False
-            return f"{folder_path} should end with .ds.", None, True
-        return f"{folder_path} does not exist. Please try again.", None, True
-    return "Invalid input. Please enter a valid folder path.", None, True
+                return folder_path, False
+            return dash.no_update, dash.no_update
+        return dash.no_update, dash.no_update
+    return dash.no_update, dash.no_update
 
 @dash.callback(
     Output("frequency-inputs", "style"),
@@ -252,6 +272,7 @@ def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw
 
 def get_annotations_dataframe(folder_path):
     raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
+    
     annotations_df = raw.annotations.to_data_frame()
     
     # Convert the 'onset' column to datetime and localize it to UTC
@@ -263,11 +284,10 @@ def get_annotations_dataframe(folder_path):
     
     # Convert to dictionary format
     annotations_dict = annotations_df.to_dict(orient="records")
+
+    time_secs = raw.times
     
-    # Calculate the max length (assuming max value in 'onset' corresponds to this)
-    max_length = annotations_df['onset'].max()
-    
-    return annotations_dict, max_length
+    return annotations_dict, math.floor(time_secs[-1]*100)/100
     
 @dash.callback(
     Output("preprocess-status", "children"),
@@ -289,6 +309,7 @@ def preprocess_meg_data(n_clicks, folder_path, freq_data):
         try:
             annotations_dict, max_length = get_annotations_dataframe(folder_path)
             chunk_limits = pu.update_chunk_limits(max_length)
+            print(chunk_limits)
 
             raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
             resample_freq = freq_data.get("resample_freq")
@@ -299,6 +320,7 @@ def preprocess_meg_data(n_clicks, folder_path, freq_data):
             raw.resample(resample_freq)
 
             for chunk_idx in chunk_limits:
+                print(chunk_idx)
                 start_time, end_time = chunk_idx
                 raw_df = get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw)
             return "Preprocessed and saved data", "/view", annotations_dict, {'max_length': max_length}, chunk_limits

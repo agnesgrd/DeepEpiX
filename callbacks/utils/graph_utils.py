@@ -5,7 +5,7 @@ from pages.home import get_preprocessed_dataframe
 import plotly.express as px
 
 
-def calculate_channel_offset(num_channels, plot_height=900, min_gap=40):
+def calculate_channel_offset(num_channels, plot_height=900, min_gap=20):
     """
     Calculate the optimal channel offset to avoid overlap of traces in the plot.
     
@@ -19,13 +19,16 @@ def calculate_channel_offset(num_channels, plot_height=900, min_gap=40):
     """
     # Ensure there's enough space between each trace to avoid overlap.
     # We leave space for the desired minimum gap between traces.
+    print(num_channels)
     total_gap_needed = (num_channels - 1) * min_gap
-    
+    print(total_gap_needed)
     # Calculate the optimal offset based on the plot height and the required gap.
     optimal_channel_offset = (plot_height - total_gap_needed) / (num_channels - 1) if num_channels > 1 else min_gap
     
     # Ensure the offset is a positive value
     optimal_channel_offset = max(optimal_channel_offset, min_gap)
+
+    print(optimal_channel_offset)
     
     return optimal_channel_offset
 
@@ -102,7 +105,7 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
 
     # Offset channel traces along the y-axis
     offset_start_time = time.time()
-    channel_offset = calculate_channel_offset(len(selected_channels)) / offset_selection #/ 12
+    channel_offset = calculate_channel_offset(len(selected_channels))*(10-offset_selection)/10 #/ 12
     y_axis_ticks = get_y_axis_ticks(selected_channels, channel_offset)
     shifted_filtered_raw_df = filtered_raw_df + np.tile(y_axis_ticks, (len(filtered_raw_df), 1))
     print(f"Step 5: Channel offset calculation completed in {time.time() - offset_start_time:.2f} seconds.")

@@ -27,3 +27,4 @@ spike_spacing_from_border_ms = 0.03
 dim = (int(sfreq*window_size_ms), 274,1) # sample shape
 tf_model = "features"
 subject_number = 1
+loc_meg_channels_path = '/home/admin_mel/Code/DeepEpiX/model_pipeline/loc_meg_channels.pkl'

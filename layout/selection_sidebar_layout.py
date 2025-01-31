@@ -106,7 +106,7 @@ def create_selection():
         # Offset Selection
         html.Div([
             html.Label(
-                "Select Offset:",
+                "Select Amplitude:",
                 style={"fontWeight": "bold", "fontSize": "14px", "marginBottom": "8px"}
             ),
             html.Div(
@@ -114,7 +114,7 @@ def create_selection():
                     dbc.Button("-", id="offset-decrement", color="primary", size="sm", n_clicks=0),
                     html.Span(
                         id="offset-display", 
-                        children="15",  # Default offset value
+                        children="5",  # Default offset value
                         style={
                             "margin": "0 10px",  # Space between buttons
                             "fontWeight": "bold",

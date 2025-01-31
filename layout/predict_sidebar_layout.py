@@ -31,7 +31,7 @@ def create_predict():
     # Detected spike name input
     html.Div([
         html.Label("Detected Spike Name:", style={**label_styles["classic"]}),
-        dbc.Input(id="spike-name", type="text", value="detected_spikes_name", style={**input_styles["small-number"]}),
+        dbc.Input(id="model-spike-name", type="text", value="detected_spikes_name", style={**input_styles["small-number"]}),
     ], style={"marginBottom": "20px"}),
 
         # Detected spike name input
@@ -111,7 +111,7 @@ def update_selected_model(selected_value):
     Input('run-prediction-button', 'n_clicks'),
     State('folder-store', 'data'),
     State('model-dropdown', 'value'),
-    State('spike-name', 'value'),
+    State('model-spike-name', 'value'),
     State('venv', 'value'),
     State('threshold', 'value'),
     prevent_initial_call = True
@@ -163,7 +163,7 @@ def execute_predict_script(n_clicks, subject_folder_path, model_path, spike_name
     Input('store-display-button', 'n_clicks'),
     State('annotations-store', 'data'),
     State('prediction-output', 'children'),
-    State('spike-name', 'value'),
+    State('model-spike-name', 'value'),
     prevent_initial_call = True
 )
 def store_display_prediction(n_clicks, annotation_data, prediction_table, spike_name):

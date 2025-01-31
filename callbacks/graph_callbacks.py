@@ -10,6 +10,7 @@ import callbacks.utils.annotation_utils as au
 import traceback
 import plotly.graph_objects as go
 import pandas as pd
+import itertools
 
 def register_callbacks_annotation_names():
     # Callback to populate the checklist options and default value dynamically
@@ -74,15 +75,15 @@ def register_update_graph_time_channel():
         Input("montage-radio", "value"),
         Input("channel-region-checkboxes", "value"),
         Input("folder-store", "data"),
+        Input("offset-display", "children"),
         State("chunk-limits-store", "data"),
-        State("offset-display", "children"),
         State("frequency-store", "data"),
         State("montage-store", "data"),
         State("raw-info-store", "data"),
         State("meg-signal-graph", "figure"),
         prevent_initial_call=False
     )
-    def update_graph_time_channel(page_selection, montage_selection, channel_selection, folder_path, chunk_limits, offset_selection, freq_data, montage_store, raw_info, graph):
+    def update_graph_time_channel(page_selection, montage_selection, channel_selection, folder_path, offset_selection, chunk_limits,freq_data, montage_store, raw_info, graph):
         """Update MEG signal visualization based on time and channel selection."""
 
         time_range = chunk_limits[int(page_selection)]
@@ -114,9 +115,9 @@ def register_update_graph_time_channel():
                         raise ValueError(f"No channels available for the selected montage: {montage_selection}")
                 
                     if offset_selection is None:
-                        offset_selection = 12
+                        offset_selection = 5
                         
-                fig = gu.generate_graph_time_channel(selected_channels, int(offset_selection), time_range, folder_path, freq_data)
+                fig = gu.generate_graph_time_channel(selected_channels, float(offset_selection), time_range, folder_path, freq_data)
 
                 return fig, None
             
@@ -166,8 +167,22 @@ def register_update_annotations():
         # Prepare the shapes and annotations for the selected annotations
         new_shapes = []
         new_annotations = []
+
+        # Define a color palette (extend as needed)
+        color_palette = itertools.cycle(["red", "blue", "green", "purple", "orange", "brown", "pink"])
+
+        # Dictionary to store description-to-color mapping
+        description_colors = {}
+
         for _, row in filtered_annotations_df.iterrows():
             description = row["description"]
+
+                # Assign a consistent color for each description
+            if description not in description_colors:
+                description_colors[description] = next(color_palette)
+
+            color = description_colors[description]  # Get assigned color
+
             if description in annotations_to_show:
                 new_shapes.append(
                     dict(
@@ -178,21 +193,22 @@ def register_update_annotations():
                         y1=y_max,
                         xref="x",
                         yref="y",
-                        line=dict(color="red", width=2, dash="dot"),
+                        line=dict(color=color, width=2, dash="dot"),
                         opacity=0.25
                     )
                 )
                 # Add the label in the margin
                 new_annotations.append(
                     dict(
-                        x=row.name,
+                        x=row.name - 0.02,
                         y=0.98,  # Slightly above the graph in the margin
                         xref="x",
                         yref="paper",  # Use paper coordinates for the y-axis (margins)
                         text=description,  # Annotation text
                         showarrow=False,  # No arrow needed
-                        font=dict(size=10, color="red"),  # Customize font
+                        font=dict(size=10, color=color),  # Customize font
                         align="center",
+                        textangle =-90
                     )
                 )
 
@@ -358,12 +374,12 @@ def register_offset_display():
     )
     def update_offset(decrement_clicks, increment_clicks, current_offset):
         # Step value and range constraints
-        step = 5
-        min_value = 5
-        max_value = 50
+        step = 0.5
+        min_value = 1
+        max_value = 10
 
         # Convert current offset to integer
-        offset = int(current_offset)
+        offset = 5
 
         # Calculate new offset based on button clicks
         offset += (increment_clicks - decrement_clicks) * step

@@ -31,8 +31,7 @@ from callbacks.topomap_callbacks import (
     register_activate_deactivate_topomap_button
 )
 from callbacks.spike_callbacks import (
-    register_middle_time_on_selection,
-    register_plot_potential_spike,
+    register_add_spike_timestep_on_click,
     register_add_spike_to_annotation,
     register_delete_selected_spike,
     register_enable_add_spike_button,
@@ -94,9 +93,7 @@ register_update_annotation_graph()
 
 register_hide_channel_selection_when_montage()
 
-register_middle_time_on_selection()
-
-#register_plot_potential_spike()
+register_add_spike_timestep_on_click()
 
 register_add_spike_to_annotation()
 
