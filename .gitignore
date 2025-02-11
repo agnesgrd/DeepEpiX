@@ -25,3 +25,6 @@ file_system_backend/
 
 # Model prediction results
 results/
+
+# Jupyter Notebook test
+*.ipynb

@@ -19,7 +19,7 @@ def create_graph_container():
                     "border-radius": "5px",
                     "box-shadow": "2px 2px 5px rgba(0,0,0,0.2)",
                     "z-index": "1000",
-                    "opacity": 0.9  # Slight transparency
+                    "opacity": 0.5  # Slight transparency
                 },
                 children=[
                     dcc.RadioItems(
@@ -27,6 +27,26 @@ def create_graph_container():
                         options=[],  # Initially empty
                         value=0  # Default to the first page
                     )
+                ]
+            ),
+
+            # Page selector (positioned on top-left)
+            html.Div(
+                id="next-spike-buttons-container",
+                style={
+                    "position": "absolute",
+                    "top": "15px",
+                    "left": "100px",
+                    "background-color": "rgba(0,0,0,0)",
+                    # "padding": "5px",
+                    "border-radius": "5px",
+                    "box-shadow": "2px 2px 5px rgba(0,0,0,0.2)",
+                    "z-index": "1000",
+                    "opacity": 0.5  # Slight transparency
+                },
+                children=[
+                    dbc.Button("Previous", id="prev-spike", color="primary", n_clicks=0),
+                    dbc.Button("Next", id="next-spike", color="primary", n_clicks=0)
                 ]
             ),
 

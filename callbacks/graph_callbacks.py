@@ -79,11 +79,10 @@ def register_update_graph_time_channel():
         State("chunk-limits-store", "data"),
         State("frequency-store", "data"),
         State("montage-store", "data"),
-        State("raw-info-store", "data"),
         State("meg-signal-graph", "figure"),
         prevent_initial_call=False
     )
-    def update_graph_time_channel(page_selection, montage_selection, channel_selection, folder_path, offset_selection, chunk_limits,freq_data, montage_store, raw_info, graph):
+    def update_graph_time_channel(page_selection, montage_selection, channel_selection, folder_path, offset_selection, chunk_limits,freq_data, montage_store, graph):
         """Update MEG signal visualization based on time and channel selection."""
 
         time_range = chunk_limits[int(page_selection)]
@@ -136,12 +135,11 @@ def register_update_annotations():
         Input("annotation-checkboxes", "options"),
         Input("page-selector", "value"),
         State("annotations-store", "data"),
-        State("raw-info-store", "data"),
         State("chunk-limits-store", "data"),
         prevent_initial_call=True,
         supress_callback_exceptions=True
     )
-    def update_annotations(fig_dict, annotations_to_show, annotation_options, page_selection, annotations, raw_info, chunk_limits):
+    def update_annotations(fig_dict, annotations_to_show, annotation_options, page_selection, annotations, chunk_limits):
         """Update annotations visibility based on the checklist selection."""
         # Default time range in case the figure doesn't contain valid x-axis range data
 
@@ -225,12 +223,11 @@ def register_update_annotation_graph():
         Input("annotation-checkboxes", "value"),
         Input("page-selector", "value"),
         State("annotations-store", "data"),
-        State("raw-info-store", "data"),
         State("annotation-graph", "figure"),
         State("chunk-limits-store", "data"),
         prevent_initial_call=True
     )
-    def update_annotation_graph(annotation_options, annotations_to_show, page_selection, annotations_data, raw_info, annotation_fig, chunk_limits):
+    def update_annotation_graph(annotation_options, annotations_to_show, page_selection, annotations_data, annotation_fig, chunk_limits):
 
         if not annotations_data or not isinstance(annotations_data, list):
             return dash.no_update
@@ -331,20 +328,22 @@ def register_move_time_slider():
     @dash.callback(
         Output("meg-signal-graph", "figure", allow_duplicate = True),
         Input("keyboard", "keydown"),
-        State("raw-info-store", "data"),
+        State("page-selector", "value"),
+        State("chunk-limits-store", "data"),
         State("meg-signal-graph", "figure"),
         prevent_initial_call=True,
         supress_callback_exceptions=True
     )
-    def move_time_slider(keydown, raw_info, fig):
+    def move_time_slider(keydown, page_selection, chunk_limits, fig):
 
         # Get the current x-axis range
         xaxis_range = fig["layout"]["xaxis"]["range"]
         move_amount = 1/3*(xaxis_range[1]-xaxis_range[0])  # Number of seconds to move
 
         # Define the bounds for the x-axis (adjust based on your data)
-        min_bound = 0
-        max_bound = float(raw_info["max_length"])
+        time_range = chunk_limits[int(page_selection)]
+        min_bound = time_range[0]
+        max_bound = time_range[1]
 
         # Update the range based on the key press
         if keydown["key"] == "ArrowLeft":
@@ -388,3 +387,51 @@ def register_offset_display():
         offset = max(min_value, min(max_value, offset))
 
         return str(offset)  # Return updated offset as a string
+    
+def register_move_to_spike():
+    @dash.callback(
+        Output("meg-signal-graph", "figure", allow_duplicate=True),
+        Input("prev-spike", "n_clicks"),
+        Input("next-spike", "n_clicks"),
+        State("meg-signal-graph", "figure"),
+        State("annotation-checkboxes", "value"),
+        State("annotations-store", "data"),
+        prevent_initial_call = True
+    )
+    def move_to_spike(prev_spike, next_spike, graph, annotations_to_show, annotations_data):
+
+        if not annotations_data or not annotations_to_show:
+            return dash.no_update  # No annotations available, return the same graph
+        
+        if len(annotations_to_show)==0 or len(annotations_data)==0:
+            return dash.no_update
+
+        # Extract x-coordinates (onset times) of spikes from annotations
+        spike_x_positions = [
+            ann["onset"] for ann in annotations_data if ann["description"] in annotations_to_show
+        ]
+        spike_x_positions = sorted(spike_x_positions)  # Ensure sorted order
+
+        if not spike_x_positions:
+            return graph  # No spikes to navigate
+
+        # Get the current x-axis center
+        xaxis_range = graph["layout"]["xaxis"].get("range", [])
+        if xaxis_range:
+            current_x_center = sum(xaxis_range) / 2  # Midpoint of current view
+        else:
+            current_x_center = spike_x_positions[0]  # Default to first spike
+
+        # Determine next or previous spike
+        if dash.ctx.triggered_id == "next-spike":
+            next_spike_x = next((x for x in spike_x_positions if x > current_x_center), spike_x_positions[-1])
+        elif dash.ctx.triggered_id == "prev-spike":
+            next_spike_x = next((x for x in reversed(spike_x_positions) if x < current_x_center), spike_x_positions[0])
+        else:
+            return graph  # No valid button click
+
+        # Update x-axis range to center on the new spike
+        x_range_offset = (xaxis_range[1] - xaxis_range[0]) / 2 if xaxis_range else 10
+        graph["layout"]["xaxis"]["range"] = [next_spike_x - x_range_offset, next_spike_x + x_range_offset]
+
+        return graph

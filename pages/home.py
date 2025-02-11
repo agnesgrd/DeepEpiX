@@ -242,16 +242,14 @@ def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw
 
             # Crop the raw data to the chunk's time range
             raw_chunk = raw.copy().crop(tmin=start_time, tmax=end_time)
-            print("yesss")
 
             # Transform the raw data into a dataframe
             raw_df = raw_chunk.to_data_frame(picks="meg", index="time")  # Get numerical data (channels × time)
-            print('yup')
+
             # Standardization per channel
             scaler = StandardScaler()
             raw_df_standardized = raw_df.apply(lambda x: scaler.fit_transform(x.values.reshape(-1, 1)).flatten(), axis=0)
-            
-            print(raw_df_standardized)
+
             return raw_df_standardized
 
         except Exception as e:
@@ -293,7 +291,6 @@ def get_annotations_dataframe(folder_path):
     Output("preprocess-status", "children"),
     Output("url", "pathname"),
     Output("annotations-store", "data"),
-    Output("raw-info-store", "data"),
     Output("chunk-limits-store", "data"),
     Input("preprocess-display-button", "n_clicks"),
     State("folder-store", "data"),
@@ -309,26 +306,27 @@ def preprocess_meg_data(n_clicks, folder_path, freq_data):
         try:
             annotations_dict, max_length = get_annotations_dataframe(folder_path)
             chunk_limits = pu.update_chunk_limits(max_length)
-            print(chunk_limits)
+
+            print("annotations_dict", annotations_dict)
 
             raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
             resample_freq = freq_data.get("resample_freq")
             low_pass_freq = freq_data.get("low_pass_freq")
             high_pass_freq = freq_data.get("high_pass_freq")
+
             # Apply filtering and resampling
             raw.filter(l_freq=high_pass_freq, h_freq=low_pass_freq, n_jobs=8)
             raw.resample(resample_freq)
 
             for chunk_idx in chunk_limits:
-                print(chunk_idx)
                 start_time, end_time = chunk_idx
                 raw_df = get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw)
-            return "Preprocessed and saved data", "/view", annotations_dict, {'max_length': max_length}, chunk_limits
+            return "Preprocessed and saved data", "/view", annotations_dict, chunk_limits
         
         except Exception as e:
-            return f"Error during preprocessing : {str(e)}", dash.no_update, None, None, None
+            return f"Error during preprocessing : {str(e)}", dash.no_update, None, None
 
-    return None, dash.no_update, None, None, None
+    return None, dash.no_update, None, None
     
 
 

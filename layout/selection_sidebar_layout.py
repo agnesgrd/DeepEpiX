@@ -92,7 +92,7 @@ def create_selection():
                 inline=False,
                 style={"margin": "10px 0", "fontSize": "12px"},
                 persistence=True,
-                persistence_type="local"
+                persistence_type="session"
             ),
         ], style = box_styles["classic"]),
 
