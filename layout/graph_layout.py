@@ -14,12 +14,12 @@ def create_graph_container():
                     "position": "absolute",
                     "top": "15px",
                     "left": "15px",
-                    "background-color": "white",
+                    "background-color": "rgba(0,0,0,0)",
                     # "padding": "5px",
                     "border-radius": "5px",
                     "box-shadow": "2px 2px 5px rgba(0,0,0,0.2)",
                     "z-index": "1000",
-                    "opacity": 0.5  # Slight transparency
+                    "opacity": 0.8  # Slight transparency
                 },
                 children=[
                     dcc.RadioItems(
@@ -36,17 +36,17 @@ def create_graph_container():
                 style={
                     "position": "absolute",
                     "top": "15px",
-                    "left": "100px",
+                    "left": "300px",
                     "background-color": "rgba(0,0,0,0)",
-                    # "padding": "5px",
+                    #"padding": "5px",
                     "border-radius": "5px",
                     "box-shadow": "2px 2px 5px rgba(0,0,0,0.2)",
                     "z-index": "1000",
-                    "opacity": 0.5  # Slight transparency
+                    "opacity": 0.8  # Slight transparency
                 },
                 children=[
-                    dbc.Button("Previous", id="prev-spike", color="primary", n_clicks=0),
-                    dbc.Button("Next", id="next-spike", color="primary", n_clicks=0)
+                    dbc.Button("Previous", id="prev-spike", color="primary", outline=True, n_clicks=0),
+                    dbc.Button("Next", id="next-spike", color="primary", outline=True, n_clicks=0)
                 ]
             ),
 

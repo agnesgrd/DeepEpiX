@@ -396,9 +396,11 @@ def register_move_to_spike():
         State("meg-signal-graph", "figure"),
         State("annotation-checkboxes", "value"),
         State("annotations-store", "data"),
+        State("page-selector", "value"),
+        State("chunk-limits-store", "data"),
         prevent_initial_call = True
     )
-    def move_to_spike(prev_spike, next_spike, graph, annotations_to_show, annotations_data):
+    def move_to_spike(prev_spike, next_spike, graph, annotations_to_show, annotations_data, page_selection, chunk_limits):
 
         if not annotations_data or not annotations_to_show:
             return dash.no_update  # No annotations available, return the same graph
@@ -429,9 +431,32 @@ def register_move_to_spike():
             next_spike_x = next((x for x in reversed(spike_x_positions) if x < current_x_center), spike_x_positions[0])
         else:
             return graph  # No valid button click
+        
+        time_range_limits = chunk_limits[int(page_selection)]
+        
+        # Extract time range limits
+        time_range_min, time_range_max = time_range_limits
 
-        # Update x-axis range to center on the new spike
+        # Compute x-axis range offset
         x_range_offset = (xaxis_range[1] - xaxis_range[0]) / 2 if xaxis_range else 10
-        graph["layout"]["xaxis"]["range"] = [next_spike_x - x_range_offset, next_spike_x + x_range_offset]
+
+        # Default centered range
+        proposed_x_min = next_spike_x - x_range_offset
+        proposed_x_max = next_spike_x + x_range_offset
+
+        # Adjust if near the edges
+        if proposed_x_min < time_range_min:
+            x_min, x_max = time_range_min, time_range_min + 2 * x_range_offset
+        elif proposed_x_max > time_range_max:
+            x_min, x_max = time_range_max - 2 * x_range_offset, time_range_max
+        else:
+            x_min, x_max = proposed_x_min, proposed_x_max
+
+        # Ensure the adjusted range is within valid limits
+        x_min = max(x_min, time_range_min)
+        x_max = min(x_max, time_range_max)
+
+        # Update the graph layout
+        graph["layout"]["xaxis"]["range"] = [x_min, x_max]
 
         return graph
