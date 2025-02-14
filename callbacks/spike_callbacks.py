@@ -16,6 +16,11 @@ def register_enable_delete_spike_button():
         prevent_initial_call=True
     )
     def enable_delete_spike_button(selected_data):
+        if selected_data is None:
+            return dash.no_update
+        if 'range' not in selected_data.keys():
+            return dash.no_update
+        print(selected_data)
         if selected_data['range']['x'] is not None:
             return False  # Enable the button if both inputs are provided
         return True  # Disable the button if either input is missing

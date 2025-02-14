@@ -25,7 +25,8 @@ from callbacks.graph_callbacks import (
     register_update_annotation_graph,
     register_hide_channel_selection_when_montage,
     register_offset_display,
-    register_move_to_spike
+    register_move_to_spike,
+    register_callbacks_sensivity_analysis
 )
 from callbacks.topomap_callbacks import (
     register_display_topomap_on_click,
@@ -115,4 +116,6 @@ register_display_topomap_on_click()
 register_activate_deactivate_topomap_button()
 
 register_move_to_spike()
+
+register_callbacks_sensivity_analysis()
 

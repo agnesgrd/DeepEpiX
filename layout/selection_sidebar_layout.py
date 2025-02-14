@@ -122,5 +122,24 @@ def create_selection():
                     "gap": "12px"  # Space between elements
                 }
             ),
-        ], style=box_styles["classic"])
+        ], style=box_styles["classic"]),
+
+        # Montage Selection
+        html.Div([
+            html.Label(
+                "Select Colors:",
+                style={"fontWeight": "bold", "fontSize": "14px", "marginBottom": "8px"}
+            ),
+            dcc.RadioItems(
+                id="colors-radio",
+                options = [{'label':'unified', 'value': 'unified'}, {'label':'rainbow', 'value': 'rainbow'}],
+                value='rainbow',
+                inline=False,
+                style={"margin": "10px 0", "fontSize": "12px"},
+                # persistence=True,
+                # persistence_type="local"
+            ),
+        ], style = box_styles["classic"]),
+
+
     ])

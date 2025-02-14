@@ -66,7 +66,6 @@ def save_data_matrices(good_channels_file, subject, path_output):
 
 	with open(params.loc_meg_channels_path, 'rb') as fp: #path to the file.pkl containing for each channel name its location
 		loc_meg_channels = pickle.load(fp)
-		print(loc_meg_channels)
 	#raw_names = [r for r in os.listdir(params.subject) if ('.ds' in r) and not ('._' in r) and not ('misc' in r)]
 	#raw_names.sort()
 	#print(raw_names)
@@ -78,8 +77,6 @@ def save_data_matrices(good_channels_file, subject, path_output):
 	for raw_file in (raw_names):
 		# try:
 		raw_file=raw_file
-		print("###############################################################RAWFILE")
-		print(raw_file)
 		raw = mne.io.read_raw_ctf(raw_file, preload=True, verbose=False)
 
 		#Resample the data
@@ -92,8 +89,6 @@ def save_data_matrices(good_channels_file, subject, path_output):
 		raw.filter(0.5,50, n_jobs=8)
 
 		raw = raw.get_data()
-		print("###########################SHAPE")
-		print(raw.shape)
 		all_raws.append(raw)
 		all_files.append(raw_file)
 			
@@ -133,12 +128,12 @@ def create_windows(path_output, stand=False):
 
 		# Slice in short windows (seconds)
 		# get the center of each windows in seconds
-		window_centers = np.arange(0, block_data.shape[1], window_spacing)
+		window_centers = np.arange(window_size/2, block_data.shape[1], window_spacing)
 		# Start getting the data for each window
 		for window_center in tqdm(window_centers):
 			# get the data only if time duration is big enough before and after the
 			# center of the window
-			if (window_size/2. < window_center < block_data.shape[1] - window_size/2.):
+			if (window_size/2. <= window_center <= block_data.shape[1] - window_size/2.):
 				# get low and high limit of the window in samples
 				low_limit = round((window_center - window_size/2.))
 				high_limit = round((window_center + window_size/2. +0.1))# Because of odd window size
@@ -146,6 +141,7 @@ def create_windows(path_output, stand=False):
 				window_center_time.append(window_center)
 				nb_block.append(block)
 				total_nb_windows = total_nb_windows+1
+				print(window_center)
 
 		X_block = np.stack(X_block,axis=0)       
 		X_all = np.append(X_all,X_block,axis=0)
@@ -156,7 +152,6 @@ def create_windows(path_output, stand=False):
 	#SAVES INFOS FOR A GIVEN SUBJECT
 	# cast MEG data to float32. VERY IMPORTANT as we then save them in a binary file and this info allows us to know how many bytes to read in the binary
 	X_all = X_all.astype('float32')
-	print('#####################################################################################################"')
 	print('Saving windows to: ',path_output+"data_raw_"+str(params.subject_number)+'_windows_bi')
 	##saves windows to binary file (for faster reading later)
 	X_all.tofile(path_output+"data_raw_"+str(params.subject_number)+'_windows_bi')
@@ -169,7 +164,7 @@ def create_windows(path_output, stand=False):
 
 def generate_database(total_nb_windows):  
 
-	X_test_ids = np.zeros((total_nb_windows ,3),dtype=int)
+	X_test_ids = np.zeros((total_nb_windows,3),dtype=int)
 	X_test_ids[:,0] = np.linspace(0,total_nb_windows-1,num=total_nb_windows,dtype=int)
 	X_test_ids[:,1] =  np.ones((total_nb_windows),dtype=int)*params.subject_number
 
@@ -222,7 +217,6 @@ def compute_window_phase_congruency(window):
 
 def write_mrk_file(filepath,raw_name,onset_list_detected_spikes, marker_name):
 
-	print(raw_name[:-3]+'.mrk')
 	with open(raw_name[:-3]+'.mrk', 'w') as f:
 		f.write('PATH OF DATASET:\n'+filepath+' \n\n\nNUMBER OF MARKERS:\n1\n\n\n')
 		f.write('CLASSGROUPID:\n3\nNAME:\n'+marker_name+'\nCOMMENT:\n\nCOLOR:\ngreen\nEDITABLE:\nYes\nCLASSID:\n1\nNUMBER OF SAMPLES:\n' + str(len(onset_list_detected_spikes)) + '\nLIST OF SAMPLES:\nTRIAL NUMBER      TIME FROM SYNC POINT (in seconds)\n')

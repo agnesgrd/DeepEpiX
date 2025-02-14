@@ -3,6 +3,9 @@ import static.constants as c
 from sklearn.preprocessing import StandardScaler
 from pages.home import get_preprocessed_dataframe
 import plotly.express as px
+import plotly.graph_objects as go
+import pandas as pd
+import math
 
 
 def calculate_channel_offset(num_channels, plot_height=900, min_gap=20):
@@ -81,7 +84,7 @@ def get_shifted_time_axis(time_range, raw_df):
     
     return adjusted_times
 
-def generate_graph_time_channel(selected_channels, offset_selection, time_range, folder_path, freq_data):
+def generate_graph_time_channel(selected_channels, offset_selection, time_range, folder_path, freq_data, color_selection, sensitivity_analysis):
     """Handles the preprocessing and figure generation for the MEG signal visualization."""
     import time  # For logging execution times
 
@@ -96,8 +99,6 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
     shifted_times = get_shifted_time_axis(time_range, raw_df)
     print(f"Step 2: Time shifting completed in {time.time() - filter_start_time:.2f} seconds.")
 
-
-
     # Filter the dataframe based on the selected channels
     filter_df_start_time = time.time()
     filtered_raw_df = raw_df[selected_channels]
@@ -109,11 +110,20 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
     y_axis_ticks = get_y_axis_ticks(selected_channels, channel_offset)
     shifted_filtered_raw_df = filtered_raw_df + np.tile(y_axis_ticks, (len(filtered_raw_df), 1))
     print(f"Step 5: Channel offset calculation completed in {time.time() - offset_start_time:.2f} seconds.")
+
     # Create a dictionary mapping channels to their colors
-    color_map = {channel: c.CHANNEL_TO_COLOR[channel] for channel in selected_channels}
+    if color_selection == "rainbow":
+        color_map = {channel: c.CHANNEL_TO_COLOR[channel] for channel in selected_channels}
+    elif color_selection == "unified":
+        color_map = {channel: "#00008B" for channel in selected_channels}
+    elif "smoothGrad" in color_selection:
+        color_map = {channel: "#00008B" for channel in selected_channels}
+
     # Use Plotly Express for efficient figure generation
     fig_start_time = time.time()
     shifted_filtered_raw_df["Time"] = shifted_times  # Add time as a column for Plotly Express
+
+
     fig = px.line(
         shifted_filtered_raw_df,
         x="Time",
@@ -121,6 +131,44 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
         labels={"value": "Value", "variable": "Channel", "Time": "Time (s)"},
         color_discrete_map=color_map
     )
+
+    if 'smoothGrad' in color_selection:
+
+        # Add scatter plot using px.scatter
+        # Convert time range to integer indices
+        time_range_indices = np.arange(math.floor(time_range[0] * 150), math.ceil(time_range[1] * 150)+1).astype(int)
+        print(time_range_indices[0], time_range_indices[-1])
+        channel_indices = np.where(np.isin(c.ALL_CH_NAMES, selected_channels))[0]
+        filtered_sa_array = sensitivity_analysis[time_range_indices[:, None], channel_indices]
+        scatter_df = shifted_filtered_raw_df.melt(id_vars=["Time"], var_name="Channel", value_name="Value")
+
+        scatter_df["Color"] = filtered_sa_array.flatten('F')  # Flatten color array
+        # # Add a break (NaN row) between each channel
+        # scatter_df_sorted = scatter_df.sort_values(by=["Channel", "Time"])  # Ensure sorting within each channel
+
+        # # Function to add a break row (NaN) after each channel
+        # def add_break(x):
+        #     break_row = pd.DataFrame([{col: None for col in x.columns}])  # Create a row of NaNs
+        #     return pd.concat([x, break_row], ignore_index=True)
+
+        # scatter_df_sorted = scatter_df_sorted.groupby("Channel", group_keys=True).apply(add_break).reset_index(drop=True)
+
+        scatter_df_filtered = scatter_df[scatter_df["Color"] > 0]
+
+        scatter_fig = px.scatter(
+            scatter_df_filtered,
+            x="Time",
+            y="Value",
+            color="Color",
+            color_continuous_scale="Reds",
+            labels={"value": "Value", "variable": "Channel", "Time": "Time (s)"},
+            opacity=0.8
+        )
+
+        # Add scatter traces to the line plot
+        fig.add_traces(scatter_fig.data)
+
+        # fig.update_traces(mode='markers', marker_size = 3)  # Set your desired width
 
     print(f"Step 6: Figure creation completed in {time.time() - fig_start_time:.2f} seconds.")
 
@@ -161,8 +209,30 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
         hovermode = 'closest'
     )
     # Update the line width after creation
-    for trace in fig.data:
-        trace.update(line=dict(width=1))
+
+
+    fig.update_traces(line=dict(width=1))
+
+    if "smoothGrad" in color_selection:
+        fig.update_layout(           
+            coloraxis_colorbar=dict(
+            title=dict(text="SmoothGrad"),
+            thicknessmode="pixels", thickness=10,
+            lenmode="fraction", len=0.15,
+            y=0,
+            x=0.9,
+            orientation="h",
+            ticks="outside",
+            dtick=1),
+            coloraxis=dict(cmin=0, cmax=1)  # Set color range from 0 to 1
+        )
+
+
+        fig.update_traces(line=dict(width=2))
+
+
+    
+
     print(f"Step 7: Layout update completed in {time.time() - layout_start_time:.2f} seconds.")
 
     # Total execution time

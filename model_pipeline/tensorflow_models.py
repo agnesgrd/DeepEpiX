@@ -1,20 +1,17 @@
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+# os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+
 import tensorflow as tf
 import tensorflow.keras as keras
 from keras import backend as K
 
-import pickle
 import numpy as np
-import os
 import os.path as op
-import mne
-from tqdm import tqdm
-from warnings import warn
-import string
-import sys
 import matplotlib.pyplot as plt
 import model_pipeline.params as params
 import pandas as pd
-import csv
+import gc
 from model_pipeline.utils import save_obj, load_obj, standardize
 from model_pipeline.utils import compute_window_ppa, compute_window_upslope, compute_window_std, compute_window_average_slope, compute_window_downslope, compute_window_amplitude_ratio, compute_window_sharpness
 
@@ -161,13 +158,13 @@ class DataGenerator_memeff(tf.keras.utils.Sequence):
         prefixe = 'data_raw_'
         suffixe = '_windows_bi' 
 
+        f = open(op.join(self.path, prefixe+'1'+suffixe))
+
         for i, ID in enumerate(list_IDs_temp):
 
             win = np.array(ID)[0]
             sub = np.array(ID)[1]
             label = np.array(ID)[2]
-
-            f = open(op.join(self.path, prefixe+str(sub)+suffixe))
 
             # Store sample 
             f.seek(self.dim[0]*self.dim[1]*win*4) #4 because its float32 and dtype.itemsize = 4
@@ -187,6 +184,8 @@ class DataGenerator_memeff(tf.keras.utils.Sequence):
 
             # Store class
             y_batch[i,] = label
+        
+        f.close()
 
         return X_batch, y_batch
 
@@ -238,6 +237,9 @@ class DataGenerator_memeff_feat_only(tf.keras.utils.Sequence):
 
         # Generate data
 
+        # if the subject is different from the previous one, then open the subject file
+        f = open(op.join(self.path, prefixe+'1'+suffixe))
+
         for i, ID in enumerate(list_IDs_temp):
             # get infos from the "ids" array
             win = np.array(ID)[0]
@@ -249,8 +251,6 @@ class DataGenerator_memeff_feat_only(tf.keras.utils.Sequence):
             else:
                duplicate = 0
 
-            # if the subject is different from the previous one, then open the subject file
-            f = open(op.join(self.path, prefixe+str(sub)+suffixe))
             # Read the window data from the binary file (seek=move the cursor, fromfile=extract the correct nb of bytes) 
             f.seek(self.dim[0]*self.dim[1]*win*4) #4 because its float32 and dtype.itemsize = 4
             sample = np.fromfile(f, dtype='float32', count=self.dim[0]*self.dim[1])
@@ -276,6 +276,8 @@ class DataGenerator_memeff_feat_only(tf.keras.utils.Sequence):
 
             # Store classf
             y_batch[i,] = label
+        
+        f.close()
 
         return features_batch, y_batch
 
@@ -328,8 +330,6 @@ def test_model_dash(model_name, testing_generator, X_test_ids, output_path, thre
     y_pred_probas = model.predict(testing_generator)
     y_test = X_test_ids[:,2]
 
-    print(y_pred_probas)
-
     y_pred = (y_pred_probas > threshold).astype("int32")
 
     y_timing_data = load_obj("data_raw_"+str(params.subject_number)+'_timing.pkl', output_path)
@@ -337,10 +337,11 @@ def test_model_dash(model_name, testing_generator, X_test_ids, output_path, thre
     # Ensure y_pred is 1D
     y_pred = y_pred.flatten()
 
-
     # Extract relevant timing values and convert to seconds
     new_annotation_timing = (y_timing_data[y_pred == 1] / 150).round(3).tolist()
     
+    del model
+    gc.collect()
     keras.backend.clear_session()
 
     # Save the timepoints to a CSV file
@@ -349,5 +350,5 @@ def test_model_dash(model_name, testing_generator, X_test_ids, output_path, thre
     df['duration'] = 0 # to fit with mne annotation format
     df.to_csv(f'{output_path}predictions.csv', index=False)
 
-    return df
+    return y_pred, df
 

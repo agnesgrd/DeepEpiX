@@ -7,7 +7,10 @@ import subprocess
 import pickle
 import pandas as pd
 from model_pipeline.run_model import run_model_pipeline
+from model_pipeline.smoothgrad import run_smoothgrad
 from callbacks.utils import predict_utils as pu
+import static.constants as c
+from callbacks.utils import sensitivity_analysis_utils as sau
 
 def create_predict():
     layout = html.Div([
@@ -34,10 +37,25 @@ def create_predict():
         dbc.Input(id="model-spike-name", type="text", value="detected_spikes_name", style={**input_styles["small-number"]}),
     ], style={"marginBottom": "20px"}),
 
-        # Detected spike name input
+    # Threshold
     html.Div([
         html.Label("Threshold:", style={**label_styles["classic"]}),
         dbc.Input(id="threshold", type="number", value=0.5, step=0.01, min=0, max=1, style=input_styles["small-number"]),
+    ], style={"marginBottom": "20px"}),
+
+    # Compute sensitvity analysis at the end
+    html.Div([
+        html.Label("Sensitivity Analysis (smoothGrad):", style={**label_styles["classic"]}),
+        dbc.RadioItems(
+            id="sensitivity-analysis",
+            options=[
+                {"label": "Yes", "value": "Yes"},
+                {"label": "No", "value": "No"}
+            ],
+            value="Yes",  # Default selection
+            inline=True,  # Display buttons in a row
+            style={"margin-left": "10px"}
+        )
     ], style={"marginBottom": "20px"}),
 
 
@@ -108,17 +126,19 @@ def update_selected_model(selected_value):
     Output('prediction-output', 'children'),
     Output('run-prediction-button', 'n_clicks'),
     Output('store-display-div', 'style'),
+    Output('sensitivity-analysis-store', 'data'),
     Input('run-prediction-button', 'n_clicks'),
     State('folder-store', 'data'),
     State('model-dropdown', 'value'),
     State('model-spike-name', 'value'),
     State('venv', 'value'),
     State('threshold', 'value'),
+    State('sensitivity-analysis', 'value'),
     prevent_initial_call = True
 )
-def execute_predict_script(n_clicks, subject_folder_path, model_path, spike_name, venv, threshold):
+def execute_predict_script(n_clicks, subject_folder_path, model_path, spike_name, venv, threshold, sensitivity_analysis):
     if not n_clicks or n_clicks == 0:
-        return None, dash.no_update, dash.no_update, dash.no_update
+        return None, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
     # Validation: Check if all required fields are filled
     missing_fields = []
@@ -135,9 +155,9 @@ def execute_predict_script(n_clicks, subject_folder_path, model_path, spike_name
 
     if missing_fields:
         error_message = f"⚠️ Please fill in all required fields: {', '.join(missing_fields)}"
-        return error_message, dash.no_update, dash.no_update, dash.no_update
+        return error_message, dash.no_update, dash.no_update, dash.no_update, dash.no_update
     
-    result = run_model_pipeline(
+    y_pred, result = run_model_pipeline(
         model_path, 
         venv, 
         '/home/admin_mel/Code/DeepEpiX/model_pipeline/good_channels', 
@@ -153,8 +173,12 @@ def execute_predict_script(n_clicks, subject_folder_path, model_path, spike_name
         style_header={"fontWeight": "bold", "backgroundColor": "#f0f0f0"},
         page_size=5,  # Pagination
     )
+
+    if sensitivity_analysis == "Yes":
+        grad_on_time, grad_on_channels = run_smoothgrad(model_path, y_pred)
+        grad_store = {'smoothGrad across channels': [sau.serialize_array(grad_on_time),grad_on_time.shape], 'smoothGrad across time': [sau.serialize_array(grad_on_channels), grad_on_channels.shape]}
     
-    return True, prediction_table, 0, {"display": "block"}
+    return True, prediction_table, 0, {"display": "block"}, grad_store
 
 @dash.callback(
     Output('annotations-store', 'data', allow_duplicate=True),
@@ -167,7 +191,7 @@ def execute_predict_script(n_clicks, subject_folder_path, model_path, spike_name
     prevent_initial_call = True
 )
 def store_display_prediction(n_clicks, annotation_data, prediction_table, spike_name):
-    if not n_clicks or n_clicks == 0:
+    if not n_clicks or n_clicks == 0 or prediction_table is None:
         return dash.no_update, dash.no_update, dash.no_update
     
     # Ensure annotation_data is initialized
