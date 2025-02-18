@@ -28,36 +28,38 @@ def create_selection():
                 "Select Channels:",
                 style={"fontWeight": "bold", "fontSize": "14px", "marginBottom": "8px"}
             ),
-            dbc.Button(
-                "Check All",
-                id="check-all-btn",
-                color="success",
-                outline=True,
-                size="sm",
-                n_clicks=0,
-                style={
-                    "fontSize": "12px",
-                    "padding": "6px 12px",
-                    "borderRadius": "5px",
-                    "width": "100%",
-                    "marginBottom": "10px"
-                }
-            ),
-            dbc.Button(
-                "Clear All",
-                id="clear-all-btn",
-                color="danger",
-                outline=True,
-                size="sm",
-                n_clicks=0,
-                style={
-                    "fontSize": "12px",
-                    "padding": "6px 12px",
-                    "borderRadius": "5px",
-                    "width": "100%",
-                    "marginBottom": "15px"
-                }
-            ),
+            # Button container with flexbox to align buttons side by side
+            html.Div([
+                dbc.Button(
+                    "Check All",
+                    id="check-all-channels-btn",
+                    color="success",
+                    outline=True,
+                    size="sm",
+                    n_clicks=0,
+                    style={
+                        "fontSize": "12px",
+                        "padding": "6px 12px",
+                        "borderRadius": "5px",
+                        "width": "48%",  # Adjusted width to fit side by side
+                    }
+                ),
+                dbc.Button(
+                    "Clear All",
+                    id="clear-all-channels-btn",
+                    color="warning",
+                    outline=True,
+                    size="sm",
+                    n_clicks=0,
+                    style={
+                        "fontSize": "12px",
+                        "padding": "6px 12px",
+                        "borderRadius": "5px",
+                        "width": "48%",  # Adjusted width to fit side by side
+                    }
+                ),
+            ], style={"display": "flex", "justifyContent": "space-between", "gap": "4%"}),  # Align buttons side by side
+
             dcc.Checklist(
                 id="channel-region-checkboxes",
                 options=[
@@ -87,13 +89,77 @@ def create_selection():
                 "Select Annotations:",
                 style={"fontWeight": "bold", "fontSize": "14px", "marginBottom": "8px"}
             ),
+            # Button container with flexbox to align buttons side by side
+            html.Div([
+                dbc.Button(
+                    "Check All",
+                    id="check-all-annotations-btn",
+                    color="success",
+                    outline=True,
+                    size="sm",
+                    n_clicks=0,
+                    style={
+                        "fontSize": "12px",
+                        "padding": "6px 12px",
+                        "borderRadius": "5px",
+                        "width": "48%",  # Adjusted width
+                    }
+                ),
+                dbc.Button(
+                    "Clear All",
+                    id="clear-all-annotations-btn",
+                    color="warning",
+                    outline=True,
+                    size="sm",
+                    n_clicks=0,
+                    style={
+                        "fontSize": "12px",
+                        "padding": "6px 12px",
+                        "borderRadius": "5px",
+                        "width": "48%",  # Adjusted width
+                    }
+                ),
+            ], style={"display": "flex", "justifyContent": "space-between", "gap": "4%", "marginBottom": "6px"}),  # Align buttons side by side
+
+            dbc.Button(
+                "Delete Selected",
+                id="delete-annotations-btn",
+                color="danger",
+                outline=True,
+                size="sm",
+                n_clicks=0,
+                style={
+                    "fontSize": "12px",
+                    "padding": "6px 12px",
+                    "borderRadius": "5px",
+                    "width": "100%",
+                    "marginBottom": "15px"
+                }
+            ),
+
             dcc.Checklist(
                 id="annotation-checkboxes",
                 inline=False,
                 style={"margin": "10px 0", "fontSize": "12px"},
                 persistence=True,
-                persistence_type="session"
+                persistence_type="local"
             ),
+
+
+            # Confirmation Modal
+            dbc.Modal(
+                [
+                    dbc.ModalHeader("Confirm Deletion"),
+                    dbc.ModalBody(id="delete-modal-body", children="Are you sure you want to delete the selected annotations?"),
+                    dbc.ModalFooter([
+                        dbc.Button("Cancel", id="cancel-delete-btn", color="secondary", n_clicks=0),
+                        dbc.Button("Delete", id="confirm-delete-btn", color="danger", n_clicks=0)
+                    ])
+                ],
+                id="delete-confirmation-modal",
+                is_open=False,
+            )
+
         ], style = box_styles["classic"]),
 
         # Offset Selection

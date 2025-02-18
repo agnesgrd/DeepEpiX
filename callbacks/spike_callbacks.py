@@ -20,7 +20,6 @@ def register_enable_delete_spike_button():
             return dash.no_update
         if 'range' not in selected_data.keys():
             return dash.no_update
-        print(selected_data)
         if selected_data['range']['x'] is not None:
             return False  # Enable the button if both inputs are provided
         return True  # Disable the button if either input is missing
@@ -58,19 +57,21 @@ def register_add_spike_to_annotation():
     @dash.callback(
         Output("annotations-store", "data", allow_duplicate=True),
         Output("history-store", "data", allow_duplicate=True),
+        Output("annotation-checkboxes", "value", allow_duplicate=True),
         Input("add-spike-button", "n_clicks"),
         State("spike-name", "value"),
         State("spike-timestep", "value"),
         State("annotations-store", "data"),
         State("history-store", "data"),
+        State("annotation-checkboxes", "value"),
         prevent_initial_call=True
     )
-    def add_spike_to_annotation(n_clicks, spike_name, spike_timestep, annotations_data, history_data):
+    def add_spike_to_annotation(n_clicks, spike_name, spike_timestep, annotations_data, history_data, checkbox_values):
         # Validate input
         if n_clicks is None or n_clicks == 0:
-            return dash.no_update, dash.no_update
+            return dash.no_update, dash.no_update, dash.no_update
         if not spike_name or spike_timestep is None:
-            return dash.no_update, dash.no_update
+            return dash.no_update, dash.no_update, dash.no_update
 
         # Convert annotations data to DataFrame if not empty
         if not annotations_data:
@@ -84,8 +85,14 @@ def register_add_spike_to_annotation():
         action = f"Added a spike <{spike_name}> at {spike_timestep} (s).\n"
         history_data = hu.fill_history_data(history_data, action)
 
+        # Ensure checkbox_values is a list before appending
+        if checkbox_values is None:
+            checkbox_values = []
+        if spike_name not in checkbox_values:
+            checkbox_values.append(spike_name)
+
         # Convert the updated DataFrame back to a records-based format
-        return annotations_data, history_data
+        return annotations_data, history_data, checkbox_values
     
 def register_delete_selected_spike():
     @dash.callback(

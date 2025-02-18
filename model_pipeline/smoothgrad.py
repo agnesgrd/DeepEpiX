@@ -103,6 +103,8 @@ def postprocess_grad(av_grad, axis=0):
 
 def run_smoothgrad(model_file, y_pred):
     X_test_ids = utils.generate_database(total_nb_windows)
+    print(total_nb_windows)
+    print(y_pred.shape)
 
     # -- get model
     model = keras.models.load_model(model_file, compile=False)

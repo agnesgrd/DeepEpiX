@@ -13,6 +13,7 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from callbacks.utils import preprocessing_utils as pu
 from callbacks.utils import folder_path_utils as fpu
+import pickle
 
 
 # Register the page
@@ -24,10 +25,11 @@ cache = Cache(app.server, config={
     # 'CACHE_REDIS_PORT': 6379,          # Redis server port
     # 'CACHE_REDIS_DB': 0,               # Redis database index
     # 'CACHE_REDIS_URL': 'redis://localhost:6379/0',  # Redis connection URL
-    'CACHE_TYPE': 'filesystem',
-    'CACHE_DIR': 'cache-directory',
-    'CACHE_DEFAULT_TIMEOUT': 86400,
-    'CACHE_THRESHOLD': 50 # higher numbers will store more data in the filesystem / redis cache
+    'CACHE_TYPE': 'simple',
+    # 'CACHE_TYPE': 'filesystem',
+    # 'CACHE_DIR': 'cache-directory',
+    'CACHE_DEFAULT_TIMEOUT': 240,
+    # 'CACHE_THRESHOLD': 50 # higher numbers will store more data in the filesystem / redis cache
 })
 
 layout = html.Div([
@@ -248,7 +250,7 @@ def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw
 
             # Standardization per channel
             scaler = StandardScaler()
-            raw_df_standardized = raw_df.apply(lambda x: scaler.fit_transform(x.values.reshape(-1, 1)).flatten(), axis=0)
+            raw_df_standardized = raw_df - raw_df.mean(axis = 0) #.apply(lambda x: scaler.fit_transform(x.values.reshape(-1, 1)).flatten(), axis=0)
 
             return raw_df_standardized
 
@@ -260,13 +262,13 @@ def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw
     def process_data_in_chunks(folder_path, freq_data, start_time, end_time):
         try:
             chunk_df = preprocess_chunk(start_time, end_time, raw, freq_data)
-            return chunk_df.to_json()
+            return chunk_df
 
         except Exception as e:
             return f"Error during processing: {str(e)}"
 
     # Process and return the result in JSON format
-    return pd.read_json(StringIO(process_data_in_chunks(folder_path, freq_data, start_time, end_time)))
+    return process_data_in_chunks(folder_path, freq_data, start_time, end_time)
 
 def get_annotations_dataframe(folder_path):
     raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)

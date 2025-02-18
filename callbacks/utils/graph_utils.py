@@ -8,7 +8,7 @@ import pandas as pd
 import math
 
 
-def calculate_channel_offset(num_channels, plot_height=900, min_gap=20):
+def calculate_channel_offset(num_channels, plot_height=900, min_gap=30):
     """
     Calculate the optimal channel offset to avoid overlap of traces in the plot.
     
@@ -22,16 +22,13 @@ def calculate_channel_offset(num_channels, plot_height=900, min_gap=20):
     """
     # Ensure there's enough space between each trace to avoid overlap.
     # We leave space for the desired minimum gap between traces.
-    print(num_channels)
     total_gap_needed = (num_channels - 1) * min_gap
-    print(total_gap_needed)
+
     # Calculate the optimal offset based on the plot height and the required gap.
     optimal_channel_offset = (plot_height - total_gap_needed) / (num_channels - 1) if num_channels > 1 else min_gap
     
     # Ensure the offset is a positive value
     optimal_channel_offset = max(optimal_channel_offset, min_gap)
-
-    print(optimal_channel_offset)
     
     return optimal_channel_offset
 
@@ -77,14 +74,14 @@ def get_shifted_time_axis(time_range, raw_df):
         pd.Series: A series of adjusted times in seconds, with the offset applied.
     """
     # Calculate elapsed time in seconds from the first timestamp in the DataFrame
-    times = (raw_df.index - raw_df.index[0]).total_seconds()
+    times = (raw_df.index - raw_df.index[0])
     
     # Add the starting time of the given range as an offset
     adjusted_times = times + time_range[0]
     
     return adjusted_times
 
-def generate_graph_time_channel(selected_channels, offset_selection, time_range, folder_path, freq_data, color_selection, sensitivity_analysis):
+def generate_graph_time_channel(selected_channels, offset_selection, time_range, folder_path, freq_data, color_selection, sensitivity_analysis, xaxis_range):
     """Handles the preprocessing and figure generation for the MEG signal visualization."""
     import time  # For logging execution times
 
@@ -106,7 +103,7 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
 
     # Offset channel traces along the y-axis
     offset_start_time = time.time()
-    channel_offset = calculate_channel_offset(len(selected_channels))*(10-offset_selection)/10 #/ 12
+    channel_offset = calculate_channel_offset(len(selected_channels))*(10-offset_selection)*10 #/10 #/ 12
     y_axis_ticks = get_y_axis_ticks(selected_channels, channel_offset)
     shifted_filtered_raw_df = filtered_raw_df + np.tile(y_axis_ticks, (len(filtered_raw_df), 1))
     print(f"Step 5: Channel offset calculation completed in {time.time() - offset_start_time:.2f} seconds.")
@@ -137,7 +134,6 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
         # Add scatter plot using px.scatter
         # Convert time range to integer indices
         time_range_indices = np.arange(math.floor(time_range[0] * 150), math.ceil(time_range[1] * 150)+1).astype(int)
-        print(time_range_indices[0], time_range_indices[-1])
         channel_indices = np.where(np.isin(c.ALL_CH_NAMES, selected_channels))[0]
         filtered_sa_array = sensitivity_analysis[time_range_indices[:, None], channel_indices]
         scatter_df = shifted_filtered_raw_df.melt(id_vars=["Time"], var_name="Channel", value_name="Value")
@@ -178,7 +174,7 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
         autosize=True,
         xaxis=dict(
             title='Time (s)',
-            range=[time_range[0],time_range[0]+10],
+            range=xaxis_range,
             fixedrange=False,
             rangeslider=dict(visible=True, thickness=0.02),
             showspikes=True,

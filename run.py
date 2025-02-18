@@ -7,6 +7,11 @@ from dash import Input, Output, State
 import dash
 from layout import box_styles
 
+import cProfile
+pr = cProfile.Profile()
+pr.enable()
+
+
 
 # Initialize Dash app with use_pages=True
 app = Dash(__name__,
@@ -126,6 +131,9 @@ app.layout = html.Div(
 #         active_style if pathname == "/predict" else {**box_styles["panel-tabs"]} ,
 #         active_style if pathname == "/save" else {**box_styles["panel-tabs"]},
 #     )
+
+pr.disable()
+pr.dump_stats('profile_output.prof')
 
 
 if __name__ == "__main__":

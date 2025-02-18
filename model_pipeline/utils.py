@@ -141,7 +141,6 @@ def create_windows(path_output, stand=False):
 				window_center_time.append(window_center)
 				nb_block.append(block)
 				total_nb_windows = total_nb_windows+1
-				print(window_center)
 
 		X_block = np.stack(X_block,axis=0)       
 		X_all = np.append(X_all,X_block,axis=0)

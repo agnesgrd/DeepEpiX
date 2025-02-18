@@ -12,22 +12,30 @@ from layout.sidebar_layout import create_sidebar
 # Callback imports
 from callbacks.selection_callbacks import (
     register_page_buttons_display,
-    register_update_page_button_styles
+    register_update_page_button_styles,
+    register_manage_channels_checklist,
+    register_manage_annotations_checklist,
+    register_offset_display,
+    register_popup_annotation_suppression,
+    register_cancel_or_confirm_annotation_suppression,
+    register_callbacks_montage_names,
+    register_callbacks_annotation_names,
+    register_hide_channel_selection_when_montage
 )
+
 
 from callbacks.graph_callbacks import (
     register_update_graph_time_channel,
-    register_update_annotations,
-    register_callbacks_montage_names,
-    register_callbacks_annotation_names,
-    register_manage_channels_checklist,
     register_move_time_slider,
-    register_update_annotation_graph,
-    register_hide_channel_selection_when_montage,
-    register_offset_display,
     register_move_to_spike,
     register_callbacks_sensivity_analysis
 )
+
+from callbacks.annotation_callbacks import (
+    register_update_annotations,
+    register_update_annotation_graph,
+)
+
 from callbacks.topomap_callbacks import (
     register_display_topomap_on_click,
     register_activate_deactivate_topomap_button
@@ -118,4 +126,10 @@ register_activate_deactivate_topomap_button()
 register_move_to_spike()
 
 register_callbacks_sensivity_analysis()
+
+register_manage_annotations_checklist()
+
+register_popup_annotation_suppression()
+
+register_cancel_or_confirm_annotation_suppression()
 
