@@ -6,6 +6,10 @@ import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
 import math
+from plotly_resampler import FigureResampler
+from plotly_resampler.aggregation import MinMaxLTTB
+from plotly.subplots import make_subplots
+
 
 
 def calculate_channel_offset(num_channels, plot_height=900, min_gap=30):
@@ -120,7 +124,6 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
     fig_start_time = time.time()
     shifted_filtered_raw_df["Time"] = shifted_times  # Add time as a column for Plotly Express
 
-
     fig = px.line(
         shifted_filtered_raw_df,
         x="Time",
@@ -128,6 +131,40 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
         labels={"value": "Value", "variable": "Channel", "Time": "Time (s)"},
         color_discrete_map=color_map
     )
+
+    # Create a resampler-aware figure
+    # Create the resampled figure
+    # fig = FigureResampler(
+    #     go.Figure(),
+    #     default_downsampler=MinMaxLTTB(parallel=True),
+    #     resampled_trace_prefix_suffix=("<b style='color:#2bb1d6'>[R]</b> ", ''),
+    #     # show_mean_aggregation_size=False,
+    #     # default_n_shown_samples=17000,
+    #     create_overview=True,
+    #     # Specify the subplot rows that will be used for the overview axis of each column
+    #     overview_row_idxs=[1],
+    #     # Additonal kwargs for the overview axis
+    #     overview_kwargs={"height": 200},
+    #     )
+
+    # # Ensure contiguous NumPy arrays for performance
+    # time_values = np.ascontiguousarray(shifted_filtered_raw_df["Time"].to_numpy())
+
+    # for channel in selected_channels:
+    #     y_values = np.ascontiguousarray(shifted_filtered_raw_df[channel].to_numpy())  # Fix here
+
+    #     fig.add_trace(
+    #         go.Scattergl(
+    #             # x=time_values,
+    #             # y=y_values,
+    #             mode="lines",
+    #             name=channel,
+    #             line=dict(color=color_map[channel], width=1)
+    #         ),
+    #         hf_x=time_values,
+    #         hf_y=y_values,  # Pass contiguous array
+
+    #     )
 
     if 'smoothGrad' in color_selection:
 

@@ -1,6 +1,5 @@
 import base64
 import numpy as np
-import json
 
 def serialize_array(arr):
     return base64.b64encode(arr.astype(np.float32).tobytes()).decode()

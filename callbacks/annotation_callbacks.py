@@ -66,6 +66,7 @@ def register_update_annotations():
 
         for _, row in filtered_annotations_df.iterrows():
             description = row["description"]
+            duration = row['duration']
 
                 # Assign a consistent color for each description
             if description not in description_colors:
@@ -74,19 +75,38 @@ def register_update_annotations():
             color = description_colors[description]  # Get assigned color
 
             if description in annotations_to_show:
-                new_shapes.append(
-                    dict(
-                        type="line",
-                        x0=row.name,
-                        x1=row.name,
-                        y0=y_min,
-                        y1=y_max,
-                        xref="x",
-                        yref="y",
-                        line=dict(color=color, width=2, dash="dot"),
-                        opacity=0.25
+                 #Check the duration and add either a vertical line or a rectangle
+                if duration == 0:
+                    # Vertical line if duration is 0
+                    new_shapes.append(
+                        dict(
+                            type="line",
+                            x0=row.name,
+                            x1=row.name,
+                            y0=y_min,
+                            y1=y_max,
+                            xref="x",
+                            yref="y",
+                            line=dict(color=color, width=2, dash="dot"),
+                            opacity=0.25
+                        )
                     )
-                )
+                else:
+                    # Rectangle if duration > 0
+                    new_shapes.append(
+                        dict(
+                            type="rect",
+                            x0=row.name,
+                            x1=row.name + duration,
+                            y0=y_min,
+                            y1=y_max,
+                            xref="x",
+                            yref="y",
+                            line=dict(color=color, width=2),
+                            fillcolor=color,  # Set the color of the rectangle
+                            opacity=0.25
+                        )
+                    )
                 # Add the label in the margin
                 new_annotations.append(
                     dict(
@@ -124,8 +144,8 @@ def register_update_annotation_graph():
         if not annotations_data or not isinstance(annotations_data, list):
             return dash.no_update
         
-        # if not annotations_to_show:
-        #     return dash.no_update
+        if not annotations_to_show and not isinstance(annotations_to_show, list):
+            return dash.no_update
 
         time_range = chunk_limits[int(page_selection)]
 
@@ -139,17 +159,27 @@ def register_update_annotation_graph():
         # Create the annotation graph
         tick_vals = []
         tick_labels = []
+        shapes = []
 
         for _, row in annotations_df.iterrows():
             if row["description"] in annotations_to_show:
-                tick_vals.append(row.name)  # Use the onset time as the tick position
-                tick_labels.append(round(row.name, 2))
+                if row["duration"] == 0:
+                    tick_vals.append(row.name)  # Use the onset time as the tick position
+                    tick_labels.append(round(row.name, 2))
+
+                if row["duration"] > 0:
+                    shapes.append({
+                        'type': 'rect',
+                        'x0': row.name,
+                        'x1': row.name + row["duration"],  # Duration defines the rectangle width
+                        'y0': 0,  # Starting y-position of rectangle
+                        'y1': 1,  # Ending y-position of rectangle
+                        'line': {'color': 'rgba(0,0,255,0.6)', 'width': 2},  # Rectangle line color
+                        'fillcolor': 'rgba(0,0,255,0.2)',  # Rectangle fill color
+                    })
 
         # Update the figure with the new shapes and annotations
         fig_patch = go.Figure(annotation_fig)
-
-        print(tick_vals)
-        print(tick_labels)
 
         # Add styling improvements
         fig_patch.update_layout(
@@ -169,6 +199,7 @@ def register_update_annotation_graph():
                 range=[0, 1],  # More generous y-axis range
                 showgrid=False
             ),
+            shapes=shapes,
             paper_bgcolor="white",  # Light background for clarity
             plot_bgcolor= "rgba(0,0,0,0)",  # Keep the plot transparent
             margin=dict(l=10, r=0, t=10, b=100)  # Adjust margins for better spacing

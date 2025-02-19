@@ -13,7 +13,9 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from callbacks.utils import preprocessing_utils as pu
 from callbacks.utils import folder_path_utils as fpu
-import pickle
+import plotly.graph_objects as go
+import numpy as np
+import static.constants as c
 
 
 # Register the page
@@ -28,7 +30,7 @@ cache = Cache(app.server, config={
     'CACHE_TYPE': 'simple',
     # 'CACHE_TYPE': 'filesystem',
     # 'CACHE_DIR': 'cache-directory',
-    'CACHE_DEFAULT_TIMEOUT': 240,
+    'CACHE_DEFAULT_TIMEOUT': 8400,
     # 'CACHE_THRESHOLD': 50 # higher numbers will store more data in the filesystem / redis cache
 })
 
@@ -65,57 +67,73 @@ layout = html.Div([
 
     ], style={"padding": "15px", "backgroundColor": "#fff", "border": "1px solid #ddd","borderRadius": "8px", "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)", "marginBottom": "20px"}),
 
-    # Section for frequency parameters, initially hidden
     html.Div(
-        id="frequency-inputs",
+        id="frequency-container",
         children=[
-            html.H3("Frequency Parameters for Signal Processing", style={"margin-bottom": "15px"}),
+            # Frequency Inputs (Left Side)
+            html.Div(
+                id="frequency-inputs",
+                children=[
+                    html.H3("Frequency Parameters for Signal Processing", style={"margin-bottom": "15px"}),
 
-            # Inputs for frequency parameters
-            html.Div([
-                html.Label("Resampling Frequency (Hz): "),
-                dbc.Input(id="resample-freq", type="number", value=150, step=50, min=50, style=input_styles["number"]),
-            ], style={"padding": "10px"}),
+                    html.Div([
+                        html.Label("Resampling Frequency (Hz): "),
+                        dbc.Input(id="resample-freq", type="number", value=150, step=50, min=50, style=input_styles["number-in-box"]),
+                    ], style={"padding": "10px"}),
 
-            html.Div([
-                html.Label("High-pass Frequency (Hz): "),
-                dbc.Input(id="high-pass-freq", type="number", value=0.5, step=0.1, min=0.1, style=input_styles["number"]),
-            ], style={"padding": "10px"}),
+                    html.Div([
+                        html.Label("High-pass Frequency (Hz): "),
+                        dbc.Input(id="high-pass-freq", type="number", value=0.5, step=0.1, min=0.1, style=input_styles["number-in-box"]),
+                    ], style={"padding": "10px"}),
 
-            html.Div([
-                html.Label("Low-pass Frequency (Hz): "),
-                dbc.Input(id="low-pass-freq", type="number", value=50, step=10, min=10, style=input_styles["number"]),
-            ], style={"padding": "10px"}),
+                    html.Div([
+                        html.Label("Low-pass Frequency (Hz): "),
+                        dbc.Input(id="low-pass-freq", type="number", value=50, step=10, min=10, style=input_styles["number-in-box"]),
+                    ], style={"padding": "10px"}),
 
-            # Button and status display with loading spinner
-            html.Div([
-                dbc.Button(
-                    "Preprocess & Display",
-                    id="preprocess-display-button",
-                    color="success",
-                    disabled=True,
-                    n_clicks=0
-                ),
-                # Loading spinner wraps only the elements that require loading
-                dcc.Loading(
-                    id="loading",
-                    type="default", 
-                    children=[
-                        html.Div(id="preprocess-status", style={"margin-top": "10px"})
-                    ]
-                ),
-                # Location for URL refresh
-                dcc.Location(id="url", refresh=True),
-            ], style={"padding": "10px", "margin-top": "20px"})
+                    html.Div([
+                        dbc.Button("Preprocess & Display", id="preprocess-display-button", color="success", disabled=True, n_clicks=0),
+                        dcc.Loading(
+                            id="loading",
+                            type="default",
+                            children=[html.Div(id="preprocess-status", style={"margin-top": "10px"})]
+                        ),
+                        dcc.Location(id="url", refresh=True),
+                    ], style={"padding": "10px", "margin-top": "20px"})
+                ],
+                style={
+                    "padding": "15px",
+                    "backgroundColor": "#fff",
+                    "border": "1px solid #ddd",
+                    "borderRadius": "8px",
+                    "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",
+                    "width": "40%",  # Set width for left panel
+                    "marginRight": "20px"  # Add spacing between elements
+                }
+            ),
+
+            # PSD Graph (Right Side)
+            html.Div(
+                id="psd",
+                children=[
+                    dcc.Graph(id="psd-graph")
+                ],
+                style={
+                    "padding": "15px",
+                    "backgroundColor": "#fff",
+                    "border": "1px solid #ddd",
+                    "borderRadius": "8px",
+                    "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",
+                    "width": "60%",  # Set width for right panel
+                }
+            ),
         ],
         style={
-            "padding": "15px",
-            "backgroundColor": "#fff",
-            "border": "1px solid #ddd",  # Grey border
-            "borderRadius": "8px",  # Rounded corners
-            "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",
-            "marginBottom": "20px",
-            "display": "none"
+            "display": "none",
+            "flexDirection": "row",  # Side-by-side layout
+            "alignItems": "flex-start",  # Align to top
+            "gap": "20px",  # Add spacing between elements
+            "width": "100%"  # Ensure full width
         }
     )
 ])
@@ -157,20 +175,20 @@ def handle_valid_folder_path(folder_path):
     return dash.no_update, dash.no_update
 
 @dash.callback(
-    Output("frequency-inputs", "style"),
+    Output("frequency-container", "style"),
     Input("load-button", "n_clicks"),
     prevent_initial_call=True
 )
 def handle_load_button(n_clicks):
     """Display frequency parameters when button is clicked"""
     if n_clicks > 0:
-        return {"padding": "15px",
-            "backgroundColor": "#fff",
-            "border": "1px solid #ddd",  # Grey border
-            "borderRadius": "8px",  # Rounded corners
-            "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",
-            "marginBottom": "20px",
-            "display": "block"}
+        style = {"display": "flex",
+            "flexDirection": "row",  # Side-by-side layout
+            "alignItems": "flex-start",  # Align to top
+            "gap": "20px",  # Add spacing between elements
+            "width": "100%"} # Ensure full width
+        return style
+
 
 @dash.callback(
     Output("frequency-store", "data"),
@@ -219,6 +237,60 @@ def handle_frequency_parameters(resample_freq, high_pass_freq, low_pass_freq):
 #             return f"Error during preprocessing : {str(e)}"
     
 #     return pd.read_json(StringIO(preprocess_meg_data(folder_path, freq_data)))
+
+@dash.callback(
+    Output("psd-graph", "figure"),
+    Input("folder-store", "data"),
+    Input("frequency-store", "data"),
+    prevent_initial_call=True
+)
+def display_psd(folder_path, freq_data):
+    raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
+    resample_freq = freq_data.get("resample_freq")
+    low_pass_freq = freq_data.get("low_pass_freq")
+    high_pass_freq = freq_data.get("high_pass_freq")
+
+    # Create the PSD plot using Plotly
+    psd_fig = go.Figure()
+
+    # Compute Power Spectral Density (PSD)
+    psd_data = raw.compute_psd(method='welch', fmin=high_pass_freq, fmax=low_pass_freq, n_fft=2048, picks='meg')
+    psd, freqs = psd_data.get_data(return_freqs=True)
+    print(psd.shape)
+
+    # Convert PSD to dB (as MNE does by default)
+    psd_dB = 10 * np.log10(psd)
+
+    # Create a Plotly figure to mimic MNE’s PSD plot
+    psd_fig = go.Figure()
+
+    # Plot multiple channels with transparency for better readability
+    for ch_idx, ch_name in enumerate(c.ALL_CH_NAMES_PREFIX):  # Plot only first 10 channels
+        psd_fig.add_trace(go.Scatter(
+            x=freqs,
+            y=psd_dB[ch_idx],  
+            mode='lines',
+            line=dict(width=1),
+            name=ch_name
+        ))
+
+    # Update layout to match MNE’s default style
+    psd_fig.update_layout(
+        title="Power Spectral Density (PSD)",
+        xaxis=dict(
+            title="Frequency (Hz)",
+            type="linear",  # MNE uses linear frequency scale
+            showgrid=True
+        ),
+        yaxis=dict(
+            title="Power (dB)",  # Log scale power in dB
+            type="linear",
+            showgrid=True
+        ),
+        template="plotly_white"
+    )
+
+    return psd_fig
 
 def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw=None):
     """
