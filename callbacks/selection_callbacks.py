@@ -251,6 +251,8 @@ def register_callbacks_sensivity_analysis():
     )
     def display_sensitivity_analysis_checklist(sa_store, value, default_options):
         # Create options for the checklist from the channels in montage_store
+        if sa_store is None or sa_store == {}:
+            return dash.no_update
         options = [{'label': key, 'value': key} for key in sa_store.keys()]
         if options[-1] not in default_options:
             updated_options = default_options + options

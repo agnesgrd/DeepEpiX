@@ -5,6 +5,8 @@ from layout import input_styles, box_styles, button_styles
 from layout.selection_sidebar_layout import create_selection
 from layout.analyze_sidebar_layout import create_analyze
 from layout.predict_sidebar_layout import create_predict
+from layout.save_sidebar_layout import create_save
+
 
 
 # Helper function to create the sidebar with checkboxes
@@ -15,6 +17,7 @@ def create_sidebar():
                 dbc.Tab(create_selection(), label='Select', tab_id='selection-tab'), # create_selection()
                 dbc.Tab(create_analyze(), label='Analyze', tab_id='analyzing-tab'), # create_analyze()
                 dbc.Tab(create_predict(), label='Predict', tab_id='prediction-tab'), #create_prediction()
+                dbc.Tab(create_save(), label='Save', tab_id='saving-tab'), #create_prediction()
             ],
             id="sidebar-tabs",
             persistence = True,

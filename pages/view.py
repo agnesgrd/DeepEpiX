@@ -28,12 +28,12 @@ from callbacks.selection_callbacks import (
 from callbacks.graph_callbacks import (
     register_update_graph_time_channel,
     register_move_time_slider,
-    register_move_to_spike,
 )
 
 from callbacks.annotation_callbacks import (
     register_update_annotations,
     register_update_annotation_graph,
+    register_move_to_next_annotation
 )
 
 from callbacks.topomap_callbacks import (
@@ -123,7 +123,7 @@ register_display_topomap_on_click()
 
 register_activate_deactivate_topomap_button()
 
-register_move_to_spike()
+register_move_to_next_annotation()
 
 register_callbacks_sensivity_analysis()
 

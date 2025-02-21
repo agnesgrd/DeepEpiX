@@ -215,7 +215,7 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
             color="Color",
             color_continuous_scale="Reds",
             labels={"value": "Value", "variable": "Channel", "Time": "Time (s)"},
-            opacity=0.8
+            opacity=1
         )
 
         # Add scatter traces to the line plot

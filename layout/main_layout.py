@@ -89,5 +89,11 @@ label_styles = {
         "fontWeight": "bold",
         "fontSize": "14px",
         "marginBottom": "5px",
+    },
+    "info": {
+        "fontWeight": "lighter",
+        "fontSize": "14px",
+        "marginBottom": "5px",
     }
+
 }

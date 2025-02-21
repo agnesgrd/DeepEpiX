@@ -90,11 +90,10 @@ def get_av_grad(noisy_images,model,expected_output, num_samples):
 #     return norm_grads
 
 def postprocess_grad(av_grad):
-    av_grad_np = av_grad[0,:,:].numpy() #already abs values
+    av_grad_np = av_grad[0,:,:].numpy() #already abs values.
     thresh = np.quantile(av_grad_np,0.75)
-    print(thresh)
     av_grad_np[av_grad_np<thresh] = np.min(av_grad_np[av_grad_np>thresh])/2
-    av_grad_np[av_grad_np>thresh] = 0.5* ((av_grad_np[av_grad_np>thresh] -  np.min(av_grad_np[av_grad_np>thresh]))/(np.max(av_grad_np[av_grad_np>thresh])-np.min(av_grad_np[av_grad_np>thresh]))) + 0.5
+    av_grad_np[av_grad_np>thresh] = 0.25* ((av_grad_np[av_grad_np>thresh] -  np.min(av_grad_np[av_grad_np>thresh]))/(np.max(av_grad_np[av_grad_np>thresh])-np.min(av_grad_np[av_grad_np>thresh]))) + 0.75
     av_grad_np = signal.wiener(av_grad_np, (7,7))
     return av_grad_np
 

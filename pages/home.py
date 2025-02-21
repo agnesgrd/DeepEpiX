@@ -391,6 +391,7 @@ def preprocess_meg_data(n_clicks, folder_path, freq_data):
             # Apply filtering and resampling
             raw.filter(l_freq=high_pass_freq, h_freq=low_pass_freq, n_jobs=8)
             raw.resample(resample_freq)
+            print(raw.info["ch_names"])
 
             for chunk_idx in chunk_limits:
                 start_time, end_time = chunk_idx
