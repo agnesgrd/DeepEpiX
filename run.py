@@ -1,11 +1,6 @@
 # run.py
 from dash import Dash, html, dcc, page_container
 import dash_bootstrap_components as dbc
-import uuid
-from flask_caching import Cache
-from dash import Input, Output, State
-import dash
-from layout import box_styles
 
 import cProfile
 pr = cProfile.Profile()
@@ -41,7 +36,7 @@ app.layout = html.Div(
         dcc.Store(id="annotations-store", data = [], storage_type="local"),
         dcc.Store(id="montage-store", data={}, storage_type="local"),
         dcc.Store(id="history-store", storage_type="local"),
-        dcc.Store(id='sensitivity-analysis-store', data={}, storage_type='memory'),
+        dcc.Store(id='sensitivity-analysis-store', data={}, storage_type='local'),
 
         # Row for title and links
         html.Div(

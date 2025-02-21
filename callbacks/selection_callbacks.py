@@ -239,3 +239,23 @@ def register_hide_channel_selection_when_montage():
         else:
             # Enable all options
             return [{'label': option['label'], 'value': option['value'], 'disabled': False} for option in channel_options]
+
+def register_callbacks_sensivity_analysis():
+    # Callback to populate the checklist options and default value dynamically
+    @dash.callback(
+        Output("colors-radio", "options"),
+        Input("sensitivity-analysis-store", "data"),
+        Input("colors-radio", "value"),
+        State("colors-radio", "options"),
+        prevent_initial_call=False
+    )
+    def display_sensitivity_analysis_checklist(sa_store, value, default_options):
+        # Create options for the checklist from the channels in montage_store
+        options = [{'label': key, 'value': key} for key in sa_store.keys()]
+        if options[-1] not in default_options:
+            updated_options = default_options + options
+            # If value is valid, keep the current selection
+            return updated_options
+        else:
+            return dash.no_update
+    

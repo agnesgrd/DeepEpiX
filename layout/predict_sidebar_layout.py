@@ -175,10 +175,13 @@ def execute_predict_script(n_clicks, subject_folder_path, model_path, spike_name
     )
 
     if sensitivity_analysis == "Yes":
-        grad_on_time, grad_on_channels = run_smoothgrad(model_path, y_pred)
-        grad_store = {'smoothGrad across channels': [sau.serialize_array(grad_on_time),grad_on_time.shape], 'smoothGrad across time': [sau.serialize_array(grad_on_channels), grad_on_channels.shape]}
+        grad = run_smoothgrad(model_path, y_pred)
+        # grad_store = {'smoothGrad': [sau.serialize_array(grad),grad.shape]}
+        grad_path = "results/smoothGrad.pkl"
+        with open(grad_path, 'wb') as f:
+            pickle.dump(grad, f)
     
-    return True, prediction_table, 0, {"display": "block"}, grad_store
+    return True, prediction_table, 0, {"display": "block"}, {'smoothGrad': grad_path}
 
 @dash.callback(
     Output('annotations-store', 'data', allow_duplicate=True),

@@ -170,12 +170,17 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
 
         # Add scatter plot using px.scatter
         # Convert time range to integer indices
-        time_range_indices = np.arange(math.floor(time_range[0] * 150), math.ceil(time_range[1] * 150)+1).astype(int)
+        time_range_indices = np.arange(round(time_range[0] * 150), round(time_range[1] * 150)+1).astype(int)
         channel_indices = np.where(np.isin(c.ALL_CH_NAMES, selected_channels))[0]
+        print('time range indices',time_range_indices)
+        print('channel indices', channel_indices)
+        print(sensitivity_analysis.shape)
         filtered_sa_array = sensitivity_analysis[time_range_indices[:, None], channel_indices]
+        print(filtered_sa_array.shape)
         scatter_df = shifted_filtered_raw_df.melt(id_vars=["Time"], var_name="Channel", value_name="Value")
 
         scatter_df["Color"] = filtered_sa_array.flatten('F')  # Flatten color array
+
         # # Add a break (NaN row) between each channel
         # scatter_df_sorted = scatter_df.sort_values(by=["Channel", "Time"])  # Ensure sorting within each channel
 
@@ -185,8 +190,23 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
         #     return pd.concat([x, break_row], ignore_index=True)
 
         # scatter_df_sorted = scatter_df_sorted.groupby("Channel", group_keys=True).apply(add_break).reset_index(drop=True)
+        # Ensure time is numeric (in seconds)
+        # scatter_df = scatter_df.sort_values(by='Time')  # Sort just in case
+
+        # # Define new time range at 600 Hz (1/600 seconds step)
+        # time_min = scatter_df['Time'].min()
+        # time_max = scatter_df['Time'].max()
+        # new_time_grid = np.arange(time_min, time_max, 1/600)  # Step size = 1/600 seconds
+        # print(new_time_grid)
+        # # Reindex DataFrame
+        # scatter_df_interpolated = pd.DataFrame({'Time': new_time_grid})
+        # scatter_df_interpolated = scatter_df_interpolated.merge(scatter_df, on='Time', how='left')
+
+        # # Interpolate missing "color" values
+        # scatter_df_interpolated['Color'] = scatter_df_interpolated['Color'].interpolate(method='linear')
 
         scatter_df_filtered = scatter_df[scatter_df["Color"] > 0]
+        print(scatter_df_filtered)
 
         scatter_fig = px.scatter(
             scatter_df_filtered,
@@ -212,6 +232,8 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
         xaxis=dict(
             title='Time (s)',
             range=xaxis_range,
+            minallowed=time_range[0],
+            maxallowed=time_range[1],
             fixedrange=False,
             rangeslider=dict(visible=True, thickness=0.02),
             showspikes=True,
@@ -261,7 +283,7 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
         )
 
 
-        fig.update_traces(line=dict(width=2))
+        fig.update_traces(line=dict(width=1), marker=dict(size=3))
 
 
     

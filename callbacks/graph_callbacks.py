@@ -11,25 +11,8 @@ import traceback
 import plotly.graph_objects as go
 import pandas as pd
 import itertools
+import pickle
    
-    
-def register_callbacks_sensivity_analysis():
-    # Callback to populate the checklist options and default value dynamically
-    @dash.callback(
-        Output("colors-radio", "options"),
-        Output("colors-radio", "value"),
-        Input("sensitivity-analysis-store", "data"),
-        State("colors-radio", "options"),
-        State("colors-radio", "value"),
-        prevent_initial_call=False
-    )
-    def display_sensitivity_analysis_checklist(sa_store, default_options, value):
-        # Create options for the checklist from the channels in montage_store
-        options = [{'label': key, 'value': key} for key in sa_store.keys()]
-        updated_options = default_options + options
-
-        # If value is valid, keep the current selection
-        return updated_options, dash.no_update
             
    
 def register_update_graph_time_channel(): 
@@ -49,7 +32,7 @@ def register_update_graph_time_channel():
         State("sensitivity-analysis-store", "data"),
         prevent_initial_call=False
     )
-    def update_graph_time_channel(page_selection, montage_selection, channel_selection, folder_path, offset_selection, color_selection, chunk_limits,freq_data, montage_store, graph, sensitivity_analysis):
+    def update_graph_time_channel(page_selection, montage_selection, channel_selection, folder_path, offset_selection, color_selection, chunk_limits,freq_data, montage_store, graph, sensitivity_analysis_store):
         """Update MEG signal visualization based on time and channel selection."""
 
         time_range = chunk_limits[int(page_selection)]
@@ -61,10 +44,11 @@ def register_update_graph_time_channel():
 
 
         # Reading back
-        if color_selection == "smoothGrad across channels":
-            sensitivity_analysis = sau.deserialize_array(sensitivity_analysis['smoothGrad across channels'][0], sensitivity_analysis['smoothGrad across channels'][1])
-        elif color_selection == "smoothGrad across time":
-            sensitivity_analysis = sau.deserialize_array(sensitivity_analysis['smoothGrad across time'][0], sensitivity_analysis['smoothGrad across time'][1])
+        if "smoothGrad" in color_selection:
+            with open(sensitivity_analysis_store['smoothGrad'], 'rb') as f:
+                sensitivity_analysis = pickle.load(f)
+        else:
+            sensitivity_analysis = {}
 
         try:
             if montage_selection == "channel selection" and not channel_selection or not folder_path or not freq_data:  # Check if data is missing

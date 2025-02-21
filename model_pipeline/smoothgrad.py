@@ -89,29 +89,26 @@ def get_av_grad(noisy_images,model,expected_output, num_samples):
 #     # Returns normalized averaged gradient 
 #     return norm_grads
 
-def postprocess_grad(av_grad, axis=0):
+def postprocess_grad(av_grad):
     av_grad_np = av_grad[0,:,:].numpy() #already abs values
-    thresh = np.quantile(av_grad_np,0.5)
-    av_grad_np[av_grad_np<thresh] = 0
-    av_grad_np[np.nonzero(av_grad_np)] = 0.5* ((av_grad_np[np.nonzero(av_grad_np)] -  np.min(av_grad_np[np.nonzero(av_grad_np)]))/(np.max(av_grad_np[np.nonzero(av_grad_np)])-np.min(av_grad_np[np.nonzero(av_grad_np)]))) + 0.5
-    av_grad_np = signal.wiener(av_grad_np, (3,3))
+    thresh = np.quantile(av_grad_np,0.75)
+    print(thresh)
+    av_grad_np[av_grad_np<thresh] = np.min(av_grad_np[av_grad_np>thresh])/2
+    av_grad_np[av_grad_np>thresh] = 0.5* ((av_grad_np[av_grad_np>thresh] -  np.min(av_grad_np[av_grad_np>thresh]))/(np.max(av_grad_np[av_grad_np>thresh])-np.min(av_grad_np[av_grad_np>thresh]))) + 0.5
+    av_grad_np = signal.wiener(av_grad_np, (7,7))
     return av_grad_np
-
 
 
 ##################### MAIN
 
 def run_smoothgrad(model_file, y_pred):
     X_test_ids = utils.generate_database(total_nb_windows)
-    print(total_nb_windows)
-    print(y_pred.shape)
 
     # -- get model
     model = keras.models.load_model(model_file, compile=False)
 
     # -- instantiate arrays to store the full signal portion between start_win and stop_win and the corresponding gradient values 
-    full_grads_on_time = np.zeros((total_nb_points, 274))
-    full_grads_on_channels = np.zeros((total_nb_points, 274))
+    full_grads = np.zeros((total_nb_points, 274))
 
     # For each window
     for w,i in enumerate(range(0,total_nb_windows)):
@@ -122,14 +119,11 @@ def run_smoothgrad(model_file, y_pred):
 
             # Compute SmoothGrad (average and normalizing)
             av_grad, pred = get_av_grad(noisy_images,model,my_labels,nb_repeat_sg)
-            norm_grads_on_time = postprocess_grad(av_grad, axis = 1)
-            norm_grads_on_channels = postprocess_grad(av_grad, axis = 0)
 
-            # #Fill signal array (/!\ carreful with window overlap ! boundary conditions are not handeled here)
-            # full_signal[w*total_lenght:w*total_lenght+total_lenght,:] = sample_non_norm[overlap:,:]
+            norm_grads = postprocess_grad(av_grad)
 
             #If the model predicts a spike then fill the gradient array over the full window (comprising the beggining and end window overlaps)
-            full_grads_on_time[(w*total_lenght)-math.floor(overlap/2):(w*total_lenght)+total_lenght + math.ceil(overlap/2),:] = norm_grads_on_time[:,:]
-            full_grads_on_channels[(w*total_lenght)-math.floor(overlap/2):(w*total_lenght)+total_lenght + math.ceil(overlap/2),:] = norm_grads_on_channels[:,:]
+            full_grads[(w*total_lenght)-math.floor(overlap/2):(w*total_lenght)+total_lenght + math.ceil(overlap/2),:] = norm_grads[:,:]
 
-    return full_grads_on_time, full_grads_on_channels
+    print(full_grads.shape)
+    return full_grads

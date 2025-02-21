@@ -20,7 +20,8 @@ from callbacks.selection_callbacks import (
     register_cancel_or_confirm_annotation_suppression,
     register_callbacks_montage_names,
     register_callbacks_annotation_names,
-    register_hide_channel_selection_when_montage
+    register_hide_channel_selection_when_montage,
+    register_callbacks_sensivity_analysis
 )
 
 
@@ -28,7 +29,6 @@ from callbacks.graph_callbacks import (
     register_update_graph_time_channel,
     register_move_time_slider,
     register_move_to_spike,
-    register_callbacks_sensivity_analysis
 )
 
 from callbacks.annotation_callbacks import (
