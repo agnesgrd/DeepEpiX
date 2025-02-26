@@ -27,7 +27,8 @@ cache-directory/
 file_system_backend/
 
 # Model prediction results
-results/
+results/*
+!results/.gitkeep
 
 # Jupyter Notebook test
 *.ipynb
