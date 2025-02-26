@@ -175,7 +175,8 @@ def handle_valid_folder_path(folder_path):
     return dash.no_update, dash.no_update
 
 @dash.callback(
-    Output("frequency-container", "style"),
+    [Output("frequency-container", "style"),
+    Output("sensitivity-analysis-store", "data", allow_duplicate=True)],
     Input("load-button", "n_clicks"),
     prevent_initial_call=True
 )
@@ -187,7 +188,8 @@ def handle_load_button(n_clicks):
             "alignItems": "flex-start",  # Align to top
             "gap": "20px",  # Add spacing between elements
             "width": "100%"} # Ensure full width
-        return style
+        return style, {}
+    return dash.no_update, dash.no_update
 
 
 @dash.callback(

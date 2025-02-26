@@ -348,7 +348,7 @@ def test_model_dash(model_name, testing_generator, X_test_ids, output_path, thre
 
     df = pd.DataFrame(new_annotation_timing, columns=['onset'])
     df['duration'] = 0 # to fit with mne annotation format
-    df.to_csv(f'{output_path}predictions.csv', index=False)
+    df.to_csv(output_path / 'predictions.csv', index=False)
 
     return y_pred, df
 

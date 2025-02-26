@@ -15,13 +15,9 @@ import math
 path_to_files = '/home/admin_mel/Code/DeepEpiX/results/'
 
 binary_file = path_to_files + 'data_raw_1_windows_bi'
-f = open(binary_file)
+# f = open(binary_file)
 start_win = 3
 stop_win = 300
-blocks_file = utils.load_obj('data_raw_1_blocks.pkl', path_to_files)
-total_nb_windows = len(blocks_file)
-data_file = utils.load_obj('data_raw_1.pkl', path_to_files)
-total_nb_points = data_file['meg'][0].shape[1]
 
 ##################### FIXED PARAMS
 nb_repeat_sg = 10
@@ -101,6 +97,13 @@ def postprocess_grad(av_grad):
 ##################### MAIN
 
 def run_smoothgrad(model_file, y_pred):
+
+    f = open(binary_file)
+    blocks_file = utils.load_obj('data_raw_1_blocks.pkl', path_to_files)
+    total_nb_windows = len(blocks_file)
+    data_file = utils.load_obj('data_raw_1.pkl', path_to_files)
+    total_nb_points = data_file['meg'][0].shape[1]
+
     X_test_ids = utils.generate_database(total_nb_windows)
 
     # -- get model

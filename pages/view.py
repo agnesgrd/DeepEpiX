@@ -54,6 +54,13 @@ from callbacks.history_callbacks import (
 
 from callbacks.utils import history_utils
 
+from callbacks.save_callbacks import (
+    register_enter_default_saving_folder_path,
+    register_callbacks_annotations_to_save_names,
+    register_save_new_markerfile,
+    register_manage_annotations_to_save_checklist
+)
+
 dash.register_page(__name__)
 
 
@@ -133,3 +140,10 @@ register_popup_annotation_suppression()
 
 register_cancel_or_confirm_annotation_suppression()
 
+register_enter_default_saving_folder_path()
+
+register_save_new_markerfile()
+
+register_manage_annotations_to_save_checklist()
+
+register_callbacks_annotations_to_save_names()

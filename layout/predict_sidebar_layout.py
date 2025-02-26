@@ -11,6 +11,7 @@ from model_pipeline.smoothgrad import run_smoothgrad
 from callbacks.utils import predict_utils as pu
 import static.constants as c
 from callbacks.utils import sensitivity_analysis_utils as sau
+from pathlib import Path
 
 def create_predict():
     layout = html.Div([
@@ -160,9 +161,9 @@ def execute_predict_script(n_clicks, subject_folder_path, model_path, spike_name
     y_pred, result = run_model_pipeline(
         model_path, 
         venv, 
-        '/home/admin_mel/Code/DeepEpiX/model_pipeline/good_channels', 
+        Path.cwd() / "model_pipeline/good_channels", 
         subject_folder_path,
-        "/home/admin_mel/Code/DeepEpiX/results/",
+        Path.cwd() / "results",
         threshold = float(threshold))
     
     prediction_table = dash_table.DataTable(

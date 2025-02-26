@@ -34,7 +34,12 @@ def register_update_graph_time_channel():
     )
     def update_graph_time_channel(page_selection, montage_selection, channel_selection, folder_path, offset_selection, color_selection, chunk_limits,freq_data, montage_store, graph, sensitivity_analysis_store):
         """Update MEG signal visualization based on time and channel selection."""
+        print(folder_path)
+        if folder_path is None:
+            return dash.no_update, "Please choose a subject to display in Home page."
 
+        if chunk_limits == []:
+            return dash.no_update, "Please choose a subject to display in Home page."
         time_range = chunk_limits[int(page_selection)]
 
         # Get the current x-axis center

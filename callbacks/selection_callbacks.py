@@ -194,6 +194,9 @@ def register_callbacks_annotation_names():
         prevent_initial_call = False
     )
     def display_annotation_names_checklist(annotations_store):
+        if annotations_store == []:
+            return dash.no_update, dash.no_update
+        
         description_counts = au.get_annotation_descriptions(annotations_store)
 
         options = [{'label': f"{name} ({count})", 'value': f"{name}"} for name, count in description_counts.items()]
@@ -251,6 +254,7 @@ def register_callbacks_sensivity_analysis():
     )
     def display_sensitivity_analysis_checklist(sa_store, value, default_options):
         # Create options for the checklist from the channels in montage_store
+        print(sa_store)
         if sa_store is None or sa_store == {}:
             return dash.no_update
         options = [{'label': key, 'value': key} for key in sa_store.keys()]

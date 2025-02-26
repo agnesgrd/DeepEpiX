@@ -50,7 +50,7 @@ def annotation_by_description(annotations):
 
 	return annotations_by_description
 
-def save_mrk_file(folder_path, old_mrk_name, new_mrk_name, annotations):
+def save_mrk_file(folder_path, old_mrk_name, new_mrk_name, annotations_to_save,annotations):
 	"""Saves annotation data to a .mrk file in the specified folder."""
 	
 	# Ensure folder exists
@@ -70,8 +70,7 @@ def save_mrk_file(folder_path, old_mrk_name, new_mrk_name, annotations):
 			# print(f"Old marker file copied to {new_mrk_path}")
 			
 			annotations_dict = annotation_by_description(annotations)
-			print(len(annotations_dict))
-			nb_annot = len(annotations_dict)
+			nb_annot = len(annotations_to_save)
 			# Now rewrite the new marker file with the new annotations
 
 			
@@ -82,19 +81,20 @@ def save_mrk_file(folder_path, old_mrk_name, new_mrk_name, annotations):
 
 					# Write annotations
 				for description, annot_list in annotations_dict.items():
-						f.write(
-							f"CLASSGROUPID:\n3\n"
-							f"NAME:\n{description}\n"
-							f"COMMENT:\n\n"
-							f"COLOR:\ngreen\n"
-							f"EDITABLE:\nYes\n"
-							f"CLASSID:\n1\n"
-							f"NUMBER OF SAMPLES:\n{len(annot_list)}\n"
-							f"LIST OF SAMPLES:\nTRIAL NUMBER\t\tTIME FROM SYNC POINT (in seconds)\n"
-						)
-						for v in annot_list:
-							f.write(f"      +0\t\t\t+{v['onset']}\n")
-						f.write("\n\n")
+						if description in annotations_to_save:
+							f.write(
+								f"CLASSGROUPID:\n3\n"
+								f"NAME:\n{description}\n"
+								f"COMMENT:\n\n"
+								f"COLOR:\ngreen\n"
+								f"EDITABLE:\nYes\n"
+								f"CLASSID:\n1\n"
+								f"NUMBER OF SAMPLES:\n{len(annot_list)}\n"
+								f"LIST OF SAMPLES:\nTRIAL NUMBER\t\tTIME FROM SYNC POINT (in seconds)\n"
+							)
+							for v in annot_list:
+								f.write(f"      +0\t\t\t+{v['onset']}\n")
+							f.write("\n\n")
 
 			print(f"File saved successfully: {new_mrk_path}")
 

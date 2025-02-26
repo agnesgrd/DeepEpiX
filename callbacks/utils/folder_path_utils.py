@@ -1,12 +1,18 @@
 import tkinter as tk
 from tkinter import filedialog
 import os
+from pathlib import Path
 
 # Function to get model options
 def get_folder_path_options():
-    data_dir = "/home/admin_mel/Code/DeepEpiX/data/"
-    data = [f for f in os.listdir(data_dir) if f.endswith('.ds')]
-    return [{"label": d, "value": os.path.join(data_dir, d)} for d in data] if data else [{"label": "No data available", "value": ""}]
+    data_dir = Path.cwd() / "data"  # Proper path handling
+    data = list(data_dir.glob("*.ds"))  # List all matching files
+    
+    return (
+        [{"label": d.name, "value": str(d.resolve())} for d in data]
+        if data
+        else [{"label": "No data available", "value": ""}]
+    )
 
 
 def browse_folder():

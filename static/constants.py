@@ -1,3 +1,6 @@
+##### Useful path ##########
+
+
 ##### Default plotting variables #####
 DEFAULT_Y_AXIS_OFFSET = 40
 DEFAULT_SEGMENT_SIZE = 10

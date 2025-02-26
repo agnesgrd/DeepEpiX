@@ -1,9 +1,16 @@
-import os
+from pathlib import Path
+from itertools import chain
+
 
 # Function to get model options
 def get_model_options():
-    model_dir = "/home/admin_mel/Code/DeepEpiX/models/"
-    models = [f for f in os.listdir(model_dir) if f.endswith(('.pth', '.keras', '.h5'))]
-    
-    return [{"label": model, "value": os.path.join(model_dir, model)} for model in models] if models else [{"label": "No model available", "value": ""}]
+    model_dir = Path.cwd() / "models"
 
+    models = [f for f in model_dir.iterdir() if f.suffix in {".pth", ".keras", ".h5"}]
+
+    return (
+        [{"label": d.name, "value": str(d.resolve())} for d in models]
+        if models
+        else [{"label": "No data available", "value": ""}]
+    )
+    
