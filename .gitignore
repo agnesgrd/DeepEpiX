@@ -6,6 +6,8 @@ __pycache__/
 # Virtual environment
 .venv/*
 .venv39/*
+.torchenv/*
+.tfenv/*
 
 # Distribution files
 dist/
