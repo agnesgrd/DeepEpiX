@@ -19,7 +19,8 @@ build/
 Thumbs.db
 
 # Data
-data/
+data/*
+!data/.gitkeep
 
 # Cache
 cache-directory/
