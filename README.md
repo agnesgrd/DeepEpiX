@@ -71,8 +71,7 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-![Screenshot from 2025-01-10 11-12-11](https://github.com/user-attachments/assets/c27b6abe-b7ee-4860-8e35-27428fc1f34d)
-![View_screenshot](https://github.com/user-attachments/assets/e15ef509-19cf-487a-a3e3-4f9d6f6a29b4)
+This software is designed for clinicians to annotate raw MEG data and run predictive models for spike detection.  
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -86,52 +85,97 @@
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- GETTING STARTED -->
 ## Getting Started
 
 ### Prerequisites
 
-??
+- **Data Format**: CTF  
+- **Skills**: Basic terminal usage and Python knowledge  
 
 ### Installation
 
-1. Clone the repo
-   ```sh
-   git clone https://github.com/agnesgrd/DeepEpiX.git
-   ```
-2. Go into DeepEpiX directory adn install the virtual environment for running a dash app :
-   ```sh
-   python3 -m venv .dashenv
-   source .dashenv/bin/activate
-   python3 -m pip install -r requirements-python3.9.txt
-   ```
-Alternatively, you can just install manually the core package listed in the requirements-python3.9.in file.
-DeepEpiX was developed using Python 3.9, so this is what we recommend to use.
+Follow these steps to install and set up **DeepEpiX**.  
 
-3. If you want to use prediction models, install the following virtual environment :
-   #### TensorFlow
-   ```sh
-   python3 -m venv .tfenv
-   source .tfenv/bin/activate
-   python3 -m pip install -r requirements-tfenv.txt
-   ```
-  #### PyTorch
-   ```sh
-   python3 -m venv .torchenv
-   source .torchenv/bin/activate
-   python3 -m pip install -r requirements-torchenv.txt
-   ```
-   When running a prediction model, these environment would be call with their name .tfenv and .torchenv, they are expected to be in DeepEpiX folder.
+#### 1. Clone the Repository in your Working Directory
+```bash
+git clone https://github.com/agnesgrd/DeepEpiX.git
+```  
 
-4. Activate you dash environment and start running DeepEpiX in your terminal with
-   ```sh
-   . .dashenv/bin/activate
-   python3 run.py
-   ```
-   then open the app in your web-browser under http://127.0.0.1:8050/
-5. You're ready to use DeepEpiX Software
+#### 2. Set Up the Dash Environment  
+Navigate into the `DeepEpiX` directory 
+```bash
+cd DeepEpiX
+```
+ and install the virtual environment for running the Dash app:
+##### using 'pip + venv'
+```bash
+python3 -m venv .dashenv
+source .dashenv/bin/activate
+python3 -m pip install -r requirements-python3.9.txt
+deactivate
+```
+##### or using 'conda'
+```bash
+conda create --name .dashenv python=3.9
+conda activate .dashenv
+conda install --file requirements-python3.9.txt
+source deactivate
+``` 
+Alternatively, you can manually install the core packages listed in `requirements-python3.9.in`.  
+
+> **Note:** DeepEpiX was developed using **Python 3.9**, so we recommend using this version.  
+
+#### 3. Set Up Prediction Model Environments  
+If you want to use prediction models, install the required virtual environments:  
+
+##### TensorFlow  
+```bash
+python3 -m venv .tfenv
+source .tfenv/bin/activate
+python3 -m pip install -r requirements-tfenv.txt
+deactivate
+```
+```bash
+conda create --name .tfenv python=3.9
+conda activate .tfenv
+conda install --file requirements-tfenv.txt
+conda deactivate
+```  
+Alternatively, you can manually install the core packages listed in `requirements-tfenv.in`.  
+
+##### PyTorch  
+```bash
+python3 -m venv .torchenv
+source .torchenv/bin/activate
+python3 -m pip install -r requirements-torchenv.txt
+deactivate
+```
+```bash
+conda create --name .torchenv python=3.9
+conda activate .torchenv
+conda install --file requirements-torchenv.txt
+conda deactivate
+```  
+Alternatively, you can manually install the core packages listed in `requirements-torchenv.in`.  
+
+> These environments (`.tfenv` and `.torchenv`) should be in the **DeepEpiX** directory, as they will be referenced when running prediction models.
+> If you choose different environment names, you can modify them in the static/constants.py file by updating the TENSORFLOW_ENV and TORCH_ENV python variables.
+
+#### 4. Run DeepEpiX  
+Activate your Dash environment and start DeepEpiX:  
+```bash
+source .dashenv/bin/activate
+python3 run.py
+```
+```bash
+conda activate .dashenv
+python3 run.py
+```  
+Then, open the app in your web browser at:  
+[http://127.0.0.1:8050/](http://127.0.0.1:8050/)  
+
+#### 5. You're Ready to Use DeepEpiX! 🎉 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
