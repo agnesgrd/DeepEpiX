@@ -194,7 +194,7 @@ def register_callbacks_annotation_names():
         prevent_initial_call = False
     )
     def display_annotation_names_checklist(annotations_store):
-        if annotations_store == []:
+        if annotations_store == [] or annotations_store is None:
             return dash.no_update, dash.no_update
         
         description_counts = au.get_annotation_descriptions(annotations_store)

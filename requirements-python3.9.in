@@ -1,0 +1,24 @@
+# Core libraries
+numpy
+scipy
+pandas
+matplotlib
+scikit-learn
+dash
+flask
+plotly
+
+# Additional utilities
+jupyter
+ipykernel
+ipywidgets
+requests
+redis
+protobuf
+Werkzeug
+
+# Development tools
+pip-tools
+memory-profiler
+tqdm
+rich

@@ -61,6 +61,12 @@ from callbacks.save_callbacks import (
     register_manage_annotations_to_save_checklist
 )
 
+from callbacks.predict_callbacks import (
+    register_execute_predict_script,
+    register_store_display_prediction,
+    register_update_selected_model
+)
+
 dash.register_page(__name__)
 
 
@@ -147,3 +153,9 @@ register_save_new_markerfile()
 register_manage_annotations_to_save_checklist()
 
 register_callbacks_annotations_to_save_names()
+
+register_execute_predict_script()
+
+register_store_display_prediction()
+
+register_update_selected_model()
