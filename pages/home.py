@@ -385,6 +385,7 @@ def preprocess_meg_data(n_clicks, folder_path, freq_data):
             high_pass_freq = freq_data.get("high_pass_freq")
 
             # Apply filtering and resampling
+            raw=pu.interpolate_missing_channels(raw)
             raw.filter(l_freq=high_pass_freq, h_freq=low_pass_freq, n_jobs=8)
             raw.resample(resample_freq)
 

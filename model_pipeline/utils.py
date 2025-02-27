@@ -53,7 +53,7 @@ def interpolate_missing_channels(raw, good_channels, loc_meg_channels):
 	new_raw.reorder_channels(good_channels)
 	new_raw.info['bads'] = missing_channels
 
-	new_raw.interpolate_bads(origin=(0, 0, 0.04),reset_bads=False) 
+	new_raw.interpolate_bads(origin=(0, 0, 0.04),reset_bads=True) 
 
 	return new_raw
 
