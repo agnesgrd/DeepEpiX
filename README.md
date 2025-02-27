@@ -112,17 +112,17 @@ cd DeepEpiX
 ```bash
 python3 -m venv .dashenv
 source .dashenv/bin/activate
-python3 -m pip install -r requirements-python3.9.txt
+python3 -m pip install -r requirements/requirements-python3.9.txt
 deactivate
 ```
 ##### or using 'conda'
 ```bash
 conda create --name .dashenv python=3.9
 conda activate .dashenv
-conda install --file requirements-python3.9.txt
+conda install --file requirements/requirements-python3.9.txt
 source deactivate
 ``` 
-Alternatively, you can manually install the core packages listed in `requirements-python3.9.in`.  
+Alternatively, you can manually install the core packages listed in `requirements/requirements-python3.9.in`.  
 
 > **Note:** DeepEpiX was developed using **Python 3.9**, so we recommend using this version.  
 
@@ -139,25 +139,25 @@ deactivate
 ```bash
 conda create --name .tfenv python=3.9
 conda activate .tfenv
-conda install --file requirements-tfenv.txt
+conda install --file requirements/requirements-tfenv.txt
 conda deactivate
 ```  
-Alternatively, you can manually install the core packages listed in `requirements-tfenv.in`.  
+Alternatively, you can manually install the core packages listed in `requirements/requirements-tfenv.in`.  
 
 ##### PyTorch  
 ```bash
 python3 -m venv .torchenv
 source .torchenv/bin/activate
-python3 -m pip install -r requirements-torchenv.txt
+python3 -m pip install -r requirements/requirements-torchenv.txt
 deactivate
 ```
 ```bash
 conda create --name .torchenv python=3.9
 conda activate .torchenv
-conda install --file requirements-torchenv.txt
+conda install --file requirements/requirements-torchenv.txt
 conda deactivate
 ```  
-Alternatively, you can manually install the core packages listed in `requirements-torchenv.in`.  
+Alternatively, you can manually install the core packages listed in `requirements/requirements-torchenv.in`.  
 
 > These environments (`.tfenv` and `.torchenv`) should be in the **DeepEpiX** directory, as they will be referenced when running prediction models.
 > If you choose different environment names, you can modify them in the static/constants.py file by updating the TENSORFLOW_ENV and TORCH_ENV python variables.
