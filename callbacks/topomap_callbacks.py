@@ -2,13 +2,7 @@ import dash
 from dash import Input, Output, State, html
 import mne
 from callbacks.utils import topomap_utils as tu
-import numpy as np
-from callbacks.utils import history_utils as hu
-import static.constants as c
 import time
-from pages.home import get_preprocessed_dataframe
-import plotly.graph_objects as go
-from dash import dcc
 
 
 def register_display_topomap_on_click():

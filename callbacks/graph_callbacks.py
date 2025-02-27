@@ -1,20 +1,14 @@
-# from dash_extensions.enrich import Output, Input, State, Patch
 import traceback
 import plotly.graph_objects as go
 import dash
-from dash.dependencies import Input, Output, State
-from dash import Patch
+from dash import Input, Output, State, Patch
 import static.constants as c
 import callbacks.utils.graph_utils as gu
-import callbacks.utils.sensitivity_analysis_utils as sau
 import traceback
 import plotly.graph_objects as go
-import pandas as pd
-import itertools
 import pickle
    
-            
-   
+
 def register_update_graph_time_channel(): 
     @dash.callback(
         Output("meg-signal-graph", "figure"),
@@ -34,7 +28,7 @@ def register_update_graph_time_channel():
     )
     def update_graph_time_channel(page_selection, montage_selection, channel_selection, folder_path, offset_selection, color_selection, chunk_limits,freq_data, montage_store, graph, sensitivity_analysis_store):
         """Update MEG signal visualization based on time and channel selection."""
-        print(folder_path)
+        
         if folder_path is None:
             return dash.no_update, "Please choose a subject to display in Home page."
 

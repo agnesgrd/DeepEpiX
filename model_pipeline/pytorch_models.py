@@ -139,7 +139,6 @@ def test_model(model_name, testing_generator, X_test_ids):
     y_timing_data = load_obj("data_raw_"+str(params.args.subject_number)+'_timing.pkl',params.args.path_output)
     y_block_data = load_obj("data_raw_"+str(params.args.subject_number)+'_blocks.pkl',params.args.path_output)
 
-    print('writing here: ',params.args.path_output+'subject_'+str(params.args.subject_number)+'_predictions.csv')
     with open(params.args.path_output+'subject_'+str(params.args.subject_number)+'_predictions.csv', 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(["subject","block","timing","pred"])

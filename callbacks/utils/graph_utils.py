@@ -3,12 +3,9 @@ import static.constants as c
 from sklearn.preprocessing import StandardScaler
 from pages.home import get_preprocessed_dataframe
 import plotly.express as px
-import plotly.graph_objects as go
-import pandas as pd
-import math
-from plotly_resampler import FigureResampler
-from plotly_resampler.aggregation import MinMaxLTTB
-from plotly.subplots import make_subplots
+# from plotly_resampler import FigureResampler
+# from plotly_resampler.aggregation import MinMaxLTTB
+# from plotly.subplots import make_subplots
 
 
 

@@ -1,5 +1,7 @@
 ##### Useful path ##########
-
+MODEL_DIR = "models/"
+TENSORFLOW_ENV = ".tfenv"
+TORCH_ENV = ".torchenv"
 
 ##### Default plotting variables #####
 DEFAULT_Y_AXIS_OFFSET = 40

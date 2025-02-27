@@ -1,0 +1,4 @@
+tensorflow[and-cuda]
+mne
+pandas
+tqdm

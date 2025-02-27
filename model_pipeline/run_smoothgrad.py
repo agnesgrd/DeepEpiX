@@ -9,12 +9,13 @@ import numpy as np
 import model_pipeline.utils as utils
 from scipy import signal
 import math
+import pickle
+import sys
+import pandas as pd
 
 
 ##################### PARAMS TO SET
-path_to_files = '/home/admin_mel/Code/DeepEpiX/results/'
 
-binary_file = path_to_files + 'data_raw_1_windows_bi'
 # f = open(binary_file)
 start_win = 3
 stop_win = 300
@@ -96,36 +97,57 @@ def postprocess_grad(av_grad):
 
 ##################### MAIN
 
-def run_smoothgrad(model_file, y_pred):
+def run_smoothgrad(model_file, model_type, path_to_files, y_pred_path, threshold):
 
-    f = open(binary_file)
+    f = open(f'{path_to_files}/data_raw_1_windows_bi')
     blocks_file = utils.load_obj('data_raw_1_blocks.pkl', path_to_files)
-    total_nb_windows = len(blocks_file)
     data_file = utils.load_obj('data_raw_1.pkl', path_to_files)
+    full_result = pd.read_csv(y_pred_path)
+    # Convert 'probas' column to NumPy array
+    y_pred = full_result["probas"].to_numpy()  # or df["probas"].values
+
+
+    total_nb_windows = len(blocks_file)
     total_nb_points = data_file['meg'][0].shape[1]
-
-    X_test_ids = utils.generate_database(total_nb_windows)
-
-    # -- get model
-    model = keras.models.load_model(model_file, compile=False)
 
     # -- instantiate arrays to store the full signal portion between start_win and stop_win and the corresponding gradient values 
     full_grads = np.zeros((total_nb_points, 274))
 
-    # For each window
-    for w,i in enumerate(range(0,total_nb_windows)):
-        if y_pred[i]>0.5:
+    X_test_ids = utils.generate_database(total_nb_windows)
 
-            # Noise Augmentation (generating multiple noisy copies of the input before averaging the gradients to reduce variance)
-            sample_non_norm, noisy_images = generate_noisy_input(f, start_win+w, nb_repeat_sg, noise_val, dim=dim)
+    # Model Selection
+    if "TensorFlow" in model_type:
+        # -- get model
+        model = keras.models.load_model(model_file, compile=False)
 
-            # Compute SmoothGrad (average and normalizing)
-            av_grad, pred = get_av_grad(noisy_images,model,my_labels,nb_repeat_sg)
+        # For each window
+        for w,i in enumerate(range(0,total_nb_windows)):
+            if y_pred[i]>threshold:
 
-            norm_grads = postprocess_grad(av_grad)
+                # Noise Augmentation (generating multiple noisy copies of the input before averaging the gradients to reduce variance)
+                sample_non_norm, noisy_images = generate_noisy_input(f, start_win+w, nb_repeat_sg, noise_val, dim=dim)
 
-            #If the model predicts a spike then fill the gradient array over the full window (comprising the beggining and end window overlaps)
-            full_grads[(w*total_lenght)-math.floor(overlap/2):(w*total_lenght)+total_lenght + math.ceil(overlap/2),:] = norm_grads[:,:]
+                # Compute SmoothGrad (average and normalizing)
+                av_grad, pred = get_av_grad(noisy_images,model,my_labels,nb_repeat_sg)
 
-    print(full_grads.shape)
-    return full_grads
+                norm_grads = postprocess_grad(av_grad)
+
+                #If the model predicts a spike then fill the gradient array over the full window (comprising the beggining and end window overlaps)
+                full_grads[(w*total_lenght)-math.floor(overlap/2):(w*total_lenght)+total_lenght + math.ceil(overlap/2),:] = norm_grads[:,:]
+
+    grad_path = f"{path_to_files}/smoothGrad.pkl"
+    with open(grad_path, 'wb') as f:
+        pickle.dump(full_grads, f)
+
+if __name__ == "__main__":
+    model_path = sys.argv[1]
+    model_type = sys.argv[2]
+    path_to_files = sys.argv[3]
+    y_pred_path = sys.argv[4]
+    threshold = float(sys.argv[5])  # Convert back to float
+
+    run_smoothgrad(model_path, model_type, path_to_files, y_pred_path, threshold)
+
+
+
+

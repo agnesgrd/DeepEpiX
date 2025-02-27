@@ -1,14 +1,12 @@
 import dash
-from dash import html, dcc, get_app
+from dash import html, dcc, Input, Output, State, get_app
 import dash_bootstrap_components as dbc
-from dash.dependencies import Input, Output, State
 import os
 import mne
 import math
 from layout import input_styles, box_styles
 from dash.exceptions import PreventUpdate
 from flask_caching import Cache
-from io import StringIO
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from callbacks.utils import preprocessing_utils as pu
@@ -151,7 +149,6 @@ def update_dropdown(n_clicks, folder_path_list):
         folder_path = fpu.browse_folder()
         if folder_path:
             if fpu.test_ds_folder(folder_path):
-                print(folder_path)
                 folder_path_list.append({"label": fpu.get_ds_folder(folder_path), "value": folder_path})
                 return folder_path_list, folder_path
     return dash.no_update, dash.no_update
@@ -258,7 +255,6 @@ def display_psd(folder_path, freq_data):
     # Compute Power Spectral Density (PSD)
     psd_data = raw.compute_psd(method='welch', fmin=high_pass_freq, fmax=low_pass_freq, n_fft=2048, picks='meg')
     psd, freqs = psd_data.get_data(return_freqs=True)
-    print(psd.shape)
 
     # Convert PSD to dB (as MNE does by default)
     psd_dB = 10 * np.log10(psd)
@@ -383,8 +379,6 @@ def preprocess_meg_data(n_clicks, folder_path, freq_data):
             annotations_dict, max_length = get_annotations_dataframe(folder_path)
             chunk_limits = pu.update_chunk_limits(max_length)
 
-            print("annotations_dict", annotations_dict)
-
             raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
             resample_freq = freq_data.get("resample_freq")
             low_pass_freq = freq_data.get("low_pass_freq")
@@ -393,7 +387,6 @@ def preprocess_meg_data(n_clicks, folder_path, freq_data):
             # Apply filtering and resampling
             raw.filter(l_freq=high_pass_freq, h_freq=low_pass_freq, n_jobs=8)
             raw.resample(resample_freq)
-            print(raw.info["ch_names"])
 
             for chunk_idx in chunk_limits:
                 start_time, end_time = chunk_idx

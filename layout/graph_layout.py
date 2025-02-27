@@ -1,8 +1,5 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-import static.constants as c
-from layout import input_styles, box_styles, button_styles
-
 
 def create_graph_container():
     return html.Div(

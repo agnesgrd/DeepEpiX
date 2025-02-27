@@ -1,5 +1,6 @@
-import model_pipeline.params as params
 from model_pipeline.utils import save_data_matrices, create_windows, generate_database
+from pathlib import Path
+import sys
 
 def run_model_pipeline(
         model_name, 
@@ -13,14 +14,15 @@ def run_model_pipeline(
         tf_model = "features"
     else:
         tf_model = None
+    
 
     # Model Selection
-    if model_type == "TensorFlow":
+    if "TensorFlow" in model_type:
         if tf_model == "features":
             from model_pipeline.tensorflow_models import test_model_dash, load_generators_memeff_feat_only
         else:
             from model_pipeline.tensorflow_models import test_model_dash, load_generators_memeff
-    elif model_type == 'PyTorch':
+    elif 'PyTorch' in model_type:
         from model_pipeline.pytorch_models import test_model, load_generators_memeff
 
     # Data Preparation
@@ -35,6 +37,14 @@ def run_model_pipeline(
         testing_generator = load_generators_memeff(X_test_ids, output_path)
 
     # Model Testing
-    return test_model_dash(model_name, testing_generator, X_test_ids, output_path, threshold)
+    test_model_dash(model_name, testing_generator, X_test_ids, output_path, threshold)
 
+if __name__ == "__main__":
+    model_path = sys.argv[1]
+    model_type = sys.argv[2]
+    subject_folder_path = sys.argv[3]
+    good_channels_path = sys.argv[4]
+    results_path = sys.argv[5]
+    threshold = float(sys.argv[6])  # Convert back to float
 
+    run_model_pipeline(model_path, model_type, good_channels_path, subject_folder_path, results_path, threshold)

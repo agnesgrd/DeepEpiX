@@ -151,9 +151,8 @@ def create_windows(path_output, stand=False):
 	#SAVES INFOS FOR A GIVEN SUBJECT
 	# cast MEG data to float32. VERY IMPORTANT as we then save them in a binary file and this info allows us to know how many bytes to read in the binary
 	X_all = X_all.astype('float32')
-	print('Saving windows to: ', path_output / f"data_raw_{params.subject_number}_windows_bi")
 	##saves windows to binary file (for faster reading later)
-	X_all.tofile(path_output / f"data_raw_{params.subject_number}_windows_bi")
+	X_all.tofile(f"{path_output}/data_raw_{params.subject_number}_windows_bi")
 	#saves window center timings
 	save_obj(np.array(window_center_time), "data_raw_"+str(params.subject_number)+'_timing', path_output)
 	#saves window blocks

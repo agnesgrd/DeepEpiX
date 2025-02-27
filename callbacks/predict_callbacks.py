@@ -1,17 +1,12 @@
 import dash
-from dash import html, Output, Input, State, dcc, dash_table
-from layout import input_styles, box_styles, button_styles, label_styles
-import numpy as np
-import dash_bootstrap_components as dbc
+from dash import Output, Input, State, dash_table
 import subprocess
-import pickle
 import pandas as pd
-from model_pipeline.run_model import run_model_pipeline
-from model_pipeline.smoothgrad import run_smoothgrad
-from callbacks.utils import predict_utils as pu
 import static.constants as c
-from callbacks.utils import sensitivity_analysis_utils as sau
 from pathlib import Path
+import static.constants as c
+import os
+import time
 
 
 def register_update_selected_model():
@@ -27,9 +22,9 @@ def register_update_selected_model():
         
         # Detect environment
         if selected_value.endswith((".keras", ".h5")):
-            environment = "TensorFlow"
+            environment = "TensorFlow (.tfenv)"
         elif selected_value.endswith(".pth"):
-            environment = "PyTorch"
+            environment = "PyTorch (.torchenv)"
         else:
             environment = "Unknown"
 
@@ -72,17 +67,59 @@ def register_execute_predict_script():
             error_message = f"⚠️ Please fill in all required fields: {', '.join(missing_fields)}"
             return error_message, dash.no_update, dash.no_update, dash.no_update, dash.no_update
         
-        y_pred, result = run_model_pipeline(
-            model_path, 
-            venv, 
-            Path.cwd() / "model_pipeline/good_channels", 
-            subject_folder_path,
-            Path.cwd() / "results",
-            threshold = float(threshold))
+        working_dir = Path.cwd()
+        env = os.environ.copy()
+        env["PYTHONPATH"] = str(working_dir)
+
+        if "TensorFlow" in venv:
+            # Activate TensorFlow venv and run script
+            command = [
+                str(Path.cwd() / f"{c.TENSORFLOW_ENV}/bin/python"),
+                f"model_pipeline/run_model.py",
+                str(model_path),
+                str(venv),
+                str(subject_folder_path),
+                str(Path.cwd() / "model_pipeline/good_channels"),
+                str(Path.cwd() / "results"),
+                str(threshold)  # Ensure threshold is passed as a string 
+            ]
+        elif "PyTorch" in venv:
+            # Activate PyTorch venv and run script
+            command = [
+                str(Path.cwd() / f"{c.TORCH_ENV}/bin/python"),
+                f"model_pipeline/run_model.py",
+                str(model_path),
+                str(venv),
+                str(subject_folder_path),
+                str(Path.cwd() / "model_pipeline/good_channels"),
+                str(Path.cwd() / "results"),
+                str(threshold)  # Ensure threshold is passed as a string 
+            ]
+
+        try: 
+                # Start timing
+            start_time = time.time()
+
+            subprocess.run(command, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+            # End timing
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            print(f"Model testing executed in {elapsed_time:.2f} seconds")
+
+        except Exception as e:
+            return f"Error running model: {e}", dash.no_update, dash.no_update, dash.no_update, dash.no_update
+        
+        # Load the DataFrame from CSV
+        predictions_csv_path = Path.cwd() / "results/predictions.csv"
+        result = pd.read_csv(predictions_csv_path)
+
+        # Assuming df is your DataFrame
+        result_filtered = result[result["probas"] > threshold]
         
         prediction_table = dash_table.DataTable(
-            columns=[{"name": col, "id": col} for col in result.columns],
-            data=result.to_dict("records"),
+            columns=[{"name": col, "id": col} for col in result_filtered.columns],
+            data=result_filtered.to_dict("records"),
             style_table={"overflowX": "auto"},
             style_cell={"textAlign": "center", "padding": "8px"},
             style_header={"fontWeight": "bold", "backgroundColor": "#f0f0f0"},
@@ -90,14 +127,37 @@ def register_execute_predict_script():
         )
 
         if sensitivity_analysis == "Yes":
-            grad = run_smoothgrad(model_path, y_pred)
+
+            command = [
+                str(Path.cwd() / f"{c.TENSORFLOW_ENV}/bin/python"),
+                f"model_pipeline/run_smoothgrad.py",
+                str(model_path),
+                str(venv),
+                str(Path.cwd() / "results"),
+                str(Path.cwd() / "results/predictions.csv"),
+                str(threshold)  # Ensure threshold is passed as a string 
+            ]
+
+            try: 
+                # Start timing for the second subprocess
+                start_time = time.time()
+
+                subprocess.run(command, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+                # End timing for the second subprocess
+                end_time = time.time()
+                elapsed_time = end_time - start_time
+                print(f"Smoothgrad executed in {elapsed_time:.2f} seconds")
+
+            except Exception as e:
+                return f"Error running smoothgrad: {e}", prediction_table, 0, {"display": "block"}, dash.no_update
+
             # grad_store = {'smoothGrad': [sau.serialize_array(grad),grad.shape]}
-            grad_path = "results/smoothGrad.pkl"
-            with open(grad_path, 'wb') as f:
-                pickle.dump(grad, f)
-        
-        return True, prediction_table, 0, {"display": "block"}, {'smoothGrad': grad_path}
-    
+
+            return True, prediction_table, 0, {"display": "block"}, {'smoothGrad': str(Path.cwd() / "results/smoothGrad.pkl"),}
+
+        else:
+            return True, prediction_table, 0, {"display": "block"}, dash.no_update
 
 def register_store_display_prediction():
     @dash.callback(

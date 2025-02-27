@@ -1,4 +1,3 @@
-import dash
 from dash import html, dcc
 
 # Main layout for the app (homepage)

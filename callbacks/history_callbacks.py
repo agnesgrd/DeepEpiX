@@ -1,13 +1,6 @@
 import dash
-from dash import Input, Output, State, html
-import traceback
+from dash import html, Input, Output
 import plotly.graph_objects as go
-import dash
-from dash.dependencies import Input, Output, State
-from dash import Patch
-import callbacks.utils.graph_utils as gu
-import pandas as pd
-
 
 def register_update_history():
     @dash.callback(

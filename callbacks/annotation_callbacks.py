@@ -1,18 +1,11 @@
-# from dash_extensions.enrich import Output, Input, State, Patch
-import traceback
 import plotly.graph_objects as go
 import dash
-from dash.dependencies import Input, Output, State
-from dash import Patch
-import static.constants as c
+from dash import Patch, Input, Output, State
 import callbacks.utils.graph_utils as gu
-import callbacks.utils.annotation_utils as au
-import callbacks.utils.sensitivity_analysis_utils as sau
-import traceback
 import plotly.graph_objects as go
 import pandas as pd
 import itertools
-import pickle
+
 
 def register_update_annotations():
     @dash.callback(

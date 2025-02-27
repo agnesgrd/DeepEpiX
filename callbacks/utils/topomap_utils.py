@@ -1,12 +1,9 @@
 import matplotlib
 matplotlib.use('Agg')
 import mne
-import io
 from io import BytesIO
 import base64
 import matplotlib.pyplot as plt
-import numpy as np
-from PIL import Image
 import callbacks.utils.graph_utils as gu
 import static.constants as c
 import callbacks.utils.graph_utils as gu

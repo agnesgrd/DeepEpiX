@@ -324,31 +324,62 @@ def load_generators_memeff_feat_only(X_test_ids, output_path):
 #     keras.backend.clear_session()
 
 def test_model_dash(model_name, testing_generator, X_test_ids, output_path, threshold=0.5):
-
     model = keras.models.load_model(model_name, compile=False)
     model.compile()
-    y_pred_probas = model.predict(testing_generator)
-    y_test = X_test_ids[:,2]
 
+    # Generate predictions
+    y_pred_probas = model.predict(testing_generator).flatten()  # Ensure it's 1D
+
+    # Get binary predictions
     y_pred = (y_pred_probas > threshold).astype("int32")
 
-    y_timing_data = load_obj("data_raw_"+str(params.subject_number)+'_timing.pkl', output_path)
-    
-    # Ensure y_pred is 1D
-    y_pred = y_pred.flatten()
+    # Load timing data
+    y_timing_data = load_obj("data_raw_" + str(params.subject_number) + '_timing.pkl', output_path)
 
-    # Extract relevant timing values and convert to seconds
-    new_annotation_timing = (y_timing_data[y_pred == 1] / 150).round(3).tolist()
-    
+    # Extract onset times for predicted events (convert to seconds)
+    onsets = (y_timing_data / 150).round(3).tolist()
+
+    # Create DataFrame with onsets, duration, and probability scores
+    df = pd.DataFrame({
+        "onset": onsets,
+        "duration": 0,  # To fit MNE annotation format
+        "probas": y_pred_probas  # Store raw probabilities
+    })
+
+    # Save DataFrame as CSV
+    df.to_csv(f'{output_path}/predictions.csv', index=False)
+
     del model
     gc.collect()
     keras.backend.clear_session()
 
-    # Save the timepoints to a CSV file
 
-    df = pd.DataFrame(new_annotation_timing, columns=['onset'])
-    df['duration'] = 0 # to fit with mne annotation format
-    df.to_csv(output_path / 'predictions.csv', index=False)
+    # y_pred_probas = model.predict(testing_generator)
+    # y_test = X_test_ids[:,2]
 
-    return y_pred, df
+    # y_pred = (y_pred_probas > threshold).astype("int32")
+
+    # y_timing_data = load_obj("data_raw_"+str(params.subject_number)+'_timing.pkl', output_path)
+    
+    # # Ensure y_pred is 1D
+    # y_pred = y_pred.flatten()
+
+    # # Extract relevant timing values and convert to seconds
+    # new_annotation_timing = (y_timing_data[y_pred == 1] / 150).round(3).tolist()
+    
+    # del model
+    # gc.collect()
+    # keras.backend.clear_session()
+
+    # # Save y_pred as JSON
+    # y_pred_json_path = output_path / 'y_pred.json'
+    # with open(y_pred_json_path, 'w') as f:
+    #     json.dump(y_pred.tolist(), f)  # Convert NumPy array to list
+
+    # # Save the timepoints to a CSV file
+    # df = pd.DataFrame(new_annotation_timing, columns=['onset'])
+    # df['duration'] = 0 # to fit with mne annotation format
+    # df.to_csv(output_path / 'predictions.csv', index=False)
+
+    # return y_pred, df
 

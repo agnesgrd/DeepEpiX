@@ -1,5 +1,5 @@
 import dash
-from dash.dependencies import Input, Output
+from dash import Input, Output
 
 # Callback to display the stored folder path
 def register_callbacks_folder_path():

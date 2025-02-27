@@ -1,11 +1,5 @@
 import dash
-from dash import Input, Output, State, html
-import traceback
-import plotly.graph_objects as go
-import dash
-from dash.dependencies import Input, Output, State
-from dash import Patch
-import callbacks.utils.graph_utils as gu
+from dash import Input, Output, State
 import pandas as pd
 from callbacks.utils import history_utils as hu
 

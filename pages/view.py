@@ -2,8 +2,6 @@
 import dash
 from dash import html
 from dash_extensions import Keyboard
-from dash.dependencies import Input, Output, State
-
 
 # Layout imports
 import layout.graph_layout as gl

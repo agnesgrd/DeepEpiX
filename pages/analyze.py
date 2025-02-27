@@ -1,15 +1,10 @@
 # analyze.py: Analyze Page
 import dash
-from dash import html, dcc
-from dash.dependencies import Input, Output, State
+from dash import html, dcc, Input, Output, State
 import dash_bootstrap_components as dbc
-import mne  # Import the MNE package
-import plotly.graph_objs as go  # Import Plotly for graphing
 from layout import input_styles
-import numpy as np
-import os
 import static.constants as c
-import json
+
 
 dash.register_page(__name__)
 
