@@ -101,19 +101,37 @@
    ```sh
    git clone https://github.com/agnesgrd/DeepEpiX.git
    ```
-2. Install virtual environment and activate it
+2. Go into DeepEpiX directory adn install the virtual environment for running a dash app :
    ```sh
-   python3 -m venv .venv
-   source .venv/bin/activate
-   python3 -m pip install -r requirements.txt
+   python3 -m venv .dashenv
+   source .dashenv/bin/activate
+   python3 -m pip install -r requirements-python3.9.txt
    ```
-    DeepEpiX was developed using Python 3.10, so this is what we recommend to use.
-3. Start running DeepEpiX in your terminal with
+Alternatively, you can just install manually the core package listed in the requirements-python3.9.in file.
+DeepEpiX was developed using Python 3.9, so this is what we recommend to use.
+
+3. If you want to use prediction models, install the following virtual environment :
+   #### TensorFlow
    ```sh
+   python3 -m venv .tfenv
+   source .tfenv/bin/activate
+   python3 -m pip install -r requirements-tfenv.txt
+   ```
+  #### PyTorch
+   ```sh
+   python3 -m venv .torchenv
+   source .torchenv/bin/activate
+   python3 -m pip install -r requirements-torchenv.txt
+   ```
+   When running a prediction model, these environment would be call with their name .tfenv and .torchenv, they are expected to be in DeepEpiX folder.
+
+4. Activate you dash environment and start running DeepEpiX in your terminal with
+   ```sh
+   . .dashenv/bin/activate
    python3 run.py
    ```
    then open the app in your web-browser under http://127.0.0.1:8050/
-4. You're ready to use DeepEpiX Software
+5. You're ready to use DeepEpiX Software
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
