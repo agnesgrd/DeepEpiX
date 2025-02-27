@@ -293,6 +293,32 @@ def load_generators_memeff_feat_only(X_test_ids, output_path):
 
     return testing_generator
 
+def get_win_data_feat(sample_norm, compute_features = {"ppa" : compute_window_ppa, "std": compute_window_std, "upslope" : compute_window_upslope, "downslope": compute_window_downslope, "average_slope": compute_window_average_slope, "sharpness" : compute_window_sharpness}):
+
+    sample_norm = np.squeeze(sample_norm)
+    features_sample = np.empty((1, len(list(compute_features)), sample_norm.shape[1]))
+    for feat, func in compute_features.items():
+        features_sample[0,list(compute_features).index(feat)] = func(sample_norm)
+
+    return features_sample
+
+
+def get_win_data_signal(f,win,sub,dim):
+
+    # Store sample 
+    f.seek(dim[0]*dim[1]*win*4) #4 because its float32 and dtype.itemsize = 4
+    sample = np.fromfile(f, dtype='float32', count=dim[0]*dim[1])
+    sample = sample.reshape(dim[1],dim[0])
+    sample = np.swapaxes(sample,0,1)
+    sample = np.expand_dims(sample,axis=-1)
+    sample = np.expand_dims(sample,axis=0)
+
+    mean = np.mean(sample)
+    std = np.std(sample)
+    sample_norm = (sample - mean)/std
+
+    return sample_norm
+
 # def test_model(model_name, testing_generator, X_test_ids):
 
 #     model = keras.models.load_model(model_name, compile=False)
@@ -323,15 +349,35 @@ def load_generators_memeff_feat_only(X_test_ids, output_path):
 
 #     keras.backend.clear_session()
 
-def test_model_dash(model_name, testing_generator, X_test_ids, output_path, threshold=0.5):
+def test_model_dash(model_name, X_test_ids, output_path, threshold=0.5):
     model = keras.models.load_model(model_name, compile=False)
     model.compile()
 
-    # Generate predictions
-    y_pred_probas = model.predict(testing_generator).flatten()  # Ensure it's 1D
+    f = open(op.join(output_path, "data_raw_"+str(params.subject_number)+'_windows_bi'))
 
-    # Get binary predictions
-    y_pred = (y_pred_probas > threshold).astype("int32")
+    y_pred_probas=list()
+
+    samples = []
+
+    for ind in range(0,X_test_ids.shape[0]):
+
+        cur_sub = X_test_ids[ind,1]
+        cur_win = X_test_ids[ind,0]
+
+        sample = get_win_data_signal(f,cur_win,cur_sub,params.dim)
+        
+        if "features" in model_name:
+            sample = get_win_data_feat(sample)
+
+        samples.append(sample.squeeze())
+
+    # Convert batch list to a NumPy array
+    samples = np.array(samples, dtype=np.float32)
+
+    # Use GPU if available
+    device = "/GPU:0" if tf.config.list_physical_devices('GPU') else "/CPU:0"
+    with tf.device(device):
+        y_pred_probas = model(samples).numpy().flatten()  # Run batch inference
 
     # Load timing data
     y_timing_data = load_obj("data_raw_" + str(params.subject_number) + '_timing.pkl', output_path)
@@ -352,34 +398,3 @@ def test_model_dash(model_name, testing_generator, X_test_ids, output_path, thre
     del model
     gc.collect()
     keras.backend.clear_session()
-
-
-    # y_pred_probas = model.predict(testing_generator)
-    # y_test = X_test_ids[:,2]
-
-    # y_pred = (y_pred_probas > threshold).astype("int32")
-
-    # y_timing_data = load_obj("data_raw_"+str(params.subject_number)+'_timing.pkl', output_path)
-    
-    # # Ensure y_pred is 1D
-    # y_pred = y_pred.flatten()
-
-    # # Extract relevant timing values and convert to seconds
-    # new_annotation_timing = (y_timing_data[y_pred == 1] / 150).round(3).tolist()
-    
-    # del model
-    # gc.collect()
-    # keras.backend.clear_session()
-
-    # # Save y_pred as JSON
-    # y_pred_json_path = output_path / 'y_pred.json'
-    # with open(y_pred_json_path, 'w') as f:
-    #     json.dump(y_pred.tolist(), f)  # Convert NumPy array to list
-
-    # # Save the timepoints to a CSV file
-    # df = pd.DataFrame(new_annotation_timing, columns=['onset'])
-    # df['duration'] = 0 # to fit with mne annotation format
-    # df.to_csv(output_path / 'predictions.csv', index=False)
-
-    # return y_pred, df
-

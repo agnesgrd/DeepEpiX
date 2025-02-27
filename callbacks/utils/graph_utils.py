@@ -86,10 +86,21 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
     """Handles the preprocessing and figure generation for the MEG signal visualization."""
     import time  # For logging execution times
 
+    print("selected_channels:", selected_channels)
+    print("offset_selection:", offset_selection)
+    print("time_range:", time_range)
+    print("folder_path:", folder_path)
+    print("freq_data:", freq_data)
+    print("color_selection:", color_selection)
+    print("sensitivity_analysis:", sensitivity_analysis)
+    print("xaxis_range:", xaxis_range)
+
     start_time = time.time()
     # Preprocess data
 
     raw_df = get_preprocessed_dataframe(folder_path, freq_data, time_range[0], time_range[1])
+
+    print(raw_df.dtypes)
     print(f"Step 1: Preprocessing completed in {time.time() - start_time:.2f} seconds.")
 
     # Filter time range

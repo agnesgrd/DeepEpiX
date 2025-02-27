@@ -83,11 +83,11 @@ def register_update_graph_time_channel():
                 return fig, None
             
         except FileNotFoundError:
-            return go.Figure(), f"Error: Folder not found."
+            return dash.no_update, f"Error: Folder not found."
         except ValueError as ve:
-            return go.Figure(), f"Error: {str(ve)}.\n Details: {traceback.format_exc()}"
+            return dash.no_update, f"Error: {str(ve)}.\n Details: {traceback.format_exc()}"
         except Exception as e:
-            return go.Figure(), f"Error: Unexpected error {str(e)}.\n Details: {traceback.format_exc()}"
+            return dash.no_update, f"Error: Unexpected error {str(e)}.\n Details: {traceback.format_exc()}"
             
 def register_move_time_slider():
     @dash.callback(
