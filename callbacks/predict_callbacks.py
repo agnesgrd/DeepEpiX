@@ -75,9 +75,9 @@ def register_execute_predict_script():
 
         # Activate TensorFlow venv and run script
         if "CONDA_PREFIX" in os.environ:
-            activate_env = "conda", "run", "-n", c.TENSORFLOW_ENV, "--no-capture-output", "python"
+            activate_env = f"conda run -n {c.TENSORFLOW_ENV} --no-capture-output python"
         elif sys.prefix != sys.base_prefix or hasattr(sys, 'real_prefix'):
-            activate_env = str(Path.cwd() / f"{c.TENSORFLOW_ENV}/bin/python")
+            activate_env = f"{Path.cwd()}/{c.TENSORFLOW_ENV}/bin/python"
 
         if "TensorFlow" in venv:
 
