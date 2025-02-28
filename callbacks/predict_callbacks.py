@@ -6,6 +6,7 @@ import static.constants as c
 from pathlib import Path
 import static.constants as c
 import os
+import sys
 import time
 
 
@@ -72,10 +73,16 @@ def register_execute_predict_script():
         env = os.environ.copy()
         env["PYTHONPATH"] = str(working_dir)
 
+        # Activate TensorFlow venv and run script
+        if "CONDA_PREFIX" in os.environ:
+            activate_env = "conda", "run", "-n", c.TENSORFLOW_ENV, "--no-capture-output", "python"
+        elif sys.prefix != sys.base_prefix or hasattr(sys, 'real_prefix'):
+            activate_env = str(Path.cwd() / f"{c.TENSORFLOW_ENV}/bin/python")
+
         if "TensorFlow" in venv:
-            # Activate TensorFlow venv and run script
+
             command = [
-                str(Path.cwd() / f"{c.TENSORFLOW_ENV}/bin/python"),
+                activate_env,
                 f"model_pipeline/run_model.py",
                 str(model_path),
                 str(venv),
