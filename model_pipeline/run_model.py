@@ -7,7 +7,8 @@ def run_model_pipeline(
         good_channels_file,
         subject,
         output_path,
-        threshold):
+        threshold,
+        adjust_onset):
       
     # Model Selection
     if "TensorFlow" in model_type:
@@ -27,7 +28,7 @@ def run_model_pipeline(
     #     testing_generator = load_generators_memeff(X_test_ids, output_path)
 
     # Model Testing
-    test_model_dash(model_name, X_test_ids, output_path, threshold)
+    test_model_dash(model_name, X_test_ids, output_path, threshold, adjust_onset)
 
 if __name__ == "__main__":
     model_path = sys.argv[1]
@@ -36,5 +37,6 @@ if __name__ == "__main__":
     good_channels_path = sys.argv[4]
     results_path = sys.argv[5]
     threshold = float(sys.argv[6])  # Convert back to float
+    adjust_onset = sys.argv[7]
 
-    run_model_pipeline(model_path, model_type, good_channels_path, subject_folder_path, results_path, threshold)
+    run_model_pipeline(model_path, model_type, good_channels_path, subject_folder_path, results_path, threshold, adjust_onset)

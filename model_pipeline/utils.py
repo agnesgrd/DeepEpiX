@@ -211,6 +211,30 @@ def compute_window_phase_congruency(window):
 	phase_congruencies = 1 - (np.abs(phase_diff)/np.pi)
 	return np.max(phase_congruencies)
 
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+from scipy.ndimage import gaussian_filter1d
+from tensorflow import keras
+import os.path as op
+
+def compute_gfp(window):
+    """Compute Global Field Power (GFP) as standard deviation across channels."""
+    return np.std(window, axis=0)
+
+def find_peak_gfp(gfp, times, smoothing_sigma=2, percentile=90):
+    """Find the peak GFP time within a window after smoothing."""
+    gfp_smooth = gaussian_filter1d(gfp, sigma=smoothing_sigma)
+    
+    # Thresholding: Find first peak above percentile threshold
+    threshold = np.percentile(gfp_smooth, percentile)
+    peak_indices = np.where(gfp_smooth >= threshold)[0]
+    
+    if len(peak_indices) > 0:
+        return times[peak_indices[0]]  # First peak above threshold
+    else:
+        return times[np.argmax(gfp_smooth)]  # Default to max if no peak found
+
 #####################################################################Saving Predictions As MarkerFile
 
 def write_mrk_file(filepath,raw_name,onset_list_detected_spikes, marker_name):

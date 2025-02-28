@@ -49,7 +49,20 @@ def create_predict():
         )
     ], style={"marginBottom": "20px"}),
 
-
+    # Compute sensitvity analysis at the end
+    html.Div([
+        html.Label("Adjust onset (Global Field Power):", style={**label_styles["classic"]}),
+        dbc.RadioItems(
+            id="adjust-onset",
+            options=[
+                {"label": "Yes", "value": "Yes"},
+                {"label": "No", "value": "No"}
+            ],
+            value="Yes",  # Default selection
+            inline=True,  # Display buttons in a row
+            style={"margin-left": "10px"}
+        )
+    ], style={"marginBottom": "20px"}),
 
     # Run Prediction Button
     html.Div([

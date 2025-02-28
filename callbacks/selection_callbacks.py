@@ -191,17 +191,18 @@ def register_callbacks_annotation_names():
         Output("annotation-checkboxes", "options"),
         Output("annotation-checkboxes", "value"),
         Input("annotations-store", "data"),
+        State("annotation-checkboxes", "value"),
         prevent_initial_call = False
     )
-    def display_annotation_names_checklist(annotations_store):
-        if annotations_store == [] or annotations_store is None:
+    def display_annotation_names_checklist(annotations_store, current_value):
+        if not annotations_store:
             return dash.no_update, dash.no_update
         
         description_counts = au.get_annotation_descriptions(annotations_store)
 
         options = [{'label': f"{name} ({count})", 'value': f"{name}"} for name, count in description_counts.items()]
-        value = [f"{name}" for name in description_counts.keys()]
-        return options, dash.no_update  # Set all annotations as default selected
+        value = [f"{name}" for name in (current_value or []) if name in description_counts.keys()]
+        return options, value # Set all annotations as default selected
     
 def register_callbacks_montage_names():
     # Callback to populate the checklist options and default value dynamically

@@ -44,9 +44,10 @@ def register_execute_predict_script():
         State('venv', 'value'),
         State('threshold', 'value'),
         State('sensitivity-analysis', 'value'),
+        State('adjust-onset', 'value'),
         prevent_initial_call = True
     )
-    def execute_predict_script(n_clicks, subject_folder_path, model_path, spike_name, venv, threshold, sensitivity_analysis):
+    def execute_predict_script(n_clicks, subject_folder_path, model_path, spike_name, venv, threshold, sensitivity_analysis, adjust_onset):
         if not n_clicks or n_clicks == 0:
             return None, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
@@ -81,7 +82,8 @@ def register_execute_predict_script():
                 str(subject_folder_path),
                 str(Path.cwd() / "model_pipeline/good_channels"),
                 str(Path.cwd() / "results"),
-                str(threshold)  # Ensure threshold is passed as a string 
+                str(threshold),  # Ensure threshold is passed as a string 
+                str(adjust_onset)
             ]
         elif "PyTorch" in venv:
             # Activate PyTorch venv and run script
@@ -93,14 +95,15 @@ def register_execute_predict_script():
                 str(subject_folder_path),
                 str(Path.cwd() / "model_pipeline/good_channels"),
                 str(Path.cwd() / "results"),
-                str(threshold)  # Ensure threshold is passed as a string 
+                str(threshold),  # Ensure threshold is passed as a string 
+                str(adjust_onset)
             ]
 
         try: 
                 # Start timing
             start_time = time.time()
 
-            subprocess.run(command, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(command, env=env, text=True) #stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
             # End timing
             end_time = time.time()
@@ -142,7 +145,7 @@ def register_execute_predict_script():
                 # Start timing for the second subprocess
                 start_time = time.time()
 
-                subprocess.run(command, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                subprocess.run(command, env=env, text = True) # stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
                 # End timing for the second subprocess
                 end_time = time.time()

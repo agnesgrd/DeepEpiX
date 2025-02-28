@@ -4,6 +4,8 @@
 #
 #    pip-compile --output-file=requirements/requirements-python3.9.txt requirements/requirements-python3.9.in
 #
+annotated-types==0.7.0
+    # via pydantic
 blinker==1.9.0
     # via flask
 cachelib==0.9.0
@@ -19,19 +21,34 @@ contourpy==1.3.0
 cycler==0.12.1
     # via matplotlib
 dash==2.18.2
+    # via
+    #   -r requirements/requirements-python3.9.in
+    #   dash-bootstrap-components
+    #   dash-extensions
+dash-bootstrap-components==1.7.1
     # via -r requirements/requirements-python3.9.in
 dash-core-components==2.0.0
     # via dash
+dash-extensions==1.0.20
+    # via -r requirements/requirements-python3.9.in
 dash-html-components==2.0.0
     # via dash
 dash-table==5.0.0
     # via dash
+dataclass-wizard==0.30.1
+    # via dash-extensions
+decorator==5.2.1
+    # via mne
+editorconfig==0.17.0
+    # via jsbeautifier
 flask==3.0.3
     # via
     #   dash
     #   flask-caching
 flask-caching==2.3.0
-    # via -r requirements/requirements-python3.9.in
+    # via
+    #   -r requirements/requirements-python3.9.in
+    #   dash-extensions
 fonttools==4.55.0
     # via matplotlib
 idna==3.10
@@ -45,17 +62,29 @@ importlib-resources==6.5.2
 itsdangerous==2.2.0
     # via flask
 jinja2==3.1.4
-    # via flask
+    # via
+    #   flask
+    #   mne
 joblib==1.4.2
     # via scikit-learn
+jsbeautifier==1.15.4
+    # via dash-extensions
 kiwisolver==1.4.7
     # via matplotlib
+lazy-loader==0.4
+    # via mne
 markupsafe==3.0.2
     # via
     #   jinja2
     #   werkzeug
 matplotlib==3.9.2
+    # via
+    #   -r requirements/requirements-python3.9.in
+    #   mne
+mne==1.8.0
     # via -r requirements/requirements-python3.9.in
+more-itertools==10.6.0
+    # via dash-extensions
 nest-asyncio==1.6.0
     # via dash
 numpy==1.26.4
@@ -63,21 +92,33 @@ numpy==1.26.4
     #   -r requirements/requirements-python3.9.in
     #   contourpy
     #   matplotlib
+    #   mne
     #   pandas
     #   scikit-learn
     #   scipy
 packaging==24.2
     # via
+    #   lazy-loader
     #   matplotlib
+    #   mne
     #   plotly
+    #   pooch
 pandas==2.2.3
     # via -r requirements/requirements-python3.9.in
 pillow==11.0.0
     # via matplotlib
+platformdirs==4.3.6
+    # via pooch
 plotly==5.24.1
     # via
     #   -r requirements/requirements-python3.9.in
     #   dash
+pooch==1.8.2
+    # via mne
+pydantic==2.10.6
+    # via dash-extensions
+pydantic-core==2.27.2
+    # via pydantic
 pyparsing==3.2.0
     # via matplotlib
 python-dateutil==2.9.0.post0
@@ -87,7 +128,9 @@ python-dateutil==2.9.0.post0
 pytz==2024.2
     # via pandas
 requests==2.32.3
-    # via dash
+    # via
+    #   dash
+    #   pooch
 retrying==1.3.4
     # via dash
 scikit-learn==1.5.2
@@ -95,17 +138,25 @@ scikit-learn==1.5.2
 scipy==1.10.1
     # via
     #   -r requirements/requirements-python3.9.in
+    #   mne
     #   scikit-learn
 six==1.16.0
     # via
+    #   jsbeautifier
     #   python-dateutil
     #   retrying
 tenacity==9.0.0
     # via plotly
 threadpoolctl==3.5.0
     # via scikit-learn
+tqdm==4.67.1
+    # via mne
 typing-extensions==4.12.2
-    # via dash
+    # via
+    #   dash
+    #   dataclass-wizard
+    #   pydantic
+    #   pydantic-core
 tzdata==2024.2
     # via pandas
 urllib3==2.2.3
