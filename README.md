@@ -95,87 +95,140 @@ This software is designed for clinicians to annotate raw MEG data and run predic
 
 ### Installation
 
-Follow these steps to install and set up **DeepEpiX**.  
+Follow these steps to install and set up **DeepEpiX**.
 
-#### 1. Clone the Repository in your Working Directory
+#### 1. Clone the Repository in Your Working Directory  
 ```bash
 git clone https://github.com/agnesgrd/DeepEpiX.git
-```  
+```
 
 #### 2. Set Up the Dash Environment  
-Navigate into the `DeepEpiX` directory 
+Navigate into the `DeepEpiX` directory:  
 ```bash
 cd DeepEpiX
 ```
- and install the virtual environment for running the Dash app:
-##### using 'pip + venv'
-```bash
-python3 -m venv .dashenv
-source .dashenv/bin/activate
-python3 -m pip install -r requirements/requirements-python3.9.txt
-deactivate
-```
-##### or using 'conda'
-```bash
-conda create --name .dashenv python=3.9
-conda activate .dashenv
-conda install --file requirements/requirements-python3.9.txt
-source deactivate
-``` 
-Alternatively, you can manually install the core packages listed in `requirements/requirements-python3.9.in`.  
+
+and install the virtual environment for running the Dash app:
+
+<details>
+  <summary><b>using pip + venv</b></summary>
+
+  ```bash
+  python3 -m venv .dashenv
+  source .dashenv/bin/activate
+  python3 -m pip install -r requirements/requirements-python3.9.txt
+  deactivate
+  ```
+</details>
+
+<details>
+  <summary><b>using conda</b></summary>
+
+  ```bash
+  conda create --name .dashenv python=3.9
+  conda activate .dashenv
+  conda install --file requirements/requirements-python3.9.txt
+  conda deactivate
+  ```
+</details>
+
+<details>
+  <summary><b>or manual installation</b></summary>
+
+  Alternatively, you can manually install the core packages listed in:  
+  ```
+  requirements/requirements-python3.9.in
+  ```
+</details>
 
 > **Note:** DeepEpiX was developed using **Python 3.9**, so we recommend using this version.  
 
+---
+
 #### 3. Set Up Prediction Model Environments  
-If you want to use prediction models, install the required virtual environments:  
+If you want to use prediction models, install the required environments:
 
-##### TensorFlow  
-```bash
-python3 -m venv .tfenv
-source .tfenv/bin/activate
-python3 -m pip install -r requirements-tfenv.txt
-deactivate
-```
-```bash
-conda create --name .tfenv python=3.9
-conda activate .tfenv
-conda install --file requirements/requirements-tfenv.txt
-conda deactivate
-```  
-Alternatively, you can manually install the core packages listed in `requirements/requirements-tfenv.in`.  
+<details>
+  <summary><b>TensorFlow Environment</b></summary>
 
-##### PyTorch  
-```bash
-python3 -m venv .torchenv
-source .torchenv/bin/activate
-python3 -m pip install -r requirements/requirements-torchenv.txt
-deactivate
-```
-```bash
-conda create --name .torchenv python=3.9
-conda activate .torchenv
-conda install --file requirements/requirements-torchenv.txt
-conda deactivate
-```  
-Alternatively, you can manually install the core packages listed in `requirements/requirements-torchenv.in`.  
+  **Using pip + venv:**  
+  ```bash
+  python3 -m venv .tfenv
+  source .tfenv/bin/activate
+  python3 -m pip install -r requirements/requirements-tfenv.txt
+  deactivate
+  ```
 
-> These environments (`.tfenv` and `.torchenv`) should be in the **DeepEpiX** directory, as they will be referenced when running prediction models.
-> If you choose different environment names, you can modify them in the static/constants.py file by updating the TENSORFLOW_ENV and TORCH_ENV python variables.
+  **Using conda:**  
+  ```bash
+  conda create --name .tfenv python=3.9
+  conda activate .tfenv
+  conda install --file requirements/requirements-tfenv.txt
+  conda deactivate
+  ```
+
+  Alternatively, install manually from:  
+  ```
+  requirements/requirements-tfenv.in
+  ```
+</details>
+
+<details>
+  <summary><b>PyTorch Environment</b></summary>
+
+  **Using pip + venv:**  
+  ```bash
+  python3 -m venv .torchenv
+  source .torchenv/bin/activate
+  python3 -m pip install -r requirements/requirements-torchenv.txt
+  deactivate
+  ```
+
+  **Using conda:**  
+  ```bash
+  conda create --name .torchenv python=3.9
+  conda activate .torchenv
+  conda install --file requirements/requirements-torchenv.txt
+  conda deactivate
+  ```
+
+  Alternatively, install manually from:  
+  ```
+  requirements/requirements-torchenv.in
+  ```
+</details>
+
+> These environments (`.tfenv` and `.torchenv`) should be in the **DeepEpiX** directory, as they will be referenced when running prediction models.  
+> If you choose different environment names, update them in `static/constants.py` under `TENSORFLOW_ENV` and `TORCH_ENV`.
+
+---
 
 #### 4. Run DeepEpiX  
 Activate your Dash environment and start DeepEpiX:  
-```bash
-source .dashenv/bin/activate
-python3 run.py
-```
-```bash
-conda activate .dashenv
-python3 run.py
-```  
+<details>
+  <summary><b>using pip + venv</b></summary>
+
+  ```bash
+  source .dashenv/bin/activate
+  python3 run.py
+  ```
+</details>
+
+<details>
+  <summary><b>using conda</b></summary>
+
+  ```bash
+  conda activate .dashenv
+  python3 run.py
+  ```
+</details>
+
 Then, open the app in your web browser at:  
 [http://127.0.0.1:8050/](http://127.0.0.1:8050/)  
 
-#### 5. You're Ready to Use DeepEpiX! 🎉 
+---
+
+#### 5. You're Ready to Use DeepEpiX! 🎉  
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
