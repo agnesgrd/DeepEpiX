@@ -75,9 +75,17 @@ def register_execute_predict_script():
 
         # Activate TensorFlow venv and run script
         if "CONDA_PREFIX" in os.environ:
-            activate_env = f"conda run -n {c.TENSORFLOW_ENV} --no-capture-output python"
-        elif sys.prefix != sys.base_prefix or hasattr(sys, 'real_prefix'):
-            activate_env = f"{Path.cwd()}/{c.TENSORFLOW_ENV}/bin/python"
+            activate_env = f"conda run -n {c.TENSORFLOW_ENV} python"
+        else:
+            if os.name == "nt":
+                activate_env = f"{Path.cwd()}/{c.TENSORFLOW_ENV}/Scripts/python.exe"
+            else:
+                activate_env = f"{Path.cwd()}/{c.TENSORFLOW_ENV}/bin/python"
+            
+        # else:
+        #     raise RuntimeError("No virtual environment detected. Please activate one before running the script.")
+        
+
 
         if "TensorFlow" in venv:
 
@@ -92,6 +100,8 @@ def register_execute_predict_script():
                 str(threshold),  # Ensure threshold is passed as a string 
                 str(adjust_onset)
             ]
+            print(command)
+
         elif "PyTorch" in venv:
             # Activate PyTorch venv and run script
             command = [

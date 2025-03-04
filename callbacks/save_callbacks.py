@@ -21,8 +21,8 @@ def register_callbacks_annotations_to_save_names():
         Input("annotations-store", "data"),
         prevent_initial_call = False
     )
-    def display_annotation_names_checklist(annotations_store):
-        if annotations_store == []:
+    def display_annotation_names_to_save_checklist(annotations_store):
+        if not annotations_store:
             return dash.no_update, dash.no_update
         
         description_counts = au.get_annotation_descriptions(annotations_store)
@@ -39,7 +39,7 @@ def register_manage_annotations_to_save_checklist():
         State("annotations-to-save-checkboxes", "options"),
         prevent_initial_call = True
     )
-    def manage_annotations_to_save_checklist(check_all_clicks, clear_all_clicks, options):
+    def manage_annotation_names_to_save_checklist(check_all_clicks, clear_all_clicks, options):
         # Determine which button was clicked
         ctx = dash.callback_context
 

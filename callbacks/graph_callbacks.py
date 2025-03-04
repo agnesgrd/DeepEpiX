@@ -32,8 +32,8 @@ def register_update_graph_time_channel():
         if folder_path is None:
             return dash.no_update, "Please choose a subject to display in Home page."
 
-        if chunk_limits == []:
-            return dash.no_update, "Please choose a subject to display in Home page."
+        # if not chunk_limits:
+        #     return dash.no_update, "Please choose a subject to display in Home page."
         time_range = chunk_limits[int(page_selection)]
 
         # Get the current x-axis center

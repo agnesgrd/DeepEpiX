@@ -28,7 +28,7 @@ cache = Cache(app.server, config={
     'CACHE_TYPE': 'simple',
     # 'CACHE_TYPE': 'filesystem',
     # 'CACHE_DIR': 'cache-directory',
-    'CACHE_DEFAULT_TIMEOUT': 8400,
+    'CACHE_DEFAULT_TIMEOUT': 84000,
     # 'CACHE_THRESHOLD': 50 # higher numbers will store more data in the filesystem / redis cache
 })
 
@@ -244,6 +244,8 @@ def handle_frequency_parameters(resample_freq, high_pass_freq, low_pass_freq):
     prevent_initial_call=True
 )
 def display_psd(folder_path, freq_data):
+    if not folder_path:
+        return dash.no_update
     raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
     resample_freq = freq_data.get("resample_freq")
     low_pass_freq = freq_data.get("low_pass_freq")

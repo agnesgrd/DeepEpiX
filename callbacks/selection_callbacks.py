@@ -11,6 +11,9 @@ def register_page_buttons_display():
         prevent_initial_call=False
     )
     def update_buttons(chunk_limits):
+        if not chunk_limits:
+            return dash.no_update  # Default to the first page
+        
         return html.Div(
             # RadioItems for the page buttons
             dcc.RadioItems(
@@ -41,8 +44,9 @@ def register_update_page_button_styles():
     )
     def update_button_styles(selected_value, chunk_limits):
         # Update styles dynamically for each button
-        if chunk_limits is None or selected_value is None:
+        if not chunk_limits or not selected_value:
             return dash.no_update  # Default to the first page
+        
         return [
             {
                 "label": html.Span(
@@ -213,7 +217,7 @@ def register_callbacks_montage_names():
         State("montage-radio", "value"),
         prevent_initial_call=False
     )
-    def display_annotation_names_checklist(montage_store, value):
+    def display_montage_names_checklist(montage_store, value):
         # Create options for the checklist from the channels in montage_store
         options = [{'label': key, 'value': key} for key in montage_store.keys()]
         options.append({'label': 'channel selection', 'value': 'channel selection'})
@@ -236,7 +240,7 @@ def register_hide_channel_selection_when_montage():
         State("channel-region-checkboxes", "options"),
         prevent_initial_call=False
     )
-    def display_annotation_names_checklist(montage_option, montage_value, channel_options):
+    def hide_channel_selection_when_montage(montage_option, montage_value, channel_options):
         if montage_value != 'channel selection':
             # Disable all options
             return [{'label': option['label'], 'value': option['value'], 'disabled': True} for option in channel_options]

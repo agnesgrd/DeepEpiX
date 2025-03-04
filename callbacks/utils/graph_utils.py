@@ -24,18 +24,23 @@ def calculate_channel_offset(num_channels, plot_height=900, min_gap=30):
     # Ensure there's enough space between each trace to avoid overlap.
     # We leave space for the desired minimum gap between traces.
     total_gap_needed = (num_channels - 1) * min_gap
+    print('total gap needed', total_gap_needed)
 
     # Calculate the optimal offset based on the plot height and the required gap.
     optimal_channel_offset = (plot_height - total_gap_needed) / (num_channels - 1) if num_channels > 1 else min_gap
+    print('optimal channel offset', optimal_channel_offset)
     
     # Ensure the offset is a positive value
     optimal_channel_offset = max(optimal_channel_offset, min_gap)
+
+    print('reel optimal', optimal_channel_offset)
     
     return optimal_channel_offset
 
 def get_y_axis_ticks(selected_channels, channel_offset = c.DEFAULT_Y_AXIS_OFFSET):
     
     channel_offset = (channel_offset if channel_offset != None else c.DEFAULT_Y_AXIS_OFFSET)
+    print("channel offset applied", channel_offset)
     y_axis_ticks = np.arange(len(selected_channels)) * channel_offset
     return y_axis_ticks
 
@@ -115,7 +120,8 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
 
     # Offset channel traces along the y-axis
     offset_start_time = time.time()
-    channel_offset = calculate_channel_offset(len(selected_channels))*(10-offset_selection)*10 #/10 #/ 12
+    channel_offset = calculate_channel_offset(len(selected_channels))*(11-offset_selection)*9 #/10 #/ 12
+    print('reel channel offset', channel_offset)
     y_axis_ticks = get_y_axis_ticks(selected_channels, channel_offset)
     shifted_filtered_raw_df = filtered_raw_df + np.tile(y_axis_ticks, (len(filtered_raw_df), 1))
     print(f"Step 5: Channel offset calculation completed in {time.time() - offset_start_time:.2f} seconds.")
@@ -250,12 +256,13 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
         ),
         yaxis=dict(
             title='Channels',
+            autorange=True,
             showgrid=True,
             tickvals=y_axis_ticks,
             ticktext=[f'{selected_channels[i]}' for i in range(len(selected_channels))],
             ticklabelposition="outside right",
             side="right",
-            automargin=True,
+            # automargin=True,
             spikethickness = 0
         ),
         title={
