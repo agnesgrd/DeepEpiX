@@ -127,7 +127,7 @@ and install the virtual environment for running the Dash app:
   ```bash
   conda create --name .dashenv python=3.9
   conda activate .dashenv
-  conda install --file requirements/requirements-python3.9.txt
+  conda install -c conda-forge numpy scipy pandas matplotlib scikit-learn dash plotly Flask-Caching mne dash-bootstrap-components dash-extensions
   conda deactivate
   ```
 </details>
