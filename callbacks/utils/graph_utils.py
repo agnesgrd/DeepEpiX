@@ -129,7 +129,7 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
     # Create a dictionary mapping channels to their colors
     if color_selection == "rainbow":
         color_map = {channel: c.CHANNEL_TO_COLOR[channel] for channel in selected_channels}
-    elif color_selection == "unified":
+    elif color_selection == "blue":
         color_map = {channel: "#00008B" for channel in selected_channels}
     elif "smoothGrad" in color_selection:
         color_map = {channel: "#00008B" for channel in selected_channels}

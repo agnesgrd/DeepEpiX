@@ -198,7 +198,7 @@ def create_selection():
             ),
             dcc.RadioItems(
                 id="colors-radio",
-                options = [{'label':'unified', 'value': 'unified'}, {'label':'rainbow', 'value': 'rainbow'}],
+                options = [{'label':'blue', 'value': 'blue'}, {'label':'rainbow', 'value': 'rainbow'}],
                 value='rainbow',
                 inline=False,
                 style={"margin": "10px 0", "fontSize": "12px"},
