@@ -76,7 +76,7 @@ layout = html.Div([
 
                     html.Div([
                         html.Label("Resampling Frequency (Hz): "),
-                        dbc.Input(id="resample-freq", type="number", value=150, step=50, min=50, style=input_styles["number-in-box"]),
+                        dbc.Input(id="resample-freq", type="number", value=150, step=1, min=50, style=input_styles["number-in-box"]),
                     ], style={"padding": "10px"}),
 
                     html.Div([
@@ -86,7 +86,12 @@ layout = html.Div([
 
                     html.Div([
                         html.Label("Low-pass Frequency (Hz): "),
-                        dbc.Input(id="low-pass-freq", type="number", value=50, step=10, min=10, style=input_styles["number-in-box"]),
+                        dbc.Input(id="low-pass-freq", type="number", value=50, step=1, min=1, style=input_styles["number-in-box"]),
+                    ], style={"padding": "10px"}),
+
+                    html.Div([
+                        html.Label("Notch filter Frequency (Hz): "),
+                        dbc.Input(id="notch-freq", type="number", value=50, step=1, min=0, style=input_styles["number-in-box"]),
                     ], style={"padding": "10px"}),
 
                     html.Div([
@@ -190,25 +195,32 @@ def handle_load_button(n_clicks):
 
 
 @dash.callback(
+    Output("preprocess-status", "children"),
     Output("frequency-store", "data"),
     Output("preprocess-display-button", "disabled"),
     Input("resample-freq", "value"),
     Input("high-pass-freq", "value"),
     Input("low-pass-freq", "value"),
+    Input("notch-freq", "value"),
     prevent_initial_call=True
 )
-def handle_frequency_parameters(resample_freq, high_pass_freq, low_pass_freq):
+def handle_frequency_parameters(resample_freq, high_pass_freq, low_pass_freq, notch_freq):
     """Retrieve frequency parameters and use them for analysis."""
+    if not low_pass_freq or not high_pass_freq or not notch_freq:
+        return "Please fill in all frequency parameters.", dash.no_update, True
+    
     if high_pass_freq >= low_pass_freq:
-        raise ValueError("High-pass frequency must be less than low-pass frequency.")
+        error = "High-pass frequency must be less than low-pass frequency."
+        return error, dash.no_update, True
     else:
         # Store the frequency values when the folder is valid
         frequency_values = {
             "resample_freq": resample_freq,
             "low_pass_freq": low_pass_freq,
-            "high_pass_freq": high_pass_freq
+            "high_pass_freq": high_pass_freq,
+            "notch_freq": notch_freq
         }
-        return frequency_values, False
+        return None, frequency_values, False
   
 # def get_preprocessed_dataframe(folder_path, freq_data):
 #     @cache.memoize()
@@ -244,12 +256,21 @@ def handle_frequency_parameters(resample_freq, high_pass_freq, low_pass_freq):
     prevent_initial_call=True
 )
 def display_psd(folder_path, freq_data):
+    print("yupp")
     if not folder_path:
         return dash.no_update
+    
     raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
+
     resample_freq = freq_data.get("resample_freq")
     low_pass_freq = freq_data.get("low_pass_freq")
     high_pass_freq = freq_data.get("high_pass_freq")
+    notch_freq = freq_data.get("notch_freq")
+
+    if not low_pass_freq or not high_pass_freq or not notch_freq:
+        return dash.no_update
+
+    raw.notch_filter(freqs=notch_freq)
 
     # Create the PSD plot using Plotly
     psd_fig = go.Figure()
@@ -310,8 +331,10 @@ def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw
                 resample_freq = freq_data.get("resample_freq")
                 low_pass_freq = freq_data.get("low_pass_freq")
                 high_pass_freq = freq_data.get("high_pass_freq")
+                notch_freq = freq_data.get("notch_freq")
                 # Apply filtering and resampling
                 raw.filter(l_freq=high_pass_freq, h_freq=low_pass_freq, n_jobs=8)
+                raw.notch_filter(freqs=notch_freq)
                 raw.resample(resample_freq)
 
             # Crop the raw data to the chunk's time range
@@ -362,7 +385,7 @@ def get_annotations_dataframe(folder_path):
     return annotations_dict, math.floor(time_secs[-1]*100)/100
     
 @dash.callback(
-    Output("preprocess-status", "children"),
+    Output("preprocess-status", "children", allow_duplicate=True),
     Output("url", "pathname"),
     Output("annotations-store", "data"),
     Output("chunk-limits-store", "data"),
@@ -385,11 +408,14 @@ def preprocess_meg_data(n_clicks, folder_path, freq_data):
             resample_freq = freq_data.get("resample_freq")
             low_pass_freq = freq_data.get("low_pass_freq")
             high_pass_freq = freq_data.get("high_pass_freq")
+            notch_freq = freq_data.get("notch_freq")
 
             # Apply filtering and resampling
             raw=pu.interpolate_missing_channels(raw)
             raw.filter(l_freq=high_pass_freq, h_freq=low_pass_freq, n_jobs=8)
+            raw.notch_filter(freqs=notch_freq)
             raw.resample(resample_freq)
+
 
             for chunk_idx in chunk_limits:
                 start_time, end_time = chunk_idx

@@ -88,7 +88,7 @@ app.layout = html.Div(
     style={"display": "flex", "flex-direction": "column", "height": "100vh"},  # Full-page flex layout
 )
 
-server = app.server
+# server = app.server
 
 if __name__ == "__main__":
-    app.run_server(host='0.0.0.0', port=8050, debug=True)
+    app.run_server(debug=True)
