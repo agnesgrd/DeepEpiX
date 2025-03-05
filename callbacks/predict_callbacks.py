@@ -131,7 +131,7 @@ def register_execute_predict_script():
             return f"Error running model: {e}", dash.no_update, dash.no_update, dash.no_update, dash.no_update
         
         # Load the DataFrame from CSV
-        predictions_csv_path = Path.cwd() / "results/predictions.csv"
+        predictions_csv_path = Path.cwd() / f"results/{os.path.basename(model_path)}_predictions.csv"
         result = pd.read_csv(predictions_csv_path)
 
         # Assuming df is your DataFrame
@@ -154,7 +154,7 @@ def register_execute_predict_script():
                 str(model_path),
                 str(venv),
                 str(Path.cwd() / "results"),
-                str(Path.cwd() / "results/predictions.csv"),
+                str(Path.cwd() / f"results/{os.path.basename(model_path)}_predictions.csv"),
                 str(threshold)  # Ensure threshold is passed as a string 
             ]
 
@@ -172,10 +172,12 @@ def register_execute_predict_script():
             except Exception as e:
                 return f"Error running smoothgrad: {e}", prediction_table, 0, {"display": "block"}, dash.no_update
 
-            # grad_store = {'smoothGrad': [sau.serialize_array(grad),grad.shape]}
-
-            return True, prediction_table, 0, {"display": "block"}, {'smoothGrad': str(Path.cwd() / "results/smoothGrad.pkl"),}
-
+            smoothgrad_path = Path.cwd() / f"results/{os.path.basename(model_path)}_smoothGrad.pkl"
+            if os.path.exists(smoothgrad_path):
+                return True, prediction_table, 0, {"display": "block"}, {'smoothGrad': str(smoothgrad_path)}
+            
+            else:
+                return True, prediction_table, 0, {"display": "block"}, dash.no_update
         else:
             return True, prediction_table, 0, {"display": "block"}, dash.no_update
 
@@ -195,7 +197,7 @@ def register_store_display_prediction():
             return dash.no_update, dash.no_update, dash.no_update
         
         # Ensure annotation_data is initialized
-        if annotation_data is None:
+        if not annotation_data:
             annotation_data = []
 
         prediction = prediction_table['props']['data']

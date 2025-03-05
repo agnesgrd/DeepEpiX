@@ -417,4 +417,4 @@ def test_model_dash(model_name, X_test_ids, output_path, threshold=0.5, adjust_o
     })
 
     # Save DataFrame as CSV
-    df.to_csv(f'{output_path}/predictions.csv', index=False)
+    df.to_csv(f'{output_path}/{os.path.basename(model_name)}_predictions.csv', index=False)

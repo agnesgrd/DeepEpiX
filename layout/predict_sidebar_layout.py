@@ -36,7 +36,7 @@ def create_predict():
 
     # Compute sensitvity analysis at the end
     html.Div([
-        html.Label("Sensitivity Analysis (smoothGrad):", style={**label_styles["classic"]}),
+        html.Label("Sensitivity Analysis (smoothGrad - only available for simple tensorflow models):", style={**label_styles["classic"]}),
         dbc.RadioItems(
             id="sensitivity-analysis",
             options=[

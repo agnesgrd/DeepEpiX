@@ -3,9 +3,10 @@ import numpy as np
 import os.path as op
 import mne
 from tqdm import tqdm
-import sys
 import pandas as pd
 import model_pipeline.params as params
+import pandas as pd
+from scipy.ndimage import gaussian_filter1d
 
 #####################################################################Preparing the data
 
@@ -210,13 +211,6 @@ def compute_window_phase_congruency(window):
 	phase_diff = np.diff(phases)
 	phase_congruencies = 1 - (np.abs(phase_diff)/np.pi)
 	return np.max(phase_congruencies)
-
-import numpy as np
-import pandas as pd
-import tensorflow as tf
-from scipy.ndimage import gaussian_filter1d
-from tensorflow import keras
-import os.path as op
 
 def compute_gfp(window):
     """Compute Global Field Power (GFP) as standard deviation across channels."""

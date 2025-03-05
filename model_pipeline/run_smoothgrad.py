@@ -106,7 +106,6 @@ def run_smoothgrad(model_file, model_type, path_to_files, y_pred_path, threshold
     # Convert 'probas' column to NumPy array
     y_pred = full_result["probas"].to_numpy()  # or df["probas"].values
 
-
     total_nb_windows = len(blocks_file)
     total_nb_points = data_file['meg'][0].shape[1]
 
@@ -135,7 +134,7 @@ def run_smoothgrad(model_file, model_type, path_to_files, y_pred_path, threshold
                 #If the model predicts a spike then fill the gradient array over the full window (comprising the beggining and end window overlaps)
                 full_grads[(w*total_lenght)-math.floor(overlap/2):(w*total_lenght)+total_lenght + math.ceil(overlap/2),:] = norm_grads[:,:]
 
-    grad_path = f"{path_to_files}/smoothGrad.pkl"
+    grad_path = f"{path_to_files}/{os.path.basename(model_file)}_smoothGrad.pkl"
     with open(grad_path, 'wb') as f:
         pickle.dump(full_grads, f)
 
