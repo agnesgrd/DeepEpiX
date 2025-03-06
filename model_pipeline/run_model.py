@@ -1,5 +1,6 @@
 from model_pipeline.utils import save_data_matrices, create_windows, generate_database
 import sys
+import params
 
 def run_model_pipeline(
 		model_name, 
@@ -13,15 +14,18 @@ def run_model_pipeline(
 	# Model Selection
 	if "TensorFlow" in model_type:
 			from model_pipeline.tensorflow_models import test_model_dash
+			window_size = params.window_size_ms
 	elif 'PyTorch' in model_type:
 		if 'AE1D' in model_path:
 			from model_pipeline.anomaly_detect import test_model_dash
+			window_size = params.window_size_ms_ae
 		else:
 			from model_pipeline.pytorch_models import test_model_dash, load_generators_memeff
-
+			window_size = params.window_size_ms
+			
 	# Data Preparation
 	save_data_matrices(good_channels_file, subject, output_path)
-	total_nb_windows = create_windows(output_path)
+	total_nb_windows = create_windows(output_path, window_size)
 	X_test_ids = generate_database(total_nb_windows)
 
 	# # Data Generator

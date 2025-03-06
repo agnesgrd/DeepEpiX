@@ -65,6 +65,12 @@ from callbacks.predict_callbacks import (
     register_update_selected_model
 )
 
+from callbacks.anom_detect_callbacks import (
+    register_update_selected_model_anom_detect,
+    register_execute_predict_script_anom_detect,
+    register_display_anom_detect
+)
+
 dash.register_page(__name__)
 
 
@@ -157,3 +163,9 @@ register_execute_predict_script()
 register_store_display_prediction()
 
 register_update_selected_model()
+
+register_update_selected_model_anom_detect()
+
+register_execute_predict_script_anom_detect()
+
+register_display_anom_detect()

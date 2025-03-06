@@ -6,6 +6,7 @@ from layout.selection_sidebar_layout import create_selection
 from layout.analyze_sidebar_layout import create_analyze
 from layout.predict_sidebar_layout import create_predict
 from layout.save_sidebar_layout import create_save
+from layout.anom_detect_sidebar_layout import create_anom_detect
 
 
 
@@ -17,6 +18,7 @@ def create_sidebar():
                 dbc.Tab(create_selection(), label='Select', tab_id='selection-tab'), # create_selection()
                 dbc.Tab(create_analyze(), label='Analyze', tab_id='analyzing-tab'), # create_analyze()
                 dbc.Tab(create_predict(), label='Predict', tab_id='prediction-tab'), #create_prediction()
+                dbc.Tab(create_anom_detect(), label='Anomaly', tab_id='anom-detection-tab'), #create_prediction()
                 dbc.Tab(create_save(), label='Save', tab_id='saving-tab'), #create_prediction()
             ],
             id="sidebar-tabs",

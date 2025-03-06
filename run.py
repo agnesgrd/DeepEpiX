@@ -21,6 +21,7 @@ app.layout = html.Div(
         dcc.Store(id="montage-store", data={}, storage_type="local"),
         dcc.Store(id="history-store", storage_type="local"),
         dcc.Store(id='sensitivity-analysis-store', data={}, storage_type='local'),
+        dcc.Store(id='anomaly-detection-store', data={}, storage_type='local'),
 
         # Row for title and links
         html.Div(

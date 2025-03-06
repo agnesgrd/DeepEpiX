@@ -68,7 +68,7 @@ def register_update_annotations():
 
             color = description_colors[description]  # Get assigned color
 
-            if description in annotations_to_show:
+            if str(description) in annotations_to_show:
                  #Check the duration and add either a vertical line or a rectangle
                 if duration == 0:
                     # Vertical line if duration is 0

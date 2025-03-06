@@ -87,18 +87,9 @@ def get_shifted_time_axis(time_range, raw_df):
     
     return adjusted_times
 
-def generate_graph_time_channel(selected_channels, offset_selection, time_range, folder_path, freq_data, color_selection, sensitivity_analysis, xaxis_range):
+def generate_graph_time_channel(selected_channels, offset_selection, time_range, folder_path, freq_data, color_selection, xaxis_range, filter = {}):
     """Handles the preprocessing and figure generation for the MEG signal visualization."""
     import time  # For logging execution times
-
-    print("selected_channels:", selected_channels)
-    print("offset_selection:", offset_selection)
-    print("time_range:", time_range)
-    print("folder_path:", folder_path)
-    print("freq_data:", freq_data)
-    print("color_selection:", color_selection)
-    print("sensitivity_analysis:", sensitivity_analysis)
-    print("xaxis_range:", xaxis_range)
 
     start_time = time.time()
     # Preprocess data
@@ -131,7 +122,7 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
         color_map = {channel: c.CHANNEL_TO_COLOR[channel] for channel in selected_channels}
     elif color_selection == "blue":
         color_map = {channel: "#00008B" for channel in selected_channels}
-    elif "smoothGrad" in color_selection:
+    elif "smoothGrad" in color_selection or "anomDetect" in color_selection:
         color_map = {channel: "#00008B" for channel in selected_channels}
 
     # Use Plotly Express for efficient figure generation
@@ -181,46 +172,15 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
     #     )
 
     if 'smoothGrad' in color_selection:
-
+        print(filter.shape)
         # Add scatter plot using px.scatter
         # Convert time range to integer indices
         time_range_indices = np.arange(round(time_range[0] * 150), round(time_range[1] * 150)+1).astype(int)
         channel_indices = np.where(np.isin(c.ALL_CH_NAMES, selected_channels))[0]
-        print('time range indices',time_range_indices)
-        print('channel indices', channel_indices)
-        print(sensitivity_analysis.shape)
-        filtered_sa_array = sensitivity_analysis[time_range_indices[:, None], channel_indices]
-        print(filtered_sa_array.shape)
+        filtered_sa_array = filter[time_range_indices[:, None], channel_indices]
         scatter_df = shifted_filtered_raw_df.melt(id_vars=["Time"], var_name="Channel", value_name="Value")
-
         scatter_df["Color"] = filtered_sa_array.flatten('F')  # Flatten color array
-
-        # # Add a break (NaN row) between each channel
-        # scatter_df_sorted = scatter_df.sort_values(by=["Channel", "Time"])  # Ensure sorting within each channel
-
-        # # Function to add a break row (NaN) after each channel
-        # def add_break(x):
-        #     break_row = pd.DataFrame([{col: None for col in x.columns}])  # Create a row of NaNs
-        #     return pd.concat([x, break_row], ignore_index=True)
-
-        # scatter_df_sorted = scatter_df_sorted.groupby("Channel", group_keys=True).apply(add_break).reset_index(drop=True)
-        # Ensure time is numeric (in seconds)
-        # scatter_df = scatter_df.sort_values(by='Time')  # Sort just in case
-
-        # # Define new time range at 600 Hz (1/600 seconds step)
-        # time_min = scatter_df['Time'].min()
-        # time_max = scatter_df['Time'].max()
-        # new_time_grid = np.arange(time_min, time_max, 1/600)  # Step size = 1/600 seconds
-        # print(new_time_grid)
-        # # Reindex DataFrame
-        # scatter_df_interpolated = pd.DataFrame({'Time': new_time_grid})
-        # scatter_df_interpolated = scatter_df_interpolated.merge(scatter_df, on='Time', how='left')
-
-        # # Interpolate missing "color" values
-        # scatter_df_interpolated['Color'] = scatter_df_interpolated['Color'].interpolate(method='linear')
-
         scatter_df_filtered = scatter_df[scatter_df["Color"] > 0]
-        print(scatter_df_filtered)
 
         scatter_fig = px.scatter(
             scatter_df_filtered,
@@ -235,7 +195,28 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
         # Add scatter traces to the line plot
         fig.add_traces(scatter_fig.data)
 
-        # fig.update_traces(mode='markers', marker_size = 3)  # Set your desired width
+    elif 'anomDetect' in color_selection:
+        print(filter.shape)
+
+        time_range_indices = np.arange(round(time_range[0] * 150), round(time_range[1] * 150)+1).astype(int)
+        channel_indices = np.where(np.isin(c.ALL_CH_NAMES, selected_channels))[0]
+        filtered_sa_array = filter[time_range_indices[:, None], channel_indices]
+        scatter_df = shifted_filtered_raw_df.melt(id_vars=["Time"], var_name="Channel", value_name="Value")
+        scatter_df["Color"] = filtered_sa_array.flatten('F')  # Flatten color array
+        scatter_df_filtered = scatter_df[scatter_df["Color"] > 0]
+
+        scatter_fig = px.scatter(
+            scatter_df_filtered,
+            x="Time",
+            y="Value",
+            color="Color",
+            color_continuous_scale="Reds",
+            labels={"value": "Value", "variable": "Channel", "Time": "Time (s)"},
+            opacity=1
+        )
+
+        # Add scatter traces to the line plot
+        fig.add_traces(scatter_fig.data)
 
     print(f"Step 6: Figure creation completed in {time.time() - fig_start_time:.2f} seconds.")
 
@@ -295,6 +276,23 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
             ticks="outside",
             dtick=1),
             coloraxis=dict(cmin=0, cmax=1)  # Set color range from 0 to 1
+        )
+
+
+        fig.update_traces(line=dict(width=1), marker=dict(size=3))
+
+    elif "anomDetect" in color_selection:
+        fig.update_layout(           
+            coloraxis_colorbar=dict(
+            title=dict(text="Mean Square Error"),
+            thicknessmode="pixels", thickness=10,
+            lenmode="fraction", len=0.15,
+            y=0,
+            x=0.9,
+            orientation="h",
+            ticks="outside",
+            dtick=1),
+            coloraxis=dict(cmin=0, cmax=0.2)  # Set color range from 0 to 1
         )
 
 

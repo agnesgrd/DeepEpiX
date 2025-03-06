@@ -253,19 +253,19 @@ def register_callbacks_sensivity_analysis():
     @dash.callback(
         Output("colors-radio", "options"),
         Input("sensitivity-analysis-store", "data"),
+        Input("anomaly-detection-store", "data"),
         Input("colors-radio", "value"),
         State("colors-radio", "options"),
         prevent_initial_call=False
     )
-    def display_sensitivity_analysis_checklist(sa_store, value, default_options):
+    def display_sensitivity_analysis_checklist(sa_store, ad_store, value, default_options):
         # Create options for the checklist from the channels in montage_store
-        if sa_store is None or sa_store == {}:
+        if (sa_store is None or sa_store == {}) and (ad_store is None or ad_store == {}):
             return dash.no_update
-        options = [{'label': key, 'value': key} for key in sa_store.keys()]
-        if options[-1] not in default_options:
-            updated_options = default_options + options
-            # If value is valid, keep the current selection
-            return updated_options
-        else:
-            return dash.no_update
+        new_options = [{'label': key, 'value': key} for key in sa_store.keys() if {'label': key, 'value': key} not in default_options] + [{'label': key, 'value': key} for key in ad_store.keys() if {'label': key, 'value': key} not in default_options]
+
+        updated_options = default_options + new_options
+
+        return updated_options
+
     

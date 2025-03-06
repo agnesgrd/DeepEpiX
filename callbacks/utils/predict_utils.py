@@ -3,10 +3,10 @@ from itertools import chain
 
 
 # Function to get model options
-def get_model_options():
+def get_model_options(AE):
     model_dir = Path.cwd() / "models"
 
-    models = [f for f in model_dir.iterdir() if f.suffix in {".pth", ".keras", ".h5"}]
+    models = [f for f in model_dir.iterdir() if f.suffix in {".pth", ".keras", ".h5"} and ('AE' in str(f)) is AE]
 
     return (
         [{"label": d.name, "value": str(d.resolve())} for d in models]

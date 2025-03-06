@@ -24,9 +24,10 @@ def register_update_graph_time_channel():
         State("montage-store", "data"),
         State("meg-signal-graph", "figure"),
         State("sensitivity-analysis-store", "data"),
+        State("anomaly-detection-store", "data"),
         prevent_initial_call=False
     )
-    def update_graph_time_channel(page_selection, montage_selection, channel_selection, folder_path, offset_selection, color_selection, chunk_limits,freq_data, montage_store, graph, sensitivity_analysis_store):
+    def update_graph_time_channel(page_selection, montage_selection, channel_selection, folder_path, offset_selection, color_selection, chunk_limits,freq_data, montage_store, graph, sensitivity_analysis_store, anom_detect_store):
         """Update MEG signal visualization based on time and channel selection."""
         
         if folder_path is None:
@@ -45,9 +46,14 @@ def register_update_graph_time_channel():
         # Reading back
         if "smoothGrad" in color_selection:
             with open(sensitivity_analysis_store['smoothGrad'], 'rb') as f:
-                sensitivity_analysis = pickle.load(f)
+                filter = pickle.load(f)
+
+        elif "anomDetect" in color_selection:
+            with open(anom_detect_store['anomDetect'], 'rb') as f:
+                filter = pickle.load(f)
+        
         else:
-            sensitivity_analysis = {}
+            filter = {}
 
         try:
             if montage_selection == "channel selection" and not channel_selection or not folder_path or not freq_data:  # Check if data is missing
@@ -78,7 +84,7 @@ def register_update_graph_time_channel():
                     if offset_selection is None:
                         offset_selection = 5
                         
-                fig = gu.generate_graph_time_channel(selected_channels, float(offset_selection), time_range, folder_path, freq_data, color_selection, sensitivity_analysis, xaxis_range)
+                fig = gu.generate_graph_time_channel(selected_channels, float(offset_selection), time_range, folder_path, freq_data, color_selection, xaxis_range, filter)
 
                 return fig, None
             

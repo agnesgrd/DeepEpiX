@@ -105,13 +105,13 @@ def save_data_matrices(good_channels_file, subject, path_output):
 	save_obj(data, 'data_raw_%s' % params.subject_number, path_output)
 
 #Crops the windows from the pickle file and saves it in a binary file
-def create_windows(path_output, stand=False):
+def create_windows(path_output, window_size_ms, stand=False):
 
 	total_nb_windows = 0
 	#Window size in time points (based on window duration)
-	window_size = params.window_size_ms * params.sfreq
+	window_size = window_size_ms * params.sfreq
 	#Spacing between two window centers (made such that windows slightly overlap)
-	window_spacing = (params.window_size_ms - 2*params.spike_spacing_from_border_ms) * params.sfreq
+	window_spacing = (window_size_ms - 2*params.spike_spacing_from_border_ms) * params.sfreq
 	#size of window border in which we ignore potential spikes (because too much on the border) (in time points)
 	spike_spacing_from_border = params.spike_spacing_from_border_ms * params.sfreq
 
@@ -130,6 +130,7 @@ def create_windows(path_output, stand=False):
 		# Slice in short windows (seconds)
 		# get the center of each windows in seconds
 		window_centers = np.arange(window_size/2, block_data.shape[1], window_spacing)
+		print(window_centers)
 		# Start getting the data for each window
 		for window_center in tqdm(window_centers):
 			# get the data only if time duration is big enough before and after the
@@ -158,7 +159,7 @@ def create_windows(path_output, stand=False):
 	save_obj(np.array(window_center_time), "data_raw_"+str(params.subject_number)+'_timing', path_output)
 	#saves window blocks
 	save_obj(np.array(nb_block), "data_raw_"+str(params.subject_number)+'_blocks', path_output)
-	
+
 	return total_nb_windows
 
 def generate_database(total_nb_windows):  
