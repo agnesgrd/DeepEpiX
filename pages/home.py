@@ -95,6 +95,11 @@ layout = html.Div([
                     ], style={"padding": "10px"}),
 
                     html.Div([
+                        html.Label("Channel Name for Heartbeat Detection (ex: MRF52-2805, default = None): "),
+                        dbc.Input(id="heartbeat-channel", type="text", style=input_styles["number-in-box"]),
+                    ], style={"padding": "10px"}),
+
+                    html.Div([
                         dbc.Button("Preprocess & Display", id="preprocess-display-button", color="success", disabled=True, n_clicks=0),
                         dcc.Loading(
                             id="loading",
@@ -313,6 +318,36 @@ def display_psd(folder_path, freq_data):
 
     return psd_fig
 
+def get_heartbeat_event(raw, ch_name):
+    # Find ECG events using the `find_ecg_events` function
+    events, _, _ = mne.preprocessing.find_ecg_events(
+        raw,
+        ch_name = ch_name
+
+    )
+    
+    # Get the sampling frequency (in Hz)
+    sfreq = raw.info['sfreq']
+
+    # Create a list to store the event information
+    event_list = []
+
+    # For each ECG event, create a dictionary with onset (in seconds), description, and duration
+    for event in events:
+        onset_sample = event[0]  # The event onset in samples
+        onset_sec = onset_sample / sfreq  # Convert to seconds
+        description = 'ECG Event'  # You can customize this
+        duration = 0  # Duration in seconds (for simplicity, we'll assume a 1-second duration)
+                
+        # Append to the event list
+        event_list.append({
+            'onset': onset_sec,
+            'description': description,
+            'duration': duration
+        })
+
+    return pd.DataFrame(event_list)
+
 def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw=None):
     """
     Preprocess the MEG data in chunks and cache them.
@@ -365,8 +400,8 @@ def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw
     # Process and return the result in JSON format
     return process_data_in_chunks(folder_path, freq_data, start_time, end_time)
 
-def get_annotations_dataframe(folder_path):
-    raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
+def get_annotations_dataframe(raw, heartbeat_ch_name):
+    # raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
     
     annotations_df = raw.annotations.to_data_frame()
     
@@ -377,10 +412,14 @@ def get_annotations_dataframe(folder_path):
     origin_time = pd.Timestamp(raw.annotations.orig_time)
     annotations_df['onset'] = (annotations_df['onset'] - origin_time).dt.total_seconds()
     
-    # Convert to dictionary format
-    annotations_dict = annotations_df.to_dict(orient="records")
-
     time_secs = raw.times
+
+    heartbeat_df = get_heartbeat_event(raw, heartbeat_ch_name)
+
+    df_combined = pd.concat([annotations_df, heartbeat_df], ignore_index=True)
+
+    # Convert to dictionary format
+    annotations_dict = df_combined.to_dict(orient="records")
     
     return annotations_dict, math.floor(time_secs[-1]*100)/100
     
@@ -392,19 +431,21 @@ def get_annotations_dataframe(folder_path):
     Input("preprocess-display-button", "n_clicks"),
     State("folder-store", "data"),
     State("frequency-store", "data"),
+    State("heartbeat-channel", "value"),
     prevent_initial_call=True
 )
-def preprocess_meg_data(n_clicks, folder_path, freq_data):
+def preprocess_meg_data(n_clicks, folder_path, freq_data, heartbeat_ch_name):
     """Preprocess MEG data and save it."""
     if n_clicks is None:
         raise PreventUpdate
     if n_clicks > 0:
         cache.clear()
         try:
-            annotations_dict, max_length = get_annotations_dataframe(folder_path)
+            raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
+
+            annotations_dict, max_length = get_annotations_dataframe(raw, heartbeat_ch_name)
             chunk_limits = pu.update_chunk_limits(max_length)
 
-            raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
             resample_freq = freq_data.get("resample_freq")
             low_pass_freq = freq_data.get("low_pass_freq")
             high_pass_freq = freq_data.get("high_pass_freq")
@@ -415,7 +456,6 @@ def preprocess_meg_data(n_clicks, folder_path, freq_data):
             raw.filter(l_freq=high_pass_freq, h_freq=low_pass_freq, n_jobs=8)
             raw.notch_filter(freqs=notch_freq)
             raw.resample(resample_freq)
-
 
             for chunk_idx in chunk_limits:
                 start_time, end_time = chunk_idx

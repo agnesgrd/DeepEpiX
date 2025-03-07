@@ -11,7 +11,7 @@ def create_predict():
         html.Label("Available Models:", style={**label_styles["classic"]}),
         dcc.Dropdown(
             id="model-dropdown",
-            options=pu.get_model_options(AE=False),
+            options=pu.get_model_options('CNN'),
             placeholder="Select ...",
         ),
     ], style={"marginBottom": "20px"}),

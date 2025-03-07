@@ -11,7 +11,7 @@ def create_anom_detect():
         html.Label("Available Models:", style={**label_styles["classic"]}),
         dcc.Dropdown(
             id="model-ae-dropdown",
-            options=pu.get_model_options(AE=True),
+            options=pu.get_model_options('AE'),
             placeholder="Select ...",
         ),
     ], style={"marginBottom": "20px"}),

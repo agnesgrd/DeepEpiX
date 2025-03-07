@@ -17,6 +17,7 @@ from scipy.ndimage import median_filter, gaussian_filter
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+import utils
 
 class Encoder(nn.Module):
 	def __init__(self):
@@ -107,7 +108,7 @@ def resume(model, filename, device):
 
 def postprocess(mse_win):
 	# Compute threshold at the 75th percentile
-	thresh = np.quantile(mse_win, 0.95)
+	thresh = np.quantile(mse_win, 0.75)
 
 	# Instead of setting low values to an arbitrary min/2, use log-scaling for better distribution
 	mse_win = np.log1p(mse_win)  # log(1 + x) avoids issues with zero values
@@ -115,7 +116,7 @@ def postprocess(mse_win):
 	# Normalize high MSE values using robust scaling (less sensitive to outliers)
 	high_mse = mse_win[mse_win > thresh]
 	if high_mse.size > 0:
-		mse_win[mse_win > thresh] = 0.05 * ((high_mse - np.median(high_mse)) / (np.percentile(high_mse, 90) - np.median(high_mse))) + 0.95
+		mse_win[mse_win > thresh] = 0.25 * ((high_mse - np.median(high_mse)) / (np.percentile(high_mse, 90) - np.median(high_mse))) + 0.75
 
 	# # Apply Wiener filter with a smaller window (reduces blurring of sharp spikes)
 	mse_win = signal.wiener(mse_win, (7,7))
@@ -137,9 +138,9 @@ def get_win_data_signal(f,win,sub,dim):
 	sample = np.expand_dims(sample,axis=0)
 	sample = np.expand_dims(sample,axis=0)
 
-	mean = np.mean(sample)
-	std = np.std(sample)
-	sample = (sample - mean)/std
+	# mean = np.mean(sample)
+	# std = np.std(sample)
+	# sample = (sample - mean)/std
 	
 	return sample
 
@@ -478,7 +479,7 @@ def create_event_dataframe_with_description(heartbeats_onset, spikes_onset, bad_
 	
 	return df
 
-def extract_event_windows(signal, event_onsets, fs, window_duration=0.1):
+def extract_features_windows(signal, event_onsets, fs, window_duration=0.1):
 	"""
 	Extracts 0.4s signal windows around event onsets.
 
@@ -494,8 +495,11 @@ def extract_event_windows(signal, event_onsets, fs, window_duration=0.1):
 	window_size = int(window_duration * fs)
 	half_window = window_size // 2
 	windows = []
-
+	compute_features = {"ppa" : utils.compute_window_ppa, "std": utils.compute_window_std, "upslope" : utils.compute_window_upslope, "downslope": utils.compute_window_downslope, "average_slope": utils.compute_window_average_slope, "sharpness" : utils.compute_window_sharpness}
+	features = []
+					 
 	for onset in event_onsets:
+		
 		center_idx = int(onset * fs)  # Convert time to sample index
 		start_idx = max(0, center_idx - half_window)
 		end_idx = min(len(signal), center_idx + half_window)
@@ -511,17 +515,90 @@ def extract_event_windows(signal, event_onsets, fs, window_duration=0.1):
 		# start_idx = max(0, center_idx - half_window)
 		# end_idx = min(len(signal), center_idx + half_window)
 
-		# Extract window and pad if necessary
-		window = signal[start_idx:end_idx]
+		
+		for feat, func in compute_features.items():
+			feature = func(window)
 
 		# if len(window) < window_size:
 		# 	window = np.pad(window, (0, window_size - len(window)), 'constant')
 
 		windows.append(window)
+		features.append(feature)
 	
 	print(window.shape)
 
-	return np.array(windows)
+	return np.array(features)
+
+def compute_matches(model_onsets, gt_onsets, delta):
+	true_positive = 0
+	false_positive = 0
+	false_negative = 0
+	
+	matched_gt = set()  # To track which ground truth values have been matched
+
+	# Count true positives: each model prediction must match one unique ground truth
+	for m in model_onsets:
+		# Check if model prediction m matches any ground truth g within the delta
+		matched = False
+		for g in gt_onsets:
+			if abs(m - g) <= delta and g not in matched_gt:
+				true_positive += 1
+				matched_gt.add(g)  # Mark this ground truth as matched
+				matched = True
+				break
+		if not matched:
+			false_positive += 1  # If no match, it's a false positive
+
+	# Count false negatives: ground truth not matched by any model prediction
+	for g in gt_onsets:
+		if g not in matched_gt:
+			false_negative += 1  # This ground truth has no matching model prediction
+
+	return true_positive, false_positive, false_negative
+
+def compute_performance(model_prediction, ground_truth, tolerance):
+
+	delta = tolerance
+
+	# model_onsets = pd.DataFrame(model_prediction)
+	# gt_onsets = pd.DataFrame(ground_truth)
+
+	true_positive, false_positive, false_negative = compute_matches(model_prediction, ground_truth, delta)
+
+	# Compute Precision, Recall, F1-score
+	precision = true_positive / (true_positive + false_positive) if (true_positive + false_positive) > 0 else 0
+	recall = true_positive / (true_positive + false_negative) if (true_positive + false_negative) > 0 else 0
+	f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+
+	# Confusion Matrix Data
+	conf_matrix_data = {
+		"Metric": ["True Positive", "False Positive", "False Negative", "True Negative"],
+		"Count": [true_positive, false_positive, false_negative, "nan"]
+	}
+	conf_matrix_data = [
+		{"": "Actual Negative", "Predicted Negative": "nan", "Predicted Positive": false_positive},
+		{"": "Actual Positive", "Predicted Negative": false_negative, "Predicted Positive": true_positive}
+	]
+
+	# Performance Metrics Data
+	perf_metrics_data = {
+		"Metric": ["Precision", "Recall", "F1 Score"],
+		"Value": [f"{precision:.3f}", f"{recall:.3f}", f"{f1:.3f}"]
+	}
+
+	# Display results
+	results = f"""
+	**Performance Metrics:**
+	- **Precision:** {precision:.3f}
+	- **Recall:** {recall:.3f}
+	- **F1 Score:** {f1:.3f}
+	"""
+
+	# Create Dash tables
+	confusion_matrix_df = pd.DataFrame(conf_matrix_data)
+	performance_metrics_df = pd.DataFrame(perf_metrics_data)
+
+	return confusion_matrix_df, performance_metrics_df
 
 def test_model_dash(model_name, X_test_ids, output_path, threshold, adjust_onset):
 
@@ -555,8 +632,6 @@ def test_model_dash(model_name, X_test_ids, output_path, threshold, adjust_onset
 	full_mse = np.zeros((total_nb_points, 274))
 	full_signal = np.zeros((total_nb_points, 274))
 
-	print("full_mse", full_mse.shape)
-
 	with torch.no_grad():
 		for w in range(0,X_test_ids.shape[0]):
 
@@ -565,14 +640,18 @@ def test_model_dash(model_name, X_test_ids, output_path, threshold, adjust_onset
 
 			sample = get_win_data_signal(f,cur_win,cur_sub,params.dim_ae)
 
-			input = torch.tensor(sample,dtype = torch.float32).to(device)
+			mean = np.mean(sample)
+			std = np.std(sample)
+			input = (sample - mean)/std
+
+			input = torch.tensor(input,dtype = torch.float32).to(device)
 			output = model(input)
 
 			input = input.squeeze()
 			output = output.squeeze()
 			mse = np.swapaxes(MSE(output, input).cpu().numpy(), 0, 1)
 			
-			full_signal[(w*(params.dim_ae[0]-9)):(w*(params.dim_ae[0]-9))+params.dim_ae[0],:] = np.swapaxes(input.cpu().numpy(), 0, 1)
+			full_signal[(w*(params.dim_ae[0]-9)):(w*(params.dim_ae[0]-9))+params.dim_ae[0],:] = np.swapaxes(sample[0][0], 0, 1)
 			full_mse[(w*(params.dim_ae[0]-9)):(w*(params.dim_ae[0]-9))+params.dim_ae[0],:] = postprocess(mse)
 
 			del sample
@@ -581,57 +660,80 @@ def test_model_dash(model_name, X_test_ids, output_path, threshold, adjust_onset
 
 	del model
 
-
+	std_per_time = np.std(full_mse, axis=1)  # This gives an array of shape (time,)
+	full_mse = signal.wiener(full_mse, 3)
+	# # Now, duplicate the standard deviation across the channels to match the shape (time, channels)
+	full_mse = np.tile(std_per_time[:, np.newaxis], (1, full_mse.shape[1]))  # Shape (time, channels)
 
 	grad_path = f"{output_path}/{os.path.basename(model_name)}_anomDetect.pkl"
 	with open(grad_path, 'wb') as f:
 		pickle.dump(full_mse, f)
-
-	std_per_time = np.std(full_mse, axis=1)  # This gives an array of shape (time,)
-	full_mse = signal.wiener(full_mse, 7)
-
 
 	# Call the function to detect events
 	heartbeats_onset, spikes_onset, bad_segments_onset = detect_events_by_duration_with_gap_filling(
 		std_per_time, fs=params.sfreq_ae
 	)
 
-	# # Now, duplicate the standard deviation across the channels to match the shape (time, channels)
-	# full_mse = np.tile(std_per_time[:, np.newaxis], (1, full_mse.shape[1]))  # Shape (time, channels)
-	  
-	# # Create the DataFrame with descriptions
-	# df = create_event_dataframe_with_description(heartbeats_onset, spikes_onset, bad_segments_onset)
+	# Create the DataFrame with descriptions
+	df_pred = create_event_dataframe_with_description(heartbeats_onset, spikes_onset, bad_segments_onset)
 	
+	# Save DataFrame as CSV
+	df_pred.to_csv(f'{output_path}/{os.path.basename(model_name)}_predictions.csv', index=False)
+
+
+	# PERFORMANCE
+	# Load ground truth
+	output_csv_path = "/home/admin_mel/Code/DeepEpiX/data/testData/patient_annotations.csv"
+	df_gt = pd.read_csv(output_csv_path)
+	subject = 'Conti'
+	ds = 'conti_Epi-001_20090709_07.ds'
+	model_descriptions = [["spike"], ["heartbeat"]]
+	target_descriptions = [["jj_add", "JJ_add", "jj_valid", "JJ_valid"], ["ECG Event"]]
+	tolerance_by_event = [0.3, 0.1]
+
+	for i in range(2):
+
+		# Select only spike events in both DataFrames
+		df_gt_spike = df_gt.loc[
+			(df_gt["description"].isin(target_descriptions[i])) & (df_gt["ds_id"] == ds),
+			"onset"
+		]
+
+		df_pred_spike = df_pred.loc[(df_pred["description"].isin(model_descriptions[i])), "onset"]
+
+		cf_matrix, perf = compute_performance(df_pred_spike, df_gt_spike, tolerance= tolerance_by_event[i])
+
+		print(model_descriptions[i], cf_matrix, perf)
+
+
+
+	# event_onsets = heartbeats_onset + spikes_onset + bad_segments_onset
+	# # Extract signal windows
+	# features = extract_features_windows(full_signal, event_onsets, fs=params.sfreq_ae)
+	# print(features.shape)
+
+	# # Normalize and reduce dimensions
+
+	# scaler = StandardScaler()
+	# features = scaler.fit_transform(features)
+
+	# # pca = PCA(n_components=10)  # Reduce to 5 main features
+	# # event_windows_reduced = pca.fit_transform(event_windows_scaled)
+
+	# # Apply K-Means clustering
+	# num_clusters = 2
+	# kmeans = KMeans(n_clusters=num_clusters, random_state=42)
+	# labels = kmeans.fit_predict(features)
+
+	# # Create the DataFrame
+	# df = pd.DataFrame({
+	# 	"onset": event_onsets,
+	# 	"duration": 0,  # Use calculated durations
+	# 	"description": [f" cluster {l}" for l in labels]  # Event type as description
+	# })
+
 	# # Save DataFrame as CSV
 	# df.to_csv(f'{output_path}/{os.path.basename(model_name)}_predictions.csv', index=False)
-
-
-
-	event_onsets = heartbeats_onset + spikes_onset + bad_segments_onset
-	# Extract signal windows
-	event_windows = extract_event_windows(full_signal, event_onsets, fs=params.sfreq_ae)
-
-	# Normalize and reduce dimensions
-	scaler = StandardScaler()
-	event_windows_scaled = scaler.fit_transform(event_windows.reshape(event_windows.shape[0], -1))
-
-	pca = PCA(n_components=10)  # Reduce to 5 main features
-	event_windows_reduced = pca.fit_transform(event_windows_scaled)
-
-	# Apply K-Means clustering
-	num_clusters = 3
-	kmeans = KMeans(n_clusters=num_clusters, random_state=42)
-	labels = kmeans.fit_predict(event_windows_reduced)
-
-	# Create the DataFrame
-	df = pd.DataFrame({
-		"onset": event_onsets,
-		"duration": 0,  # Use calculated durations
-		"description": [f" cluster {l}" for l in labels]  # Event type as description
-	})
-
-	# Save DataFrame as CSV
-	df.to_csv(f'{output_path}/{os.path.basename(model_name)}_predictions.csv', index=False)
 
 	# # Print cluster assignments
 	# for i, (onset, cluster) in enumerate(zip(event_onsets, labels)):
