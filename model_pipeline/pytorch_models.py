@@ -159,8 +159,8 @@ def get_win_data_signal(f,win,sub,dim):
     sample_norm = (sample - mean)/std
     
     return sample_norm
-
-def test_model_dash(model_name, X_test_ids, output_path, threshold, adjust_onset):
+s
+def test_model_dash(model_name, X_test_ids, output_path, threshold, adjust_onset, subject):
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 

@@ -349,7 +349,7 @@ def get_win_data_signal(f,win,sub,dim):
 
 #     keras.backend.clear_session()
 
-def test_model_dash(model_name, X_test_ids, output_path, threshold=0.5, adjust_onset = True):
+def test_model_dash(model_name, X_test_ids, output_path, threshold=0.5, adjust_onset = True, subject = None):
 
     model = keras.models.load_model(model_name, compile=False)
     model.compile()
