@@ -1,6 +1,7 @@
 from model_pipeline.utils import save_data_matrices, create_windows, generate_database
 import sys
 import params
+import os
 
 def run_model_pipeline(
 		model_name, 
@@ -20,7 +21,7 @@ def run_model_pipeline(
 			from model_pipeline.anomaly_detect import test_model_dash
 			window_size = params.window_size_ms_ae
 		else:
-			from model_pipeline.pytorch_models import test_model_dash, load_generators_memeff
+			from model_pipeline.pytorch_models import test_model_dash
 			window_size = params.window_size_ms
 			
 	# Data Preparation
@@ -28,14 +29,8 @@ def run_model_pipeline(
 	total_nb_windows = create_windows(output_path, window_size)
 	X_test_ids = generate_database(total_nb_windows)
 
-	# # Data Generator
-	# if tf_model == "features":
-	#     testing_generator = load_generators_memeff_feat_only(X_test_ids, output_path)
-	# else:
-	#     testing_generator = load_generators_memeff(X_test_ids, output_path)
-
 	# Model Testing
-	test_model_dash(model_name, X_test_ids, output_path, threshold, adjust_onset)
+	return test_model_dash(model_name, X_test_ids, output_path, threshold, adjust_onset, subject)
 
 if __name__ == "__main__":
 	model_path = sys.argv[1]
@@ -47,3 +42,7 @@ if __name__ == "__main__":
 	adjust_onset = sys.argv[7]
 
 	run_model_pipeline(model_path, model_type, good_channels_path, subject_folder_path, results_path, threshold, adjust_onset)
+
+
+
+

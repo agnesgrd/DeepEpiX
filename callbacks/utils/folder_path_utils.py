@@ -5,7 +5,7 @@ from pathlib import Path
 
 # Function to get model options
 def get_folder_path_options():
-    data_dir = Path.cwd() / "data/testData/Conti"  # Proper path handling
+    data_dir = Path.cwd() / "data"  # Proper path handling
     data = list(data_dir.glob("*.ds"))  # List all matching files
     
     return (

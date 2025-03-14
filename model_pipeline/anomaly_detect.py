@@ -99,13 +99,6 @@ def resume(model, filename, device):
 	checkpoint = torch.load(filename, map_location=device)
 	model.load_state_dict(checkpoint['model_state_dict'])
 
-# def postprocess(mse_win):
-#     thresh = np.quantile(mse_win,0.75)
-#     mse_win[mse_win<thresh] = np.min(mse_win[mse_win>thresh])/2
-#     mse_win[mse_win>thresh] = 0.25* ((mse_win[mse_win>thresh] -  np.min(mse_win[mse_win>thresh]))/(np.max(mse_win[mse_win>thresh])-np.min(mse_win[mse_win>thresh]))) + 0.75
-#     mse_win = signal.wiener(mse_win, (7,7))
-#     return mse_win
-
 def postprocess(mse_win):
 	# Compute threshold at the 75th percentile
 	thresh = np.quantile(mse_win, 0.75)
@@ -137,111 +130,8 @@ def get_win_data_signal(f,win,sub,dim):
 
 	sample = np.expand_dims(sample,axis=0)
 	sample = np.expand_dims(sample,axis=0)
-
-	# mean = np.mean(sample)
-	# std = np.std(sample)
-	# sample = (sample - mean)/std
 	
 	return sample
-
-# def detect_events(mse_win, signal, fs, duration_ranges={'heartbeat': (0.02, 0.05), 
-#                                                          'spike': (0.08, 0.12), 
-#                                                          'bad_segment': (0.15, np.inf)}):
-#     """
-#     Detects heartbeats, spikes, and bad segments based on preprocessed MSE patterns, 
-#     then refines onsets using GFP computed on the original signal.
-
-#     Parameters:
-#     - mse_win: np.array (time x channels) - Preprocessed MSE values
-#     - signal: np.array (time x channels) - Original input signal
-#     - fs: Sampling frequency in Hz
-#     - duration_ranges: Dict with min/max duration (in seconds) for each event type
-	
-#     Returns:
-#     - Dictionary with onsets (in seconds) for heartbeats, spikes, and bad segments.
-#     """
-	
-#     # Thresholding: Identify high-MSE regions
-#     thresh = np.quantile(mse_win, 0.75)  # Use 75th percentile as threshold
-#     binary_mask = mse_win > thresh
-#     event_mask = np.any(binary_mask, axis=1)  # Collapse across channels
-
-#     # Step 1: Detect Events Based on Duration
-#     event_onsets = {'heartbeat': [], 'spike': [], 'bad_segment': []}
-	
-#     for event_type, (min_dur, max_dur) in duration_ranges.items():
-#         min_samples = int(min_dur * fs)
-#         max_samples = int(max_dur * fs) if np.isfinite(max_dur) else None  # Handle np.inf
-		
-#         # Find event boundaries
-#         diff_mask = np.diff(np.concatenate(([0], event_mask.astype(int), [0])))
-#         event_starts = np.where(diff_mask == 1)[0]
-#         event_ends = np.where(diff_mask == -1)[0]
-		
-#         for start, end in zip(event_starts, event_ends):
-#             event_duration = end - start
-			
-#             # Apply duration filtering (ignore max_samples if it's None)
-#             if min_samples <= event_duration and (max_samples is None or event_duration <= max_samples):
-#                 # Step 2: Compute GFP on the original signal segment
-#                 signal_segment = signal[start:end, :]
-#                 gfp_segment = np.std(signal_segment, axis=1)  # GFP over time
-				
-#                 # Find peak GFP to adjust onset
-#                 peak_idx = np.argmax(gfp_segment)  # Find highest variance point
-#                 onset_time = (start + peak_idx) / fs  # Convert to seconds
-#                 event_onsets[event_type].append(onset_time)
-	
-#     return event_onsets
-
-def detect_events_by_duration(mse_win, fs, heartbeat_dur=(0.02, 0.05), spike_dur=(0.05, 0.15), bad_seg_dur=(0.3, 1), mse_thresh=0.75):
-	"""Detect heartbeats, spikes, and bad segments based on their duration and MSE threshold."""
-	event_onsets = []
-	
-	# Loop through each channel and detect events
-	for ch_idx in range(mse_win.shape[1]):
-		mse_channel = mse_win[:, ch_idx]
-		
-		# Apply thresholding to MSE (adjustable thresholding)
-		thresh = np.quantile(mse_channel, mse_thresh)  # MSE threshold at 75th percentile
-		mse_channel[mse_channel < thresh] = 0  # Set values below threshold to 0
-		mse_channel[mse_channel >= thresh] = 1  # Mark regions above the threshold as 1 (high MSE)
-		
-		# Apply Gaussian filter for smoothing
-		mse_channel = gaussian_filter(mse_channel, sigma=1)
-		
-		# Detect event onsets based on thresholded and smoothed MSE signal
-		heartbeat_onsets = find_event_onsets_by_duration(mse_channel, fs, heartbeat_dur)
-		spike_onsets = find_event_onsets_by_duration(mse_channel, fs, spike_dur)
-		bad_seg_onsets = find_event_onsets_by_duration(mse_channel, fs, bad_seg_dur)
-
-		# Add the detected onsets to the global list
-		event_onsets.extend(heartbeat_onsets)
-		event_onsets.extend(spike_onsets)
-		event_onsets.extend(bad_seg_onsets)
-	
-	return event_onsets
-
-def find_event_onsets_by_duration(mse_channel, fs, event_dur):
-	"""Find event onsets based on MSE with duration filtering."""
-	min_samples = int(event_dur[0] * fs)
-	max_samples = int(event_dur[1] * fs)
-	event_onsets = []
-	event_start = None
-
-	for i in range(len(mse_channel)):
-		if mse_channel[i] > 0:  # High MSE indicating a potential event
-			if event_start is None:
-				event_start = i  # Start of a potential event
-		else:
-			if event_start is not None:
-				event_end = i  # End of a potential event
-				event_duration = (event_end - event_start) / fs  # Duration in seconds
-				if min_samples <= (event_end - event_start) <= max_samples:
-					event_onsets.append((event_start / fs, event_end / fs))  # Convert to seconds
-				event_start = None
-	
-	return event_onsets
 
 def refine_onset_with_gfp(window, onset, fs):
 	gfp = compute_gfp(window.T)  # Compute GFP
@@ -251,11 +141,11 @@ def refine_onset_with_gfp(window, onset, fs):
 	adjusted_onset = onset - window.shape[0]/2/ fs + peak_time  # Align event to GFP peak
 	return adjusted_onset
 
-def detect_events_by_duration_with_gap_filling(std_per_time, fs, heartbeat_quantile=0.95, spike_quantile=0.75, bad_segment_quantile=0.5, 
+def detect_events_by_duration_with_gap_filling(std_per_time, mean_per_time, fs, heartbeat_quantile=0.95, spike_quantile=0.75, bad_segment_quantile=0.5, 
 											  heartbeat_min_duration=0.015, spike_min_duration=0.1, bad_segment_min_duration=0.5,
 											  heartbeat_max_duration=0.5, spike_max_duration=0.4, bad_segment_max_duration=2.0,
 											  heartbeat_max_gap_duration=0.01, spike_max_gap_duration=0.02, bad_segment_max_gap_duration=0.1,
-											  conflict_gap_duration=0.5):
+											  heartbeat_gap=0.4, spike_gap=0.06, conflict_gap_duration=0.1, bad_segment_exclusion_win=1):
 	"""
 	Detect heartbeats, spikes, and bad segments based on standard deviation per time and their durations,
 	filling any gaps in events based on a maximum gap duration, with maximum event durations.
@@ -290,15 +180,14 @@ def detect_events_by_duration_with_gap_filling(std_per_time, fs, heartbeat_quant
 	heartbeat_max_gap_samples = int(heartbeat_max_gap_duration * fs)
 	spike_max_gap_samples = int(spike_max_gap_duration * fs)
 	bad_segment_max_gap_samples = int(bad_segment_max_gap_duration * fs)
-	conflict_gap_samples = int(conflict_gap_duration * fs)
 	
 	# Identify time points where std exceeds the threshold
-	heartbeat_thresh = np.quantile(std_per_time, heartbeat_quantile)
+	heartbeat_thresh = np.quantile(mean_per_time, heartbeat_quantile)
 	spike_thresh = np.quantile(std_per_time, spike_quantile)
 	bad_segment_thresh = np.quantile(std_per_time, bad_segment_quantile)
 
 	# Identify time points where std exceeds the quantile threshold
-	heartbeat_mask = std_per_time > heartbeat_thresh
+	heartbeat_mask = mean_per_time > heartbeat_thresh
 	spike_mask = std_per_time > spike_thresh
 	bad_segment_mask = std_per_time > bad_segment_thresh
 	
@@ -318,7 +207,8 @@ def detect_events_by_duration_with_gap_filling(std_per_time, fs, heartbeat_quant
 				if event_duration >= min_samples and event_duration <= max_samples:  # Valid event duration
 					if last_event_end is not None and event_start - last_event_end <= max_gap_samples:
 						# Merge with the last event if gap is small enough
-						event_onsets[-1] = event_start / fs  # Update previous event start time
+						if event_onsets:
+							event_onsets[-1] = event_start / fs  # Update previous event start time
 					else:
 						event_onsets.append(event_start / fs)
 					last_event_end = event_end
@@ -334,87 +224,92 @@ def detect_events_by_duration_with_gap_filling(std_per_time, fs, heartbeat_quant
 	bad_segments_onset = detect_event_onsets_with_gap_filling(bad_segment_mask, bad_segment_min_samples, bad_segment_max_samples, bad_segment_max_gap_samples)
 	
 	# Resolve conflicts between detected events
-	heartbeats_onset, spikes_onset, bad_segments_onset = resolve_event_conflicts(heartbeats_onset, spikes_onset, bad_segments_onset, fs)
+	heartbeats_onset, spikes_onset, bad_segments_onset = resolve_event_conflicts(heartbeats_onset, spikes_onset, bad_segments_onset, fs, heartbeat_gap, spike_gap, bad_segment_exclusion_win, conflict_gap_duration)
 	
 	return heartbeats_onset, spikes_onset, bad_segments_onset
 
-def resolve_event_conflicts(heartbeats, spikes, bad_segments, fs, heartbeat_gap=0.4, spike_gap=0.06, bad_segment_exclusion_win=1):
-	"""
-	Resolve conflicts among detected events based on priority and time constraints.
-	
-	Rules:
-	- Heartbeats must be at least `heartbeat_gap` seconds apart.
-	- Spikes must be at least `spike_gap` seconds apart.
-	- Heartbeats and spikes should not be detected within `bad_segment_exclusion_win` seconds around bad segments.
-	- Priority: Bad segment > Spike > Heartbeat.
+def resolve_event_conflicts(heartbeats, spikes, bad_segments, fs,
+                            heartbeat_gap=0.4, spike_gap=0.06, 
+                            bad_segment_exclusion_win=1, conflit_gap_duration=0.1):
+    """
+    Resolve conflicts among detected events based on priority and time constraints.
 
-	Parameters:
-	- heartbeats (list): List of heartbeat onset times (seconds)
-	- spikes (list): List of spike onset times (seconds)
-	- bad_segments (list): List of bad segment onset times (seconds)
-	- fs (int): Sampling frequency (Hz)
+    Rules:
+    - Heartbeats must be at least `heartbeat_gap` seconds apart.
+    - Spikes must be at least `spike_gap` seconds apart.
+    - Heartbeats and spikes should not be detected within `bad_segment_exclusion_win` seconds around bad segments.
+    - Spikes should be excluded if a heartbeat is detected within `conflit_gap_samples` samples.
+    - Priority: Bad segment > Spike > Heartbeat.
 
-	Returns:
-	- final_heartbeats (list): Filtered heartbeat events
-	- final_spikes (list): Filtered spike events
-	- final_bad_segments (list): Filtered bad segment events
-	"""
-	
-	# Convert time constraints to samples
-	heartbeat_min_gap = heartbeat_gap * fs  
-	spike_min_gap = spike_gap * fs  
-	bad_segment_exclusion_window = bad_segment_exclusion_win * fs  
+    Parameters:
+    - heartbeats (list): List of heartbeat onset times (seconds)
+    - spikes (list): List of spike onset times (seconds)
+    - bad_segments (list): List of bad segment onset times (seconds)
+    - fs (int): Sampling frequency (Hz)
+    - conflit_gap_samples (int): Exclusion window in samples for spikes near heartbeats.
 
-	# Sort all events by time with their types
-	all_events = []
-	for t in bad_segments:
-		all_events.append((t, 0))  # 0 = bad segment
-	for t in spikes:
-		all_events.append((t, 1))  # 1 = spike
-	for t in heartbeats:
-		all_events.append((t, 2))  # 2 = heartbeat
+    Returns:
+    - final_heartbeats (list): Filtered heartbeat events
+    - final_spikes (list): Filtered spike events
+    - final_bad_segments (list): Filtered bad segment events
+    """
 
-	all_events.sort()  # Sort events by time
+    # Convert time constraints to seconds
+    heartbeat_min_gap = heartbeat_gap * fs  
+    spike_min_gap = spike_gap * fs  
+    bad_segment_exclusion_window = bad_segment_exclusion_win * fs  
+    conflit_gap = conflit_gap_duration / fs  # Convert samples to seconds
 
-	# Final lists
-	final_bad_segments = []
-	final_spikes = []
-	final_heartbeats = []
+    # Sort all events by time with their types
+    all_events = []
+    for t in bad_segments:
+        all_events.append((t, 0))  # 0 = bad segment
+    for t in spikes:
+        all_events.append((t, 1))  # 1 = spike
+    for t in heartbeats:
+        all_events.append((t, 2))  # 2 = heartbeat
 
-	last_heartbeat = -float("inf")  # Track last valid heartbeat time
-	last_spike = -float("inf")  # Track last valid spike time
+    all_events.sort()  # Sort events by time
 
-	i = 0
-	while i < len(all_events):
-		current_event, current_type = all_events[i]
-		has_conflict = False
+    # Final lists
+    final_bad_segments = []
+    final_spikes = []
+    final_heartbeats = []
 
-		# Check if it's within bad segment exclusion window
-		if current_type in [1, 2]:  # Spike or heartbeat
-			for bad_segment in final_bad_segments:
-				if abs(current_event - bad_segment) * fs < bad_segment_exclusion_window:
-					has_conflict = True
-					break  # Skip this event if it's too close to a bad segment
+    last_heartbeat = -float("inf")  # Track last valid heartbeat time
+    last_spike = -float("inf")  # Track last valid spike time
 
-		if not has_conflict:
-			if current_type == 0:  # Bad segment
-				final_bad_segments.append(current_event)
+    i = 0
+    while i < len(all_events):
+        current_event, current_type = all_events[i]
+        has_conflict = False
 
-			elif current_type == 1:  # Spike
-				if (current_event - last_spike) * fs >= spike_min_gap:
-					final_spikes.append(current_event)
-					last_spike = current_event
+        # Check if it's within bad segment exclusion window
+        if current_type in [1, 2]:  # Spike or heartbeat
+            for bad_segment in final_bad_segments:
+                if abs(current_event - bad_segment) * fs < bad_segment_exclusion_window:
+                    has_conflict = True
+                    break  # Skip this event if it's too close to a bad segment
 
-			else:  # Heartbeat
-				if (current_event - last_heartbeat) * fs >= heartbeat_min_gap:
-					final_heartbeats.append(current_event)
-					last_heartbeat = current_event
+        if not has_conflict:
+            if current_type == 0:  # Bad segment
+                final_bad_segments.append(current_event)
 
-		# Move to the next event
-		i += 1
+            elif current_type == 1:  # Spike
+                if ((current_event - last_spike) * fs >= spike_min_gap and
+                    (current_event - last_heartbeat) * fs >= conflit_gap):  # Check conflict gap
+                    final_spikes.append(current_event)
+                    last_spike = current_event
 
-	return final_heartbeats, final_spikes, final_bad_segments
+            else:  # Heartbeat
+                if (current_event - last_heartbeat) * fs >= heartbeat_min_gap:
+                    final_heartbeats.append(current_event)
+                    last_heartbeat = current_event
 
+        # Move to the next event
+        i += 1
+
+    return final_heartbeats, final_spikes, final_bad_segments
 
 def create_event_dataframe_with_description(heartbeats_onset, spikes_onset, bad_segments_onset):
 	"""
@@ -507,25 +402,11 @@ def extract_features_windows(signal, event_onsets, fs, window_duration=0.1):
 		# Extract window and pad if necessary
 		window = signal[start_idx:end_idx]
 		
-		# new_onset = refine_onset_with_gfp(window, onset, fs)
-		# print(onset)
-		# print(new_onset)
-
-		# center_idx = int(new_onset * fs)  # Convert time to sample index
-		# start_idx = max(0, center_idx - half_window)
-		# end_idx = min(len(signal), center_idx + half_window)
-
-		
 		for feat, func in compute_features.items():
 			feature = func(window)
 
-		# if len(window) < window_size:
-		# 	window = np.pad(window, (0, window_size - len(window)), 'constant')
-
 		windows.append(window)
 		features.append(feature)
-	
-	print(window.shape)
 
 	return np.array(features)
 
@@ -596,11 +477,44 @@ def compute_performance(model_prediction, ground_truth, tolerance):
 
 	# Create Dash tables
 	confusion_matrix_df = pd.DataFrame(conf_matrix_data)
+	# print(confusion_matrix_df)
 	performance_metrics_df = pd.DataFrame(perf_metrics_data)
+	# print(performance_metrics_df)
 
-	return confusion_matrix_df, performance_metrics_df
+	return true_positive, false_positive, false_negative, precision, recall, f1
 
-def test_model_dash(model_name, X_test_ids, output_path, threshold, adjust_onset):
+def append_to_csv(read_csv_path, new_data):
+    columns = [
+        "heartbeat_quantile", "spike_quantile", "bad_segment_quantile", 
+		"heartbeat_min_duration", "spike_min_duration", "bad_segment_min_duration", 
+		"heartbeat_max_duration", "spike_max_duration", "bad_segment_max_duration",
+		"heartbeat_max_gap_duration", "spike_max_gap_duration", "bad_segment_max_gap_duration",
+		"conflict_gap_duration",
+		"heartbeat_gap", "spike_gap", "bad_segment_exclusion_win",
+		"heartbeat_tolerance", "spike_tolerance",
+		"ds",
+		"description",
+        "TP", "FN", "FP", 
+		"precision", "recall", "f1-score"
+    ]
+    
+    # Vérifier si le fichier existe
+    if not os.path.exists(read_csv_path):
+        # Créer un DataFrame vide avec les bonnes colonnes
+        df = pd.DataFrame(columns=columns)
+        df.to_csv(read_csv_path, index=False)
+    
+    # Lire le fichier existant
+    df = pd.read_csv(read_csv_path)
+    
+    # Ajouter la nouvelle ligne
+    new_row = pd.DataFrame([new_data], columns=columns)
+    df = pd.concat([df, new_row], ignore_index=True)
+    
+    # Sauvegarder dans le fichier
+    df.to_csv(read_csv_path, index=False)
+
+def test_model_dash(model_name, X_test_ids, output_path, threshold, adjust_onset, subject):
 
 	f = open(f'{output_path}/data_raw_1_windows_bi')
 	blocks_file = load_obj('data_raw_1_blocks.pkl', output_path)
@@ -620,8 +534,8 @@ def test_model_dash(model_name, X_test_ids, output_path, threshold, adjust_onset
 	# Load the pre-trained model weights
 	resume(model, model_name, device)
 
-	# Use summary to print model details on the selected device
-	print(summary(model, (1, 274, 60)))
+	# # Use summary to print model details on the selected device
+	# print(summary(model, (1, 274, 60)))
 
 	model.eval() 
 
@@ -662,17 +576,46 @@ def test_model_dash(model_name, X_test_ids, output_path, threshold, adjust_onset
 
 	std_per_time = np.std(full_mse, axis=1)  # This gives an array of shape (time,)
 	full_mse = signal.wiener(full_mse, 3)
+	mean_per_time = np.mean(full_mse, axis=1)  # This gives an array of shape (time,)
+
 	# # Now, duplicate the standard deviation across the channels to match the shape (time, channels)
-	full_mse = np.tile(std_per_time[:, np.newaxis], (1, full_mse.shape[1]))  # Shape (time, channels)
+	# full_mse = np.tile(std_per_time[:, np.newaxis], (1, full_mse.shape[1]))  # Shape (time, channels)
 
 	grad_path = f"{output_path}/{os.path.basename(model_name)}_anomDetect.pkl"
 	with open(grad_path, 'wb') as f:
 		pickle.dump(full_mse, f)
 
+	param_values = {
+		"hq": 0.95,  # Heartbeat quantile
+		"sq": 0.75,  # Spike quantile
+		"bsq": 0.5,  # Bad segment quantile
+
+		"hmd": 0.015,  # Min duration heartbeats
+		"smd": 0.1,  # Min duration spikes
+		"bsmd": 0.5,  # Min duration bad segments
+
+		"hmxd": 0.5,  # Max duration heartbeats
+		"smxd": 0.4,  # Max duration spikes
+		"bsmxd": 2,  # Max duration bad segments
+
+		"hmgd": 0.01,  # Heartbeat gap
+		"smgd": 0.02,  # Spike gap
+		"bsmgd": 0.1,  # Bad segment gap
+
+		"cgd": 0.1,  # Conflict gap for spikes near heartbeats
+
+		"hg": 0.4,  # Heartbeat exclusion if too close
+		"sg": 0.04,  # Spike exclusion if too close
+		"bsew": 1,  # Bad segment exclusion window
+	}
+
+	hq, sq, bsq, hmd, smd, bsmd, hmxd, smxd, bsmxd, hmgd, smgd, bsmgd, cgd, hg, sg, bsew = 	param_values["hq"], param_values["sq"], param_values["bsq"], param_values["hmd"], param_values["smd"], param_values["bsmd"], param_values["hmxd"], param_values["smxd"], param_values["bsmxd"], param_values["hmgd"], param_values["smgd"], param_values["bsmgd"], param_values["hg"], param_values["sg"], param_values["cgd"], param_values["bsew"] # 
+
 	# Call the function to detect events
 	heartbeats_onset, spikes_onset, bad_segments_onset = detect_events_by_duration_with_gap_filling(
-		std_per_time, fs=params.sfreq_ae
-	)
+		std_per_time, mean_per_time, params.sfreq_ae,
+		hq, sq, bsq, hmd, smd, bsmd, hmxd, smxd, bsmxd, hmgd, smgd, bsmgd, hg, sg, cgd, bsew
+		)
 
 	# Create the DataFrame with descriptions
 	df_pred = create_event_dataframe_with_description(heartbeats_onset, spikes_onset, bad_segments_onset)
@@ -680,61 +623,38 @@ def test_model_dash(model_name, X_test_ids, output_path, threshold, adjust_onset
 	# Save DataFrame as CSV
 	df_pred.to_csv(f'{output_path}/{os.path.basename(model_name)}_predictions.csv', index=False)
 
-
 	# PERFORMANCE
 	# Load ground truth
 	output_csv_path = "/home/admin_mel/Code/DeepEpiX/data/testData/patient_annotations.csv"
+	result_csv_path = "/home/admin_mel/Code/DeepEpiX/data/testData/DeepEpiX_results.csv"
+
 	df_gt = pd.read_csv(output_csv_path)
-	subject = 'Conti'
-	ds = 'conti_Epi-001_20090709_07.ds'
-	model_descriptions = [["spike"], ["heartbeat"]]
-	target_descriptions = [["jj_add", "JJ_add", "jj_valid", "JJ_valid"], ["ECG Event"]]
-	tolerance_by_event = [0.3, 0.1]
+	model_descriptions = [["heartbeat"], ["spike"]]
+	target_descriptions = [["ECG Event"], ["jj_add", "JJ_add", "jj_valid", "JJ_valid"]]
+	tolerance_by_event = [0.1, 0.4]
 
 	for i in range(2):
 
 		# Select only spike events in both DataFrames
 		df_gt_spike = df_gt.loc[
-			(df_gt["description"].isin(target_descriptions[i])) & (df_gt["ds_id"] == ds),
+			(df_gt["description"].isin(target_descriptions[i])) & (df_gt["ds_id"] == str(os.path.basename(subject))),
 			"onset"
 		]
 
 		df_pred_spike = df_pred.loc[(df_pred["description"].isin(model_descriptions[i])), "onset"]
 
-		cf_matrix, perf = compute_performance(df_pred_spike, df_gt_spike, tolerance= tolerance_by_event[i])
-
-		print(model_descriptions[i], cf_matrix, perf)
-
-
-
-	# event_onsets = heartbeats_onset + spikes_onset + bad_segments_onset
-	# # Extract signal windows
-	# features = extract_features_windows(full_signal, event_onsets, fs=params.sfreq_ae)
-	# print(features.shape)
-
-	# # Normalize and reduce dimensions
-
-	# scaler = StandardScaler()
-	# features = scaler.fit_transform(features)
-
-	# # pca = PCA(n_components=10)  # Reduce to 5 main features
-	# # event_windows_reduced = pca.fit_transform(event_windows_scaled)
-
-	# # Apply K-Means clustering
-	# num_clusters = 2
-	# kmeans = KMeans(n_clusters=num_clusters, random_state=42)
-	# labels = kmeans.fit_predict(features)
-
-	# # Create the DataFrame
-	# df = pd.DataFrame({
-	# 	"onset": event_onsets,
-	# 	"duration": 0,  # Use calculated durations
-	# 	"description": [f" cluster {l}" for l in labels]  # Event type as description
-	# })
-
-	# # Save DataFrame as CSV
-	# df.to_csv(f'{output_path}/{os.path.basename(model_name)}_predictions.csv', index=False)
-
-	# # Print cluster assignments
-	# for i, (onset, cluster) in enumerate(zip(event_onsets, labels)):
-	# 	print(f"Event at {onset}s assigned to cluster {cluster}")
+		tp, fp, fn, p, r, f1 = compute_performance(df_pred_spike, df_gt_spike, tolerance= tolerance_by_event[i])
+	
+		new_result = {"heartbeat_quantile" : hq, "spike_quantile" : sq, "bad_segment_quantile": bsq, 
+			"heartbeat_min_duration" : hmd, "spike_min_duration": smd, "bad_segment_min_duration": bsmd, 
+			"heartbeat_max_duration": hmxd, "spike_max_duration": smxd, "bad_segment_max_duration": bsmxd,
+			"heartbeat_max_gap_duration": hmgd, "spike_max_gap_duration": smgd, "bad_segment_max_gap_duration" : bsmgd,
+			"conflict_gap_duration": cgd,
+			"heartbeat_gap": hg, "spike_gap": sg, "bad_segment_exclusion_win": bsew,
+			"heartbeat_tolerance": tolerance_by_event[0], "spike_tolerance": tolerance_by_event[1],
+			"ds": str(os.path.basename(subject)),
+			"description": model_descriptions[i],
+			"TP" : tp, "FP": fp, "FN": fn, 
+			"precision": p, "recall": r, "f1-score" : f1}
+		
+		append_to_csv(result_csv_path, new_result)

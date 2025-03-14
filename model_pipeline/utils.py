@@ -37,11 +37,13 @@ def interpolate_missing_channels(raw, good_channels, loc_meg_channels):
 	existing_channels = raw.info['ch_names'] # returns the list of chanel names that are present in the data
 	missing_channels = list(set(good_channels) - set(existing_channels)) # gets the list of missing channels by comparing the existing channel names with the list of good channels
 	new_raw = raw.copy() 
+	# missing_channels.append('MRO23-2805')
+	# new_raw.drop_channels('MRO23-2805')
 
 	# creates fake channels and set them to "bad channels", rename them with the name of the missing channels, 
 	#then mne is supposed to be able to reconstruct bad channels with "interpolate_bads" 
 	for miss in missing_channels:
-		to_copy = raw.info['ch_names'][50] #pick a random channel
+		to_copy = raw.info['ch_names'][71] #pick a random channel
 		new_channel = raw.copy().pick([to_copy])
 		new_channel.rename_channels({to_copy: miss})
 		new_raw.add_channels([new_channel], force_update_info=True)
@@ -79,6 +81,8 @@ def save_data_matrices(good_channels_file, subject, path_output):
 		# try:
 		raw_file=raw_file
 		raw = mne.io.read_raw_ctf(raw_file, preload=True, verbose=False)
+		if "Liogier_AllDataset1200Hz" in raw_file:
+			raw.drop_channels('MRO23-2805')
 
 		#Resample the data
 		raw.resample(params.sfreq)

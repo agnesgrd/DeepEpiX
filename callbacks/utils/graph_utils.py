@@ -275,7 +275,7 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
             orientation="h",
             ticks="outside",
             dtick=1),
-            coloraxis=dict(cmin=0, cmax=1)  # Set color range from 0 to 1
+            coloraxis=dict(cmin=0, cmax=0.95)  # Set color range from 0 to 1
         )
 
 
@@ -284,7 +284,7 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
     elif "anomDetect" in color_selection:
         fig.update_layout(           
             coloraxis_colorbar=dict(
-            title=dict(text="Mean Square Error"),
+            title=dict(text="Reconstruction Squared Error"),
             thicknessmode="pixels", thickness=10,
             lenmode="fraction", len=0.15,
             y=0,
@@ -292,7 +292,7 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
             orientation="h",
             ticks="outside",
             dtick=1),
-            coloraxis=dict(cmin=0, cmax=0.2)  # Set color range from 0 to 1
+            coloraxis=dict(cmin=0, cmax=1)  # Set color range from 0 to 1
         )
 
 
