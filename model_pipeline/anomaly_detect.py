@@ -623,38 +623,38 @@ def test_model_dash(model_name, X_test_ids, output_path, threshold, adjust_onset
 	# Save DataFrame as CSV
 	df_pred.to_csv(f'{output_path}/{os.path.basename(model_name)}_predictions.csv', index=False)
 
-	# PERFORMANCE
-	# Load ground truth
-	output_csv_path = "/home/admin_mel/Code/DeepEpiX/data/testData/patient_annotations.csv"
-	result_csv_path = "/home/admin_mel/Code/DeepEpiX/data/testData/DeepEpiX_results.csv"
+	# # PERFORMANCE
+	# # Load ground truth
+	# output_csv_path = "/home/admin_mel/Code/DeepEpiX/data/testData/patient_annotations.csv"
+	# result_csv_path = "/home/admin_mel/Code/DeepEpiX/data/testData/DeepEpiX_results.csv"
 
-	df_gt = pd.read_csv(output_csv_path)
-	model_descriptions = [["heartbeat"], ["spike"]]
-	target_descriptions = [["ECG Event"], ["jj_add", "JJ_add", "jj_valid", "JJ_valid"]]
-	tolerance_by_event = [0.1, 0.4]
+	# df_gt = pd.read_csv(output_csv_path)
+	# model_descriptions = [["heartbeat"], ["spike"]]
+	# target_descriptions = [["ECG Event"], ["jj_add", "JJ_add", "jj_valid", "JJ_valid"]]
+	# tolerance_by_event = [0.1, 0.4]
 
-	for i in range(2):
+	# for i in range(2):
 
-		# Select only spike events in both DataFrames
-		df_gt_spike = df_gt.loc[
-			(df_gt["description"].isin(target_descriptions[i])) & (df_gt["ds_id"] == str(os.path.basename(subject))),
-			"onset"
-		]
+	# 	# Select only spike events in both DataFrames
+	# 	df_gt_spike = df_gt.loc[
+	# 		(df_gt["description"].isin(target_descriptions[i])) & (df_gt["ds_id"] == str(os.path.basename(subject))),
+	# 		"onset"
+	# 	]
 
-		df_pred_spike = df_pred.loc[(df_pred["description"].isin(model_descriptions[i])), "onset"]
+	# 	df_pred_spike = df_pred.loc[(df_pred["description"].isin(model_descriptions[i])), "onset"]
 
-		tp, fp, fn, p, r, f1 = compute_performance(df_pred_spike, df_gt_spike, tolerance= tolerance_by_event[i])
+	# 	tp, fp, fn, p, r, f1 = compute_performance(df_pred_spike, df_gt_spike, tolerance= tolerance_by_event[i])
 	
-		new_result = {"heartbeat_quantile" : hq, "spike_quantile" : sq, "bad_segment_quantile": bsq, 
-			"heartbeat_min_duration" : hmd, "spike_min_duration": smd, "bad_segment_min_duration": bsmd, 
-			"heartbeat_max_duration": hmxd, "spike_max_duration": smxd, "bad_segment_max_duration": bsmxd,
-			"heartbeat_max_gap_duration": hmgd, "spike_max_gap_duration": smgd, "bad_segment_max_gap_duration" : bsmgd,
-			"conflict_gap_duration": cgd,
-			"heartbeat_gap": hg, "spike_gap": sg, "bad_segment_exclusion_win": bsew,
-			"heartbeat_tolerance": tolerance_by_event[0], "spike_tolerance": tolerance_by_event[1],
-			"ds": str(os.path.basename(subject)),
-			"description": model_descriptions[i],
-			"TP" : tp, "FP": fp, "FN": fn, 
-			"precision": p, "recall": r, "f1-score" : f1}
+	# 	new_result = {"heartbeat_quantile" : hq, "spike_quantile" : sq, "bad_segment_quantile": bsq, 
+	# 		"heartbeat_min_duration" : hmd, "spike_min_duration": smd, "bad_segment_min_duration": bsmd, 
+	# 		"heartbeat_max_duration": hmxd, "spike_max_duration": smxd, "bad_segment_max_duration": bsmxd,
+	# 		"heartbeat_max_gap_duration": hmgd, "spike_max_gap_duration": smgd, "bad_segment_max_gap_duration" : bsmgd,
+	# 		"conflict_gap_duration": cgd,
+	# 		"heartbeat_gap": hg, "spike_gap": sg, "bad_segment_exclusion_win": bsew,
+	# 		"heartbeat_tolerance": tolerance_by_event[0], "spike_tolerance": tolerance_by_event[1],
+	# 		"ds": str(os.path.basename(subject)),
+	# 		"description": model_descriptions[i],
+	# 		"TP" : tp, "FP": fp, "FN": fn, 
+	# 		"precision": p, "recall": r, "f1-score" : f1}
 		
-		append_to_csv(result_csv_path, new_result)
+	# 	append_to_csv(result_csv_path, new_result)
