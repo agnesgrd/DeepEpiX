@@ -101,19 +101,12 @@ This software is designed for clinicians to annotate raw MEG data and run predic
 ```bash
 git clone https://github.com/agnesgrd/DeepEpiX.git
 ```
-#### 2. Set Up the Data Directory  
-Navigate into the `DeepEpiX` directory:  
+
+#### 2. Build and run the Docker container with your local data directory:
 ```bash
 cd DeepEpiX
-```
-and modify the .env file to point to your local data directory:
-```bash
-# Open or create the .env file
-LOCAL_DATA_PATH=/home/user/data  # Modify this to your local data path
-```
-#### 3. Build and run the Docker container
-```bash
-docker-compose up --build
+docker build -t deepepix-app
+docker run -p 8050:8050 -v /home/user/DeepEpiX/data:/DeepEpiX/data deepepix-app # Modify this to point your local data path
 ```
 </details>
 
