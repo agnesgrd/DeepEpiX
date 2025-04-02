@@ -93,7 +93,7 @@ This software is designed for clinicians to annotate raw MEG data and run predic
 - **Data Format**: CTF  
 - **Skills**: Basic terminal usage and Python/Docker knowledge
 
-<details><b><summary> ### Fast Installation with Docker <summary>
+<details><summary><b> ### Fast Installation with Docker </b><summary>
 
 #### 1. Clone the Repository in Your Working Directory  
 ```bash
@@ -115,7 +115,7 @@ docker-compose up --build
 ```
 <details>
 
-<details><b><summary> ### Manual Installation for Development Mode <summary>
+<details><summary><b> ### Manual Installation for Development Mode </b><summary>
 
 Follow these steps to install and set up **DeepEpiX**.
 
