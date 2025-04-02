@@ -1,9 +1,11 @@
+from dash import html, Input, Output, callback
 import dash
-from dash import html, Input, Output
 import plotly.graph_objects as go
 
+
+
 def register_update_history():
-    @dash.callback(
+    @callback(
         Output("history-log", "children"),
         Input("history-store", "data"),
         prevent_initial_call=False
@@ -17,7 +19,7 @@ def register_update_history():
         return [html.Div(line, style={"whiteSpace": "pre-wrap"}) for line in history_data]
     
 def register_clean_history():
-    @dash.callback(
+    @callback(
         Output("history-store", "data", allow_duplicate=True),   # Clears the stored history data
         Input("clean-history-button", "n_clicks"),  # Triggered by button clicks
         prevent_initial_call=True  # Avoid triggering the callback on initial load

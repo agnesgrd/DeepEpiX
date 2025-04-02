@@ -1,12 +1,14 @@
 # analyze.py: Analyze Page
 import dash
-from dash import html, dcc, Input, Output, State
+from dash import html, dcc, Input, Output, State, callback
 import dash_bootstrap_components as dbc
 from layout import input_styles
 import static.constants as c
 
 
 dash.register_page(__name__)
+
+
 
 layout = html.Div([
 
@@ -177,7 +179,7 @@ layout = html.Div([
     )
 ])
 
-@dash.callback(
+@callback(
     Output("saved-montages-table", "data"),  # Update the DataTable with new montage data
     Input("refresh-button", "n_clicks"),  # Triggered by clicking the refresh button
     Input("save-button", "n_clicks"),
@@ -206,7 +208,7 @@ def display_montage(n_clicks_refresh, n_clicks_save, montage_store_data):
     # Return the data for the DataTable
     return saved_montages
 
-@dash.callback(
+@callback(
     Output("montage-store", "data"),
     Input("saved-montages-table", "active_cell"),  # Trigger on click on the table cell
     State("saved-montages-table", "data"),
@@ -229,7 +231,7 @@ def delete_montage(active_cell, montages_tab, montage_store_data):
         return montage_store_data
     return dash.no_update
 
-@dash.callback(
+@callback(
     Output("montage-store", "data", allow_duplicate=True),
     Output("saved-montages-table", "data", allow_duplicate=True),
     Input("delete-all-button", "n_clicks"), # Trigger on click on the table cell
@@ -240,7 +242,7 @@ def delete_all_montage(n_clicks):
         return {}, []
     return dash.no_update, dash.no_update
 
-@dash.callback(
+@callback(
     Output("create-button", "disabled"),
     Input("new-montage-name", "value"),
     prevent_initial_call=True
@@ -252,7 +254,7 @@ def handle_valid_montage_name(name):
         return False
     return True
 
-@dash.callback(
+@callback(
     Output("edit-montage", "style"),
     Input("create-button", "n_clicks"),
     prevent_initial_call=True
@@ -269,7 +271,7 @@ def handle_load_button(n_clicks):
             "display": "block"}
     
 
-@dash.callback(
+@callback(
     Output("selection-method-container", "style"),
     Input("create-button", "n_clicks"),
     State("selection-method-dropdown", "value"),
@@ -285,7 +287,7 @@ def toggle_checklists_visibility(n_clicks, selection_method):
         else:
             return {"display": "none"}  # Default to hidden
 
-@dash.callback(
+@callback(
     Output("save-button", "disabled"),
     [Input(f"montage-checklist-{group}", "value") for group in c.GROUP_CHANNELS_BY_REGION_PREFIX],
     prevent_initial_call=True
@@ -302,7 +304,7 @@ def handle_load_button(*values):
         return False  # Enable button
     
 
-@dash.callback(
+@callback(
     Output("saving-status", "children"),
     Output("montage-store", "data", allow_duplicate=True),
     Output("selection-method-container", "style", allow_duplicate=True),

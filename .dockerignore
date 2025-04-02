@@ -1,0 +1,40 @@
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+*.pyc
+
+# Virtual environment (avoid copying virtual environments inside the image)
+.venv/
+.venv39/
+.torchenv/
+.tfenv/
+.dashenv/
+
+# Distribution files
+dist/
+build/
+*.egg-info/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Data (exclude large datasets)
+data/
+!data/.gitkeep  # Keep empty data folder if necessary
+
+# Cache
+cache-directory/
+file_system_backend/
+
+# Model prediction results
+results/
+!results/.gitkeep  # Keep results folder empty if necessary
+
+# Jupyter Notebook test files
+*.ipynb_checkpoints/
+
+# Docker-specific ignores (optional)
+Dockerfile
+.dockerignore
+

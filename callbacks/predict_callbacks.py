@@ -1,5 +1,5 @@
 import dash
-from dash import Output, Input, State, dash_table
+from dash import Output, Input, State, dash_table, callback
 import subprocess
 import pandas as pd
 import static.constants as c
@@ -10,8 +10,9 @@ import sys
 import time
 
 
+
 def register_update_selected_model():
-    @dash.callback(
+    @callback(
         Output("venv", "value"),
         Input("model-dropdown", "value"),
         prevent_initial_call = True
@@ -32,7 +33,7 @@ def register_update_selected_model():
         return environment
     
 def register_execute_predict_script():
-    @dash.callback(
+    @callback(
         Output("prediction-status", "children"),
         Output('prediction-output', 'children'),
         Output('run-prediction-button', 'n_clicks'),
@@ -182,7 +183,7 @@ def register_execute_predict_script():
             return True, prediction_table, 0, {"display": "block"}, dash.no_update
 
 def register_store_display_prediction():
-    @dash.callback(
+    @callback(
         Output('annotations-store', 'data', allow_duplicate=True),
         Output('sidebar-tabs', 'active_tab'),
         Output('store-display-div', 'style', allow_duplicate=True),

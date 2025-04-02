@@ -1,11 +1,15 @@
 # run.py
-from dash import Dash, html, dcc, page_container
+from dash import Dash, html, dcc
 import dash_bootstrap_components as dbc
+import os
+import dash
 
-# Initialize Dash app with use_pages=True
 app = Dash(__name__,
-           use_pages=True, 
+           use_pages=True,
+        #    suppress_callback_exceptions=True,
            external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP])
+
+# app.enable_dev_tools(debug=True)
 
 # Main layout with page container for dynamic content loading
 app.layout = html.Div(
@@ -14,14 +18,14 @@ app.layout = html.Div(
         # This will track the URL and switch between pages based on tab selection
         dcc.Location(id='url', refresh=False),
 
-        dcc.Store(id="folder-store", storage_type="local"),
-        dcc.Store(id="chunk-limits-store", data=[], storage_type="local"),
-        dcc.Store(id="frequency-store", storage_type="local"),
-        dcc.Store(id="annotations-store", data = [], storage_type="local"),
-        dcc.Store(id="montage-store", data={}, storage_type="local"),
-        dcc.Store(id="history-store", storage_type="local"),
-        dcc.Store(id='sensitivity-analysis-store', data={}, storage_type='local'),
-        dcc.Store(id='anomaly-detection-store', data={}, storage_type='local'),
+        dcc.Store(id="folder-store", storage_type="session"),
+        dcc.Store(id="chunk-limits-store", data=[], storage_type="session"),
+        dcc.Store(id="frequency-store", storage_type="session"),
+        dcc.Store(id="annotations-store", data = [], storage_type="session"),
+        dcc.Store(id="montage-store", data={}, storage_type="session"),
+        dcc.Store(id="history-store", storage_type="session"),
+        dcc.Store(id='sensitivity-analysis-store', data={}, storage_type='session'),
+        dcc.Store(id='anomaly-detection-store', data={}, storage_type='session'),
 
         # Row for title and links
         html.Div(
@@ -46,23 +50,7 @@ app.layout = html.Div(
                                 "font-size": "30px",  # Larger icon size
                                 "color": "black",  # Icon color
                             },
-                            children=[
-                                dbc.DropdownMenuItem(
-                                    "Home", id="link-home", href="/"
-                                ),
-                                dbc.DropdownMenuItem(
-                                    "View", id="link-view", href="/view"
-                                ),
-                                dbc.DropdownMenuItem(
-                                    "Settings", id="link-analyze", href="/analyze"
-                                ),
-                                dbc.DropdownMenuItem(
-                                    "Predict", id="link-predict", href="/predict"
-                                ),
-                                dbc.DropdownMenuItem(
-                                    "Save", id="link-save", href="/save"
-                                ),
-                            ], 
+                            children=[dbc.DropdownMenuItem(f"{page['name']}", id=f"{page['path']}", href=page["relative_path"]) for page in dash.page_registry.values()],
                             style={
                             "display": "flex"
                             },
@@ -77,8 +65,8 @@ app.layout = html.Div(
                 ),
                 # Main content container (display content based on the tab selected)
                 html.Div(
-                    children=[  
-                        page_container,  # Placeholder for dynamically loaded content
+                    children=[
+                        dash.page_container,  # Placeholder for dynamically loaded content
                     ],
                     style={"width": "100%", "display": "inline-block"}  # Main content area
                 ),
@@ -92,4 +80,4 @@ app.layout = html.Div(
 # server = app.server
 
 if __name__ == "__main__":
-    app.run_server(debug=True, use_reloader=False, host = '0.0.0.0', port=22)
+    app.run(debug=True, host="0.0.0.0", port=8080)

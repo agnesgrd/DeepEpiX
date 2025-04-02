@@ -1,11 +1,14 @@
 import dash
-from dash import html, dcc, Input, Output, State
+from dash import html, dcc, Input, Output, State, callback
 import static.constants as c
 import callbacks.utils.annotation_utils as au
+from dash.exceptions import PreventUpdate
+
+
 
 def register_page_buttons_display():
     # Callback to generate page buttons based on the chunk limits in the store
-    @dash.callback(
+    @callback(
         Output("page-buttons-container", "children"),
         Input("chunk-limits-store", "data"),
         prevent_initial_call=False
@@ -36,7 +39,7 @@ def register_page_buttons_display():
 
 def register_update_page_button_styles():
     # Callback to handle button click and update styles for all buttons
-    @dash.callback(
+    @callback(
         Output("page-selector", "options"),
         Input("page-selector", "value"),
         State("chunk-limits-store", "data"),
@@ -61,7 +64,7 @@ def register_update_page_button_styles():
         ]
     
 def register_manage_channels_checklist():
-    @dash.callback(
+    @callback(
         Output("channel-region-checkboxes", "value"),
         [Input("check-all-channels-btn", "n_clicks"),
         Input("clear-all-channels-btn", "n_clicks")],
@@ -84,7 +87,7 @@ def register_manage_channels_checklist():
         return dash.no_update
     
 def register_manage_annotations_checklist():
-    @dash.callback(
+    @callback(
         Output("annotation-checkboxes", "value", allow_duplicate=True),
         [Input("check-all-annotations-btn", "n_clicks"),
         Input("clear-all-annotations-btn", "n_clicks")],
@@ -108,7 +111,7 @@ def register_manage_annotations_checklist():
         return dash.no_update
     
 # def register_check_new_annotation_by_default():
-#     @dash.callback(
+#     @callback(
 #         Output("annotation-checkboxes", "value", allow_duplicate=True),
 #         Input("annotation-store", "data"),
 #         Input("annotation-checkboxes", "options"),
@@ -122,7 +125,7 @@ def register_manage_annotations_checklist():
 #         return dash.no_update
     
 def register_offset_display():
-    @dash.callback(
+    @callback(
         Output("offset-display", "children", allow_duplicate=True),  # Update displayed offset value
         Input("offset-decrement", "n_clicks"),  # `-` button clicks
         Input("offset-increment", "n_clicks"),  # `+` button clicks
@@ -147,7 +150,7 @@ def register_offset_display():
         return str(offset)  # Return updated offset as a string
     
 def register_popup_annotation_suppression():
-    @dash.callback(
+    @callback(
         Output("delete-confirmation-modal", "is_open"),
         Output("delete-modal-body", "children"),
         Input("delete-annotations-btn", "n_clicks"),
@@ -162,7 +165,7 @@ def register_popup_annotation_suppression():
         return is_open, dash.no_update
 
 def register_cancel_or_confirm_annotation_suppression():
-    @dash.callback(
+    @callback(
         Output("delete-confirmation-modal", "is_open", allow_duplicate=True),
         Output("annotations-store", "data", allow_duplicate=True),  # Update checklist after deletion
         Input("confirm-delete-btn", "n_clicks"),
@@ -191,7 +194,7 @@ def register_cancel_or_confirm_annotation_suppression():
     
 def register_callbacks_annotation_names():
     # Callback to populate the checklist options and default value dynamically
-    @dash.callback(
+    @callback(
         Output("annotation-checkboxes", "options"),
         Output("annotation-checkboxes", "value"),
         Input("annotations-store", "data"),
@@ -210,7 +213,7 @@ def register_callbacks_annotation_names():
     
 def register_callbacks_montage_names():
     # Callback to populate the checklist options and default value dynamically
-    @dash.callback(
+    @callback(
         Output("montage-radio", "options"),
         Output("montage-radio", "value"),
         Input("montage-store", "data"),
@@ -218,6 +221,10 @@ def register_callbacks_montage_names():
         prevent_initial_call=False
     )
     def display_montage_names_checklist(montage_store, value):
+
+        if montage_store is None:
+            raise PreventUpdate
+        
         # Create options for the checklist from the channels in montage_store
         options = [{'label': key, 'value': key} for key in montage_store.keys()]
         options.append({'label': 'channel selection', 'value': 'channel selection'})
@@ -233,7 +240,7 @@ def register_callbacks_montage_names():
     
 def register_hide_channel_selection_when_montage():
     # Callback to populate the checklist options and default value dynamically
-    @dash.callback(
+    @callback(
         Output("channel-region-checkboxes", "options"),
         Input("montage-radio", "options"),
         Input("montage-radio", "value"),
@@ -250,7 +257,7 @@ def register_hide_channel_selection_when_montage():
 
 def register_callbacks_sensivity_analysis():
     # Callback to populate the checklist options and default value dynamically
-    @dash.callback(
+    @callback(
         Output("colors-radio", "options"),
         Input("sensitivity-analysis-store", "data"),
         Input("anomaly-detection-store", "data"),

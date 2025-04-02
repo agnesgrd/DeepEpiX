@@ -1,7 +1,7 @@
 import traceback
 import plotly.graph_objects as go
 import dash
-from dash import Input, Output, State, Patch
+from dash import Input, Output, State, Patch, callback
 import static.constants as c
 import callbacks.utils.graph_utils as gu
 import traceback
@@ -9,8 +9,9 @@ import plotly.graph_objects as go
 import pickle
    
 
+
 def register_update_graph_time_channel(): 
-    @dash.callback(
+    @callback(
         Output("meg-signal-graph", "figure"),
         Output("python-error", "children"),
         Input("page-selector", "value"),
@@ -96,7 +97,7 @@ def register_update_graph_time_channel():
             return dash.no_update, f"Error: Unexpected error {str(e)}.\n Details: {traceback.format_exc()}"
             
 def register_move_time_slider():
-    @dash.callback(
+    @callback(
         Output("meg-signal-graph", "figure", allow_duplicate = True),
         Input("keyboard", "keydown"),
         State("page-selector", "value"),

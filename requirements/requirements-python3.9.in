@@ -9,3 +9,5 @@ Flask-Caching
 mne
 dash-bootstrap-components
 dash-extensions
+gunicorn
+flask

@@ -1,10 +1,12 @@
 import dash
-from dash import Input, Output, State
+from dash import Input, Output, State, callback
 from callbacks.utils import markerfile_utils as mu
 from callbacks.utils import annotation_utils as au
 
+
+
 def register_enter_default_saving_folder_path():
-    @dash.callback(
+    @callback(
         Output("saving-folder-path-dropdown", "value"),
         Input("folder-store", "data"),
         prevent_initial_call = False
@@ -15,7 +17,7 @@ def register_enter_default_saving_folder_path():
         
 def register_callbacks_annotations_to_save_names():
     # Callback to populate the checklist options and default value dynamically
-    @dash.callback(
+    @callback(
         Output("annotations-to-save-checkboxes", "options"),
         Output("annotations-to-save-checkboxes", "value"),
         Input("annotations-store", "data"),
@@ -32,7 +34,7 @@ def register_callbacks_annotations_to_save_names():
         return options, dash.no_update  # Set all annotations as default selected
         
 def register_manage_annotations_to_save_checklist():
-    @dash.callback(
+    @callback(
         Output("annotations-to-save-checkboxes", "value", allow_duplicate=True),
         [Input("check-all-annotations-to-save-btn", "n_clicks"),
         Input("clear-all-annotations-to-save-btn", "n_clicks")],
@@ -57,7 +59,7 @@ def register_manage_annotations_to_save_checklist():
     
 def register_save_new_markerfile():
     # Callback function to save the annotation file
-    @dash.callback(
+    @callback(
         Output("saving-mrk-status", "children"),  # Display a message in the saving status area
         Input("save-annotation-button", "n_clicks"),  # Trigger when the Save button is clicked
         State("saving-folder-path-dropdown", "value"),  # Get the selected folder path from the dropdown

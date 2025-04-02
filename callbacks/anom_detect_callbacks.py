@@ -1,17 +1,14 @@
 import dash
-from dash import Output, Input, State, dash_table
+from dash import Output, Input, State, dash_table, callback
 import subprocess
 import pandas as pd
 import static.constants as c
 from pathlib import Path
-import static.constants as c
 import os
-import sys
 import time
 
-
 def register_update_selected_model_anom_detect():
-    @dash.callback(
+    @callback(
         Output("venv-ae", "value"),
         Input("model-ae-dropdown", "value"),
         prevent_initial_call = True
@@ -32,7 +29,7 @@ def register_update_selected_model_anom_detect():
         return environment
     
 def register_execute_predict_script_anom_detect():
-    @dash.callback(
+    @callback(
         Output("anomaly-detection-status", "children"),
         Output('anomaly-detection-output', 'children'),
         Output('run-anomaly-detection-button', 'n_clicks'),
@@ -145,7 +142,7 @@ def register_execute_predict_script_anom_detect():
         
 
 def register_display_anom_detect():
-    @dash.callback(
+    @callback(
         Output('annotations-store', 'data', allow_duplicate=True),
         Output('sidebar-tabs', 'active_tab', allow_duplicate=True),
         Output('store-display-anomaly-detection-div', 'style', allow_duplicate=True),

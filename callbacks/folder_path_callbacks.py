@@ -1,9 +1,11 @@
 import dash
-from dash import Input, Output
+from dash import Input, Output, callback
+
+
 
 # Callback to display the stored folder path
 def register_callbacks_folder_path():
-    @dash.callback(
+    @callback(
         Output("display-folder-path", "children"),
         Input("folder-store", "data"),  # Access the stored data
         prevent_initial_call=False

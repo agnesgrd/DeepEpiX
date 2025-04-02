@@ -1,14 +1,15 @@
 import plotly.graph_objects as go
 import dash
-from dash import Patch, Input, Output, State
+from dash import Patch, Input, Output, State, callback
 import callbacks.utils.graph_utils as gu
 import plotly.graph_objects as go
 import pandas as pd
 import itertools
 
 
+
 def register_update_annotations():
-    @dash.callback(
+    @callback(
         Output("meg-signal-graph", "figure", allow_duplicate=True),
         Input("meg-signal-graph", "figure"),  # Current figure to update
         Input("annotation-checkboxes", "value"),  # Annotations to show based on the checklist
@@ -123,7 +124,7 @@ def register_update_annotations():
         return fig_patch
         
 def register_update_annotation_graph():
-    @dash.callback(
+    @callback(
         Output("annotation-graph", "figure"),
         Input("annotation-checkboxes", "options"),
         Input("annotation-checkboxes", "value"),
@@ -203,7 +204,7 @@ def register_update_annotation_graph():
         return fig_patch
     
 def register_move_to_next_annotation():
-    @dash.callback(
+    @callback(
         Output("meg-signal-graph", "figure", allow_duplicate=True),
         Input("prev-spike", "n_clicks"),
         Input("next-spike", "n_clicks"),

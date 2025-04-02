@@ -1,12 +1,13 @@
 import dash
-from dash import Input, Output, State, html
+from dash import Input, Output, State, html, callback
 import mne
 from callbacks.utils import topomap_utils as tu
 import time
 
 
+
 def register_display_topomap_on_click():
-    @dash.callback(
+    @callback(
         Output("topomap-result", "children"),
         Output("topomap-picture", "children"),
         Output("history-store", "data", allow_duplicate=True),
@@ -48,7 +49,7 @@ def register_display_topomap_on_click():
         return dash.no_update, dash.no_update, dash.no_update
         
 def register_activate_deactivate_topomap_button():
-    @dash.callback(
+    @callback(
         Output('plot-topomap-button', 'outline'),
         Input('plot-topomap-button', 'n_clicks'),
         prevent_initial_call=True
@@ -63,7 +64,7 @@ def register_activate_deactivate_topomap_button():
 
 # # Callback to handle the plotting of the topomap
 # def register_display_topomap():
-#     @dash.callback(
+#     @callback(
 #         Output("topomap-img", "src"),
 #         Output("topomap-modal", "is_open"),
 #         [Input("plot-topomap-button", "n_clicks")],
@@ -91,7 +92,7 @@ def register_activate_deactivate_topomap_button():
     
 
 # def register_enable_topomap_button():
-#     @dash.callback(
+#     @callback(
 #         Output("plot-topomap-button-range", "disabled"),
 #         Input("topomap-min-range", "value"),
 #         Input("topomap-max-range", "value")
@@ -102,7 +103,7 @@ def register_activate_deactivate_topomap_button():
 #         return True  # Disable the button if either input is missing
      
 # def register_display_topomap_video():
-#     @dash.callback(
+#     @callback(
 #         Output("topomap-result", "children"),
 #         Output("topomap-modal-content", "children"),
 #         Output("topomap-range-modal", "is_open"),
@@ -180,7 +181,7 @@ def register_activate_deactivate_topomap_button():
 #         return None, None, is_open, dash.no_update
     
 # def register_range_on_selection():   
-#     @dash.callback(
+#     @callback(
 #         [Output("topomap-min-range", "value"),
 #         Output("topomap-max-range", "value")],
 #         [Input("meg-signal-graph", "selectedData")]  # Capture selection data from the graph

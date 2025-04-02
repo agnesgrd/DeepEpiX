@@ -91,9 +91,30 @@ This software is designed for clinicians to annotate raw MEG data and run predic
 ### Prerequisites
 
 - **Data Format**: CTF  
-- **Skills**: Basic terminal usage and Python knowledge  
+- **Skills**: Basic terminal usage and Python/Docker knowledge
 
-### Installation
+### Fast Installation with Docker
+
+#### 1. Clone the Repository in Your Working Directory  
+```bash
+git clone https://github.com/agnesgrd/DeepEpiX.git
+```
+#### 2. Set Up the Data Directory  
+Navigate into the `DeepEpiX` directory:  
+```bash
+cd DeepEpiX
+```
+and modify the .env file to point to your local data directory:
+```bash
+# Open or create the .env file
+LOCAL_DATA_PATH=/home/user/data  # Modify this to your local data path
+```
+#### 3. Build and run the Docker container
+```bash
+docker-compose up --build
+```
+
+### Manual Installation for Development Mode
 
 Follow these steps to install and set up **DeepEpiX**.
 

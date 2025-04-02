@@ -1,36 +1,19 @@
 import dash
-from dash import html, dcc, Input, Output, State, get_app
+from dash import html, dcc, Input, Output, State, callback
 import dash_bootstrap_components as dbc
 import os
 import mne
-import math
 from layout import input_styles, box_styles
-from dash.exceptions import PreventUpdate
-from flask_caching import Cache
-import pandas as pd
-from sklearn.preprocessing import StandardScaler
 from callbacks.utils import preprocessing_utils as pu
 from callbacks.utils import folder_path_utils as fpu
+from callbacks.utils import annotation_utils as au
 import plotly.graph_objects as go
 import numpy as np
 import static.constants as c
-
+from dash.exceptions import PreventUpdate
 
 # Register the page
 dash.register_page(__name__, path = "/")
-app=get_app()
-cache = Cache(app.server, config={
-    # 'CACHE_TYPE': 'redis',
-    # 'CACHE_REDIS_HOST': 'localhost',    # Redis server hostname
-    # 'CACHE_REDIS_PORT': 6379,          # Redis server port
-    # 'CACHE_REDIS_DB': 0,               # Redis database index
-    # 'CACHE_REDIS_URL': 'redis://localhost:6379/0',  # Redis connection URL
-    'CACHE_TYPE': 'simple',
-    # 'CACHE_TYPE': 'filesystem',
-    # 'CACHE_DIR': 'cache-directory',
-    'CACHE_DEFAULT_TIMEOUT': 84000,
-    # 'CACHE_THRESHOLD': 50 # higher numbers will store more data in the filesystem / redis cache
-})
 
 layout = html.Div([
     
@@ -147,7 +130,7 @@ layout = html.Div([
 ])
 
 # Callback to update dropdown when button is clicked
-@app.callback(
+@callback(
     Output("folder-path-dropdown", "options"),
     Output("folder-path-dropdown", "value"),  # Set selected folder
     Input("open-folder-button", "n_clicks"),
@@ -164,7 +147,7 @@ def update_dropdown(n_clicks, folder_path_list):
     return dash.no_update, dash.no_update
 
 
-@dash.callback(
+@callback(
     Output("folder-store", "data"),
     Output("load-button", "disabled"),
     Input("folder-path-dropdown", "value"),
@@ -172,18 +155,16 @@ def update_dropdown(n_clicks, folder_path_list):
 )
 def handle_valid_folder_path(folder_path):
     """Validate entered folder path for .ds"""
+    # Check if folder exists and finish by .ds, then make "load" button clickable
     if folder_path:
-        # Check if folder exists and finish by .ds, then make "load" button clickable
         if os.path.isdir(folder_path):            
             if folder_path.endswith(".ds"):
                 return folder_path, False
-            return dash.no_update, dash.no_update
-        return dash.no_update, dash.no_update
     return dash.no_update, dash.no_update
 
-@dash.callback(
+@callback(
     [Output("frequency-container", "style"),
-    Output("sensitivity-analysis-store", "data", allow_duplicate=True)],
+    Output("sensitivity-analysis-store", "clear_data")],
     Input("load-button", "n_clicks"),
     prevent_initial_call=True
 )
@@ -195,11 +176,11 @@ def handle_load_button(n_clicks):
             "alignItems": "flex-start",  # Align to top
             "gap": "20px",  # Add spacing between elements
             "width": "100%"} # Ensure full width
-        return style, {}
+        return style, True
     return dash.no_update, dash.no_update
 
 
-@dash.callback(
+@callback(
     Output("preprocess-status", "children"),
     Output("frequency-store", "data"),
     Output("preprocess-display-button", "disabled"),
@@ -211,10 +192,11 @@ def handle_load_button(n_clicks):
 )
 def handle_frequency_parameters(resample_freq, high_pass_freq, low_pass_freq, notch_freq):
     """Retrieve frequency parameters and use them for analysis."""
+
     if not low_pass_freq or not high_pass_freq or not notch_freq:
         return "Please fill in all frequency parameters.", dash.no_update, True
     
-    if high_pass_freq >= low_pass_freq:
+    elif high_pass_freq >= low_pass_freq:
         error = "High-pass frequency must be less than low-pass frequency."
         return error, dash.no_update, True
     else:
@@ -254,15 +236,15 @@ def handle_frequency_parameters(resample_freq, high_pass_freq, low_pass_freq, no
     
 #     return pd.read_json(StringIO(preprocess_meg_data(folder_path, freq_data)))
 
-@dash.callback(
+@callback(
     Output("psd-graph", "figure"),
     Input("folder-store", "data"),
     Input("frequency-store", "data"),
     prevent_initial_call=True
 )
 def display_psd(folder_path, freq_data):
-    print("yupp")
-    if not folder_path:
+
+    if folder_path is None or freq_data is None:
         return dash.no_update
     
     raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
@@ -318,112 +300,7 @@ def display_psd(folder_path, freq_data):
 
     return psd_fig
 
-def get_heartbeat_event(raw, ch_name):
-    # Find ECG events using the `find_ecg_events` function
-    events, _, _ = mne.preprocessing.find_ecg_events(
-        raw,
-        ch_name = ch_name
-
-    )
-    
-    # Get the sampling frequency (in Hz)
-    sfreq = raw.info['sfreq']
-
-    # Create a list to store the event information
-    event_list = []
-
-    # For each ECG event, create a dictionary with onset (in seconds), description, and duration
-    for event in events:
-        onset_sample = event[0]  # The event onset in samples
-        onset_sec = onset_sample / sfreq  # Convert to seconds
-        description = 'ECG Event'  # You can customize this
-        duration = 0  # Duration in seconds (for simplicity, we'll assume a 1-second duration)
-                
-        # Append to the event list
-        event_list.append({
-            'onset': onset_sec,
-            'description': description,
-            'duration': duration
-        })
-
-    return pd.DataFrame(event_list)
-
-def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw=None):
-    """
-    Preprocess the MEG data in chunks and cache them.
-
-    :param folder_path: Path to the raw data file.
-    :param freq_data: Dictionary containing frequency parameters for preprocessing.
-    :param chunk_duration: Duration of each chunk in seconds (default is 3 minutes).
-    :param cache: Cache object to store preprocessed chunks.
-    :return: Processed dataframe in JSON format.
-    """
-    # Helper function to preprocess a chunk of the data
-    def preprocess_chunk(start_time, end_time, raw, freq_data):
-        try:
-            if raw is None:
-                raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
-                resample_freq = freq_data.get("resample_freq")
-                low_pass_freq = freq_data.get("low_pass_freq")
-                high_pass_freq = freq_data.get("high_pass_freq")
-                notch_freq = freq_data.get("notch_freq")
-                # Apply filtering and resampling
-                raw.filter(l_freq=high_pass_freq, h_freq=low_pass_freq, n_jobs=8)
-                raw.notch_filter(freqs=notch_freq)
-                raw.resample(resample_freq)
-
-            # Crop the raw data to the chunk's time range
-            raw_chunk = raw.copy().crop(tmin=start_time, tmax=end_time)
-
-            # Transform the raw data into a dataframe
-            raw_df = raw_chunk.to_data_frame(picks="meg", index="time")  # Get numerical data (channels × time)
-
-            # Standardization per channel
-            scaler = StandardScaler()
-            raw_df_standardized = raw_df - raw_df.mean(axis = 0) #.apply(lambda x: scaler.fit_transform(x.values.reshape(-1, 1)).flatten(), axis=0)
-
-            return raw_df_standardized
-
-        except Exception as e:
-            return f"Error during preprocessing chunk: {str(e)}"
-
-    # Function to load and process the data in chunks, caching each piece
-    @cache.memoize()
-    def process_data_in_chunks(folder_path, freq_data, start_time, end_time):
-        try:
-            chunk_df = preprocess_chunk(start_time, end_time, raw, freq_data)
-            return chunk_df
-
-        except Exception as e:
-            return f"Error during processing: {str(e)}"
-
-    # Process and return the result in JSON format
-    return process_data_in_chunks(folder_path, freq_data, start_time, end_time)
-
-def get_annotations_dataframe(raw, heartbeat_ch_name):
-    # raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
-    
-    annotations_df = raw.annotations.to_data_frame()
-    
-    # Convert the 'onset' column to datetime and localize it to UTC
-    annotations_df['onset'] = pd.to_datetime(annotations_df['onset']).dt.tz_localize('UTC')
-    
-    # Calculate onset relative to origin_time in seconds
-    origin_time = pd.Timestamp(raw.annotations.orig_time)
-    annotations_df['onset'] = (annotations_df['onset'] - origin_time).dt.total_seconds()
-    
-    time_secs = raw.times
-
-    heartbeat_df = get_heartbeat_event(raw, heartbeat_ch_name)
-
-    df_combined = pd.concat([annotations_df, heartbeat_df], ignore_index=True)
-
-    # Convert to dictionary format
-    annotations_dict = df_combined.to_dict(orient="records")
-    
-    return annotations_dict, math.floor(time_secs[-1]*100)/100
-    
-@dash.callback(
+@callback(
     Output("preprocess-status", "children", allow_duplicate=True),
     Output("url", "pathname"),
     Output("annotations-store", "data"),
@@ -438,12 +315,12 @@ def preprocess_meg_data(n_clicks, folder_path, freq_data, heartbeat_ch_name):
     """Preprocess MEG data and save it."""
     if n_clicks is None:
         raise PreventUpdate
-    if n_clicks > 0:
-        cache.clear()
+    elif n_clicks > 0:
+        # cache.clear()
         try:
             raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
 
-            annotations_dict, max_length = get_annotations_dataframe(raw, heartbeat_ch_name)
+            annotations_dict, max_length = au.get_annotations_dataframe(raw, heartbeat_ch_name)
             chunk_limits = pu.update_chunk_limits(max_length)
 
             resample_freq = freq_data.get("resample_freq")
@@ -459,7 +336,7 @@ def preprocess_meg_data(n_clicks, folder_path, freq_data, heartbeat_ch_name):
 
             for chunk_idx in chunk_limits:
                 start_time, end_time = chunk_idx
-                raw_df = get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw)
+                raw_df = pu.get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw)
             return "Preprocessed and saved data", "/view", annotations_dict, chunk_limits
         
         except Exception as e:

@@ -1,10 +1,12 @@
 import dash
-from dash import Input, Output, State
+from dash import Input, Output, State, callback
 import pandas as pd
 from callbacks.utils import history_utils as hu
 
+
+
 def register_enable_delete_spike_button():
-    @dash.callback(
+    @callback(
         Output("delete-spike-button", "disabled"),
         Input("meg-signal-graph", "selectedData"),
         prevent_initial_call=True
@@ -19,7 +21,7 @@ def register_enable_delete_spike_button():
         return True  # Disable the button if either input is missing
     
 def register_enable_add_spike_button():
-    @dash.callback(
+    @callback(
         Output("add-spike-button", "disabled"),
         Input("spike-name", "value"),
         Input("spike-timestep", "value")
@@ -30,7 +32,7 @@ def register_enable_add_spike_button():
         return True  # Disable the button if either input is missing
 
 def register_add_spike_timestep_on_click():   
-    @dash.callback(
+    @callback(
         #Output("topomap-timepoint", "value"),
         Output("spike-timestep", "value"),
         Input('meg-signal-graph', 'clickData'),  # Capture selection data from the graph
@@ -48,7 +50,7 @@ def register_add_spike_timestep_on_click():
             return dash.no_update  # Default range if no selection has been made
             
 def register_add_spike_to_annotation():
-    @dash.callback(
+    @callback(
         Output("annotations-store", "data", allow_duplicate=True),
         Output("history-store", "data", allow_duplicate=True),
         Output("annotation-checkboxes", "value", allow_duplicate=True),
@@ -89,7 +91,7 @@ def register_add_spike_to_annotation():
         return annotations_data, history_data, checkbox_values
     
 def register_delete_selected_spike():
-    @dash.callback(
+    @callback(
         Output("annotations-store", "data", allow_duplicate=True),
         Output("history-store", "data", allow_duplicate=True),
         Input("delete-spike-button", "n_clicks"),
