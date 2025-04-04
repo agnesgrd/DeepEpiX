@@ -4,13 +4,38 @@ import dash_bootstrap_components as dbc
 def create_graph_container():
     return html.Div(
         [
+            html.Div(
+                id = "update-container",
+                style={
+                    "position": "absolute",
+                    "top": "15px",
+                    "left": "15px",
+                    "background-color": "rgba(0,0,0,0)",
+                    # "padding": "5px",
+                    "border-radius": "5px",
+                    "box-shadow": "2px 2px 5px rgba(0,0,0,0.2)",
+                    "z-index": "1000",
+                    "opacity": 0.8  # Slight transparency
+                },
+                children=[
+                        dbc.Button(
+                        [
+                            html.I(className="bi bi-arrow-clockwise")
+                        ],
+                        id="update-button",
+                        n_clicks=0,
+                        className="btn btn-primary"
+                    )
+                ]
+            ),
+
             # Page selector (positioned on top-left)
             html.Div(
                 id="page-buttons-container",
                 style={
                     "position": "absolute",
                     "top": "15px",
-                    "left": "15px",
+                    "left": "300px",
                     "background-color": "rgba(0,0,0,0)",
                     # "padding": "5px",
                     "border-radius": "5px",
@@ -33,7 +58,7 @@ def create_graph_container():
                 style={
                     "position": "absolute",
                     "top": "15px",
-                    "left": "300px",
+                    "left": "600px",
                     "background-color": "rgba(0,0,0,0)",
                     #"padding": "5px",
                     "border-radius": "5px",
@@ -47,31 +72,41 @@ def create_graph_container():
                 ]
             ),
 
-            # MEG Signal Graph (base graph)
-            dcc.Graph(
-                id="meg-signal-graph",
-                figure={
-                    'data': [],
-                    'layout': {
-                        'xaxis': {
-                            'range': [0, 10],
-                            'title': 'Time (s)',
-                            'rangeslider': {'visible': True, 'thickness': 0.02},
-                            'showspikes': True
+                # A loading spinner (refresh icon)
+            dcc.Loading(
+                id="loading-graph",
+                type="circle",  # You can use "dot", "circle", "default" or "pulse" here
+                children=[
+                    # The output Graph component
+                            # MEG Signal Graph (base graph)
+                    dcc.Graph(
+                        id="meg-signal-graph",
+                        figure={
+                            'data': [],
+                            'layout': {
+                                'xaxis': {
+                                    'range': [0, 10],
+                                    'title': 'Time (s)',
+                                    'rangeslider': {'visible': True, 'thickness': 0.02},
+                                    'showspikes': True
+                                },
+                                'yaxis': {'title': 'Channels', 'fixedrange': True},
+                                'title': 'MEG Signal Visualization',
+                                'margin': {'l': 0, 'r': 0, 't': 0, 'b': 0},
+                                'hovermode': 'closest'
+                                
+                            },
                         },
-                        'yaxis': {'title': 'Channels', 'fixedrange': True},
-                        'title': 'MEG Signal Visualization',
-                        'margin': {'l': 0, 'r': 0, 't': 0, 'b': 0},
-                        'hovermode': 'closest'
-                        
-                    },
-                },
-                config={
-                    "responsive": True,
-                    'doubleClick': 'reset',  # Reset zoom on double-click
-                    },
-                style={"width": "100%", "height": "80vh"}
+                        config={
+                            "responsive": True,
+                            'doubleClick': 'reset',  # Reset zoom on double-click
+                            },
+                        style={"width": "100%", "height": "80vh"}
+                    ),
+                ]
             ),
+
+            
             # Annotation Graph (overlay graph)
             dcc.Graph(
                 id="annotation-graph",
