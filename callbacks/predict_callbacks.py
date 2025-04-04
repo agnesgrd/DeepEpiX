@@ -70,52 +70,38 @@ def register_execute_predict_script():
             error_message = f"⚠️ Please fill in all required fields: {', '.join(missing_fields)}"
             return error_message, dash.no_update, dash.no_update, dash.no_update, dash.no_update
         
+        if "TensorFlow" in venv:        
+            ACTIVATE_ENV = f"{Path.cwd()}/{c.TENSORFLOW_ENV}/bin/python"
+        elif "PyTorch" in venv:
+            ACTIVATE_ENV = f"{Path.cwd()}/{c.TORCH_ENV}/bin/python"
+        
+        command = [
+            ACTIVATE_ENV,
+            f"model_pipeline/run_model.py",
+            str(model_path),
+            str(venv),
+            str(subject_folder_path),
+            str(Path.cwd() / "model_pipeline/good_channels"),
+            str(Path.cwd() / "results"),
+            str(threshold),  # Ensure threshold is passed as a string 
+            str(adjust_onset)
+        ]
+    
         working_dir = Path.cwd()
         env = os.environ.copy()
         env["PYTHONPATH"] = str(working_dir)
 
-        # Activate TensorFlow venv and run script
-        if "CONDA_PREFIX" in os.environ:
-            activate_env = f"conda run -n {c.TENSORFLOW_ENV} python"
-        else:
-            if os.name == "nt":
-                activate_env = f"{Path.cwd()}/{c.TENSORFLOW_ENV}/Scripts/python.exe"
-            else:
-                activate_env = f"{Path.cwd()}/{c.TENSORFLOW_ENV}/bin/python"
-            
+        # # Activate TensorFlow venv and run script
+        # if "CONDA_PREFIX" in os.environ:
+        #     activate_env = f"conda run -n {c.TENSORFLOW_ENV} python"
         # else:
-        #     raise RuntimeError("No virtual environment detected. Please activate one before running the script.")
-        
-
-
-        if "TensorFlow" in venv:
-
-            command = [
-                activate_env,
-                f"model_pipeline/run_model.py",
-                str(model_path),
-                str(venv),
-                str(subject_folder_path),
-                str(Path.cwd() / "model_pipeline/good_channels"),
-                str(Path.cwd() / "results"),
-                str(threshold),  # Ensure threshold is passed as a string 
-                str(adjust_onset)
-            ]
-            print(command)
-
-        elif "PyTorch" in venv:
-            # Activate PyTorch venv and run script
-            command = [
-                str(Path.cwd() / f"{c.TORCH_ENV}/bin/python"),
-                f"model_pipeline/run_model.py",
-                str(model_path),
-                str(venv),
-                str(subject_folder_path),
-                str(Path.cwd() / "model_pipeline/good_channels"),
-                str(Path.cwd() / "results"),
-                str(threshold),  # Ensure threshold is passed as a string 
-                str(adjust_onset)
-            ]
+        #     if os.name == "nt":
+        #         activate_env = f"{Path.cwd()}/{c.TENSORFLOW_ENV}/Scripts/python.exe"
+        #     else:
+        #         activate_env = f"{Path.cwd()}/{c.TENSORFLOW_ENV}/bin/python"
+            
+        # # else:
+        # #     raise RuntimeError("No virtual environment detected. Please activate one before running the script.")
 
         try: 
                 # Start timing

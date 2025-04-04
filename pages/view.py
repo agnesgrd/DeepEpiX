@@ -24,8 +24,7 @@ from callbacks.selection_callbacks import (
 
 
 from callbacks.graph_callbacks import (
-    register_update_graph_time_channel,
-    register_move_time_slider,
+    register_update_graph_time_channel
 )
 
 from callbacks.annotation_callbacks import (
@@ -111,8 +110,6 @@ register_callbacks_montage_names()
 register_update_graph_time_channel()
 
 register_update_annotations()
-
-register_move_time_slider()
 
 register_manage_channels_checklist()
 

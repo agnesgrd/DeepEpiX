@@ -15,13 +15,13 @@ RUN apt-get update && apt-get install -y python3-tk
 
 # Créer les environnements virtuels
 RUN python3 -m venv /.dashenv
-RUN python3 -m venv /.torchenv
-RUN python3 -m venv /.tfenv
+# RUN python3 -m venv /.torchenv
+# RUN python3 -m venv /.tfenv
 
 # Installer les dépendances dans les environnements virtuels respectifs
 RUN /.dashenv/bin/pip install -r requirements/requirements-python3.9.txt
-RUN /.torchenv/bin/pip install -r requirements/requirements-torchenv.txt
-RUN /.tfenv/bin/pip install -r requirements/requirements-tfenv.txt
+# RUN /.torchenv/bin/pip install -r requirements/requirements-torchenv.txt
+# RUN /.tfenv/bin/pip install -r requirements/requirements-tfenv.txt
 
 # Set dashenv as the default environment
 ENV VIRTUAL_ENV=/.dashenv
@@ -31,6 +31,6 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 COPY . /DeepEpiX/
 
 # Exposer le port
-EXPOSE 8080
+EXPOSE 8050
 
-CMD ["python3", "run.py"]
+CMD ["/.dashenv/bin/gunicorn", "-w", "12", "-b", "0.0.0.0:8050", "--timeout", "600", "run:server"]

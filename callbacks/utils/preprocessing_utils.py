@@ -15,9 +15,9 @@ cache = Cache(app.server, config={
     # 'CACHE_REDIS_PORT': 6379,          # Redis server port
     # 'CACHE_REDIS_DB': 0,               # Redis database index
     # 'CACHE_REDIS_URL': 'redis://localhost:6379/0',  # Redis connection URL
-    'CACHE_TYPE': 'simple',
+    'CACHE_TYPE': 'FileSystemCache',
     # 'CACHE_TYPE': 'filesystem',
-    # 'CACHE_DIR': 'cache-directory',
+    'CACHE_DIR': 'cache-directory',
     'CACHE_DEFAULT_TIMEOUT': 84000,
     # 'CACHE_THRESHOLD': 50 # higher numbers will store more data in the filesystem / redis cache
 })

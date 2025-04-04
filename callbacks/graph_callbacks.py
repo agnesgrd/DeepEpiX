@@ -1,7 +1,7 @@
 import traceback
 import plotly.graph_objects as go
 import dash
-from dash import Input, Output, State, Patch, callback
+from dash import Input, Output, State, Patch, callback, ClientsideFunction, clientside_callback
 import static.constants as c
 import callbacks.utils.graph_utils as gu
 import traceback
@@ -95,43 +95,3 @@ def register_update_graph_time_channel():
             return dash.no_update, f"Error: {str(ve)}.\n Details: {traceback.format_exc()}"
         except Exception as e:
             return dash.no_update, f"Error: Unexpected error {str(e)}.\n Details: {traceback.format_exc()}"
-            
-def register_move_time_slider():
-    @callback(
-        Output("meg-signal-graph", "figure", allow_duplicate = True),
-        Input("keyboard", "keydown"),
-        State("page-selector", "value"),
-        State("chunk-limits-store", "data"),
-        State("meg-signal-graph", "figure"),
-        prevent_initial_call=True,
-        supress_callback_exceptions=True
-    )
-    def move_time_slider(keydown, page_selection, chunk_limits, fig):
-
-        # Get the current x-axis range
-        xaxis_range = fig["layout"]["xaxis"]["range"]
-        move_amount = 1/3*(xaxis_range[1]-xaxis_range[0])  # Number of seconds to move
-
-        # Define the bounds for the x-axis (adjust based on your data)
-        time_range = chunk_limits[int(page_selection)]
-        min_bound = time_range[0]
-        max_bound = time_range[1]
-
-        # Update the range based on the key press
-        if keydown["key"] == "ArrowLeft":
-            new_range = [xaxis_range[0] - move_amount, xaxis_range[1] - move_amount]
-            if new_range[0] < min_bound:
-                new_range = [min_bound, min_bound + move_amount]
-        elif keydown["key"] == "ArrowRight":
-            new_range = [xaxis_range[0] + move_amount, xaxis_range[1] + move_amount]
-            if new_range[1] > max_bound:
-                new_range = [max_bound - move_amount, max_bound]
-        else:
-            return fig  # Return the figure unchanged if the key is not handled
-
-        fig_patch = Patch()
-        # Update the figure with the new x-axis range
-        fig_patch["layout"]["xaxis"]["range"] = new_range
-
-        return fig_patch
-    

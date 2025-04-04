@@ -3,6 +3,7 @@ import static.constants as c
 from sklearn.preprocessing import StandardScaler
 from callbacks.utils import preprocessing_utils as pu
 import plotly.express as px
+from callbacks.utils import preprocessing_utils as pu
 # from plotly_resampler import FigureResampler
 # from plotly_resampler.aggregation import MinMaxLTTB
 # from plotly.subplots import make_subplots
@@ -315,7 +316,7 @@ def generate_small_graph_time_channel(selected_channels, time_range, folder_path
     start_time = time.time()
     # Preprocess data
     chunk_start_time, chunk_end_time = chunk_limits[int(page_selector)]
-    raw_df = get_preprocessed_dataframe(folder_path, freq_data, chunk_start_time, chunk_end_time)
+    raw_df = pu.get_preprocessed_dataframe(folder_path, freq_data, chunk_start_time, chunk_end_time)
     print(f"Step 1: Preprocessing completed in {time.time() - start_time:.2f} seconds.")
 
     # Filter time range

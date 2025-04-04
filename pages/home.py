@@ -107,7 +107,17 @@ layout = html.Div([
             html.Div(
                 id="psd",
                 children=[
-                    dcc.Graph(id="psd-graph")
+                    html.H3("Power Spectral Density", style={"margin-bottom": "15px"}),
+
+                    dbc.Button("Compute & Display", id="compute-display-psd-button", color="success", n_clicks=0),
+
+                    dcc.Graph(id="psd-graph"),
+
+                    dcc.Loading(
+                            id="loading",
+                            type="default",
+                            children=[html.Div(id="psd-status", style={"margin-top": "10px"})]
+                        ),
                 ],
                 style={
                     "padding": "15px",
@@ -209,96 +219,73 @@ def handle_frequency_parameters(resample_freq, high_pass_freq, low_pass_freq, no
         }
         return None, frequency_values, False
   
-# def get_preprocessed_dataframe(folder_path, freq_data):
-#     @cache.memoize()
-#     def preprocess_meg_data(folder_path, freq_data):
-#         try:
-#             resample_freq = freq_data.get("resample_freq")
-#             low_pass_freq = freq_data.get("low_pass_freq")
-#             high_pass_freq = freq_data.get("high_pass_freq")
-
-#             raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
-#             raw.filter(l_freq=high_pass_freq, h_freq=low_pass_freq, n_jobs=8)
-#             raw.resample(resample_freq)
-
-#             # Transform the raw data into a serializable format
-#             raw_df = raw.to_data_frame(picks="meg", index="time")  # Get numerical data (channels × time)
-#             # Standardisation des données channel par channel
-#             scaler = StandardScaler()
-
-#             # Appliquer la standardisation à chaque canal (les colonnes de raw_df sont les canaux)
-#             raw_df_standardized = raw_df.apply(lambda x: scaler.fit_transform(x.values.reshape(-1, 1)).flatten(), axis=0)
-            
-#             return raw_df_standardized.to_json()
-            
-#         except Exception as e:
-#             return f"Error during preprocessing : {str(e)}"
-    
-#     return pd.read_json(StringIO(preprocess_meg_data(folder_path, freq_data)))
-
 @callback(
+    Output("psd-status", "children"),
     Output("psd-graph", "figure"),
-    Input("folder-store", "data"),
-    Input("frequency-store", "data"),
+    Input("compute-display-psd-button", "n_clicks"),
+    State("folder-store", "data"),
+    State("frequency-store", "data"),
     prevent_initial_call=True
 )
-def display_psd(folder_path, freq_data):
+def display_psd(n_clicks, folder_path, freq_data):
 
     if folder_path is None or freq_data is None:
-        return dash.no_update
+        return "Please fill in all frequency parameters.", dash.no_update
     
-    raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
+    if n_clicks > 0:
+    
+        raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
 
-    resample_freq = freq_data.get("resample_freq")
-    low_pass_freq = freq_data.get("low_pass_freq")
-    high_pass_freq = freq_data.get("high_pass_freq")
-    notch_freq = freq_data.get("notch_freq")
+        resample_freq = freq_data.get("resample_freq")
+        low_pass_freq = freq_data.get("low_pass_freq")
+        high_pass_freq = freq_data.get("high_pass_freq")
+        notch_freq = freq_data.get("notch_freq")
 
-    if not low_pass_freq or not high_pass_freq or not notch_freq:
-        return dash.no_update
+        if not low_pass_freq or not high_pass_freq or not notch_freq:
+            return dash.no_update
+        
+        raw.notch_filter(freqs=notch_freq)
 
-    raw.notch_filter(freqs=notch_freq)
+        # Create the PSD plot using Plotly
+        psd_fig = go.Figure()
 
-    # Create the PSD plot using Plotly
-    psd_fig = go.Figure()
+        # Compute Power Spectral Density (PSD)
+        psd_data = raw.compute_psd(method='welch', fmin=high_pass_freq, fmax=low_pass_freq, n_fft=2048, picks='meg', n_jobs=-1)
+        psd, freqs = psd_data.get_data(return_freqs=True)
 
-    # Compute Power Spectral Density (PSD)
-    psd_data = raw.compute_psd(method='welch', fmin=high_pass_freq, fmax=low_pass_freq, n_fft=2048, picks='meg')
-    psd, freqs = psd_data.get_data(return_freqs=True)
+        # Convert PSD to dB (as MNE does by default)
+        psd_dB = 10 * np.log10(psd)
 
-    # Convert PSD to dB (as MNE does by default)
-    psd_dB = 10 * np.log10(psd)
+        # Create a Plotly figure to mimic MNE’s PSD plot
+        psd_fig = go.Figure()
 
-    # Create a Plotly figure to mimic MNE’s PSD plot
-    psd_fig = go.Figure()
+        # Plot multiple channels with transparency for better readability
+        for ch_idx, ch_name in enumerate(c.ALL_CH_NAMES_PREFIX):  # Plot only first 10 channels
+            psd_fig.add_trace(go.Scatter(
+                x=freqs,
+                y=psd_dB[ch_idx],  
+                mode='lines',
+                line=dict(width=1),
+                name=ch_name
+            ))
 
-    # Plot multiple channels with transparency for better readability
-    for ch_idx, ch_name in enumerate(c.ALL_CH_NAMES_PREFIX):  # Plot only first 10 channels
-        psd_fig.add_trace(go.Scatter(
-            x=freqs,
-            y=psd_dB[ch_idx],  
-            mode='lines',
-            line=dict(width=1),
-            name=ch_name
-        ))
+        # Update layout to match MNE’s default style
+        psd_fig.update_layout(
+            title="Power Spectral Density (PSD)",
+            xaxis=dict(
+                title="Frequency (Hz)",
+                type="linear",  # MNE uses linear frequency scale
+                showgrid=True
+            ),
+            yaxis=dict(
+                title="Power (dB)",  # Log scale power in dB
+                type="linear",
+                showgrid=True
+            ),
+            template="plotly_white"
+        )
 
-    # Update layout to match MNE’s default style
-    psd_fig.update_layout(
-        title="Power Spectral Density (PSD)",
-        xaxis=dict(
-            title="Frequency (Hz)",
-            type="linear",  # MNE uses linear frequency scale
-            showgrid=True
-        ),
-        yaxis=dict(
-            title="Power (dB)",  # Log scale power in dB
-            type="linear",
-            showgrid=True
-        ),
-        template="plotly_white"
-    )
-
-    return psd_fig
+        return None, psd_fig
 
 @callback(
     Output("preprocess-status", "children", allow_duplicate=True),
@@ -328,8 +315,8 @@ def preprocess_meg_data(n_clicks, folder_path, freq_data, heartbeat_ch_name):
             high_pass_freq = freq_data.get("high_pass_freq")
             notch_freq = freq_data.get("notch_freq")
 
-            # Apply filtering and resampling
-            raw=pu.interpolate_missing_channels(raw)
+            # # Apply filtering and resampling
+            # raw=pu.interpolate_missing_channels(raw)
             raw.filter(l_freq=high_pass_freq, h_freq=low_pass_freq, n_jobs=8)
             raw.notch_filter(freqs=notch_freq)
             raw.resample(resample_freq)
