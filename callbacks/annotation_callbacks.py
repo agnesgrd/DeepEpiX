@@ -11,24 +11,22 @@ import itertools
 def register_update_annotations():
     @callback(
         Output("meg-signal-graph", "figure", allow_duplicate=True),
-        Input("meg-signal-graph", "figure"),  # Current figure to update
-        Input("annotation-checkboxes", "value"),  # Annotations to show based on the checklist
-        Input("annotation-checkboxes", "options"),
-        Input("page-selector", "value"),
+        Input("update-button", "n_clicks"),
+        State("meg-signal-graph", "figure"),  # Current figure to update
+        State("annotation-checkboxes", "value"),  # Annotations to show based on the checklist
+        State("annotation-checkboxes", "options"),
+        State("page-selector", "value"),
         State("annotations-store", "data"),
         State("chunk-limits-store", "data"),
         prevent_initial_call=True,
         supress_callback_exceptions=True
     )
-    def update_annotations(fig_dict, annotations_to_show, annotation_options, page_selection, annotations, chunk_limits):
+    def update_annotations(n_clicks, fig_dict, annotations_to_show, annotation_options, page_selection, annotations, chunk_limits):
         """Update annotations visibility based on the checklist selection."""
         # Default time range in case the figure doesn't contain valid x-axis range data
 
-        if not annotations_to_show:
+        if not n_clicks or not annotations_to_show or len(annotations_to_show)==0:
             return dash.no_update  # No annotations available, return the same graph
-        
-        if len(annotations_to_show)==0:
-            return dash.no_update
 
         time_range = chunk_limits[int(page_selection)]
 
@@ -126,22 +124,20 @@ def register_update_annotations():
 def register_update_annotation_graph():
     @callback(
         Output("annotation-graph", "figure"),
-        Input("annotation-checkboxes", "options"),
-        Input("annotation-checkboxes", "value"),
+        Input("update-button", "n_clicks"),
         Input("page-selector", "value"),
+        State("annotation-checkboxes", "options"),
+        State("annotation-checkboxes", "value"),
         State("annotations-store", "data"),
         State("annotation-graph", "figure"),
         State("chunk-limits-store", "data"),
         prevent_initial_call=True
     )
-    def update_annotation_graph(annotation_options, annotations_to_show, page_selection, annotations_data, annotation_fig, chunk_limits):
+    def update_annotation_graph(n_clicks, page_selection, annotation_options, annotations_to_show, annotations_data, annotation_fig, chunk_limits):
 
-        if not annotations_data or not isinstance(annotations_data, list):
+        if not n_clicks or not annotations_data or not isinstance(annotations_data, list) or not annotations_to_show or not isinstance(annotations_to_show, list):
             return dash.no_update
         
-        if not annotations_to_show and not isinstance(annotations_to_show, list):
-            return dash.no_update
-
         time_range = chunk_limits[int(page_selection)]
 
         # Convert annotations to DataFrame
@@ -266,46 +262,6 @@ def register_move_to_next_annotation():
         # Default centered range
         proposed_x_min = next_spike_x - x_range_offset
         proposed_x_max = next_spike_x + x_range_offset
-
-        # if next_spike_x < time_range_min:
-        #     if montage_selection == "channel selection":
-        #         # Get the selected channels based on region
-        #         selected_channels = [
-        #             channel
-        #             for region_code in channel_selection
-        #             if region_code in c.GROUP_CHANNELS_BY_REGION
-        #             for channel in c.GROUP_CHANNELS_BY_REGION[region_code]
-        #         ]
-
-        #         if not selected_channels:
-        #             raise ValueError("No channels selected from the given regions.")
-
-        #     else: 
-
-        #         # If montage selection is not "channel selection", use montage's corresponding channels
-        #         selected_channels = montage_store.get(montage_selection, [])
-
-        #     # Reading back
-        #     if "smoothGrad" in color_selection:
-        #         with open(sensitivity_analysis_store['smoothGrad'], 'rb') as f:
-        #             sensitivity_analysis = pickle.load(f)
-        #     else:
-        #         sensitivity_analysis = {}
-
-
-        #     # Adjust if near the edges
-        #     if proposed_x_min < time_range_min:
-        #         x_min, x_max = time_range_min, time_range_min + 2 * x_range_offset
-        #     elif proposed_x_max > time_range_max:
-        #         x_min, x_max = time_range_max - 2 * x_range_offset, time_range_max
-        #     else:
-        #         x_min, x_max = proposed_x_min, proposed_x_max
-
-        #     # Ensure the adjusted range is within valid limits
-        #     x_min = max(x_min, time_range_min)
-        #     x_max = min(x_max, time_range_max)
-        #     xaxis_range=[x_min, x_max]
-        #     return gu.generate_graph_time_channel(selected_channels, float(offset_selection), chunk_limits[int(page_selection)-1], folder_path, freq_data, color_selection, sensitivity_analysis, xaxis_range)
 
         # Adjust if near the edges
         if proposed_x_min < time_range_min:

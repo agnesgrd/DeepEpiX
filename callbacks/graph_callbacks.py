@@ -16,7 +16,7 @@ def register_update_graph_time_channel():
         Output("python-error", "children"),
         # Output("loading-graph", "children"),
         Input("update-button", "n_clicks"),  # Trigger the callback with the button
-        State("page-selector", "value"),
+        Input("page-selector", "value"),
         State("montage-radio", "value"),
         State("channel-region-checkboxes", "value"),
         State("folder-store", "data"),

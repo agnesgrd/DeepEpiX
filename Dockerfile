@@ -30,6 +30,8 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 # Copier le reste des fichiers après installation des dépendances
 COPY . /DeepEpiX/
 
+RUN mkdir -p /DeepEpiX/results && chmod 777 /DeepEpiX/results
+
 # Exposer le port
 EXPOSE 8050
 

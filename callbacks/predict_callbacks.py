@@ -71,7 +71,7 @@ def register_execute_predict_script():
             return error_message, dash.no_update, dash.no_update, dash.no_update, dash.no_update
         
         if "TensorFlow" in venv:        
-            ACTIVATE_ENV = f"{Path.cwd()}/{c.TENSORFLOW_ENV}/bin/python"
+            ACTIVATE_ENV = f"../{c.TENSORFLOW_ENV}/bin/python"
         elif "PyTorch" in venv:
             ACTIVATE_ENV = f"{Path.cwd()}/{c.TORCH_ENV}/bin/python"
         
@@ -136,7 +136,7 @@ def register_execute_predict_script():
         if sensitivity_analysis == "Yes":
 
             command = [
-                str(Path.cwd() / f"{c.TENSORFLOW_ENV}/bin/python"),
+                f"../{c.TENSORFLOW_ENV}/bin/python",
                 f"model_pipeline/run_smoothgrad.py",
                 str(model_path),
                 str(venv),
