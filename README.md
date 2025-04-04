@@ -105,7 +105,7 @@ git clone https://github.com/agnesgrd/DeepEpiX.git
 #### 2. Build and run the Docker container with your local data directory:
 ```bash
 cd DeepEpiX
-docker build -t deepepix-app
+docker build -t deepepix-app .
 docker run -p 8050:8050 -v /home/user/DeepEpiX/data:/DeepEpiX/data deepepix-app # Modify this to point your local data path
 ```
 </details>
