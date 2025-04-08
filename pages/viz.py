@@ -70,8 +70,7 @@ from callbacks.anom_detect_callbacks import (
     register_display_anom_detect
 )
 
-dash.register_page(__name__)
-
+dash.register_page(__name__, name="Data Viz & Analyze", href='/data-viz-analyze')
 
 layout = html.Div([
     
@@ -84,7 +83,18 @@ layout = html.Div([
     html.Div(
         [
         create_sidebar(),
-        gl.create_graph_container()
+        gl.create_graph_container(
+            update_button_id="update-button",
+            update_container_id="update-container",
+            page_buttons_container_id="page-buttons-container",
+            page_selector_id="page-selector",
+            next_spike_buttons_container_id="next-spike-buttons-container",
+            prev_spike_id="prev-spike",
+            next_spike_id="next-spike",
+            loading_id="loading-graph",
+            signal_graph_id="meg-signal-graph",
+            annotation_graph_id="annotation-graph"
+        )
     ], style={
         "display": "flex",  # Horizontal layout
         "flexDirection": "row",
@@ -99,21 +109,44 @@ layout = html.Div([
 ])
 
 
-register_page_buttons_display()
+register_page_buttons_display(
+    chunk_limits_store_id="chunk-limits-store",
+    page_buttons_container_id="page-buttons-container",
+    page_selector_id="page-selector"
+)
 
-register_update_page_button_styles()
+register_update_page_button_styles(
+    page_selector_id="page-selector",
+    chunk_limits_store_id="chunk-limits-store"
+)
 
-register_callbacks_annotation_names()
+register_callbacks_annotation_names(
+    annotation_checkboxes_id="annotation-checkboxes",
+    annotations_store_id="annotations-store"
+)
 
 register_callbacks_montage_names()
 
 register_update_graph_time_channel()
 
-register_update_annotations()
+register_update_annotations(
+    graph_id="meg-signal-graph",
+    annotation_checkboxes_id="annotation-checkboxes",
+    page_selector_id="page-selector",
+    annotations_store_id="annotations-store",
+    chunk_limits_store_id="chunk-limits-store"
+)
 
 register_manage_channels_checklist()
 
-register_update_annotation_graph()
+register_update_annotation_graph(
+    update_button_id="update-button",
+    page_selector_id="page-selector",
+    annotation_checkboxes_id="annotation-checkboxes",
+    annotations_store_id="annotations-store",
+    annotation_graph_id="annotation-graph",
+    chunk_limits_store_id="chunk-limits-store"
+)
 
 register_hide_channel_selection_when_montage()
 
@@ -137,11 +170,24 @@ register_display_topomap_on_click()
 
 register_activate_deactivate_topomap_button()
 
-register_move_to_next_annotation()
+register_move_to_next_annotation(
+    prev_spike_id="prev-spike",
+    next_spike_id="next-spike",
+    graph_id="meg-signal-graph",
+    annotation_checkboxes_id="annotation-checkboxes",
+    annotations_store_id="annotations-store",
+    page_selector_id="page-selector",
+    chunk_limits_store_id="chunk-limits-store"
+)
 
 register_callbacks_sensivity_analysis()
 
-register_manage_annotations_checklist()
+register_manage_annotations_checklist(
+    check_all_annotations_btn_id="check-all-annotations-btn",
+    clear_all_annotations_btn_id="clear-all-annotations-btn",
+    annotation_checkboxes_id="annotation-checkboxes"
+)
+
 
 register_popup_annotation_suppression()
 

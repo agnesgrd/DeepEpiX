@@ -6,26 +6,29 @@ import plotly.graph_objects as go
 import pandas as pd
 import itertools
 
-
-
-def register_update_annotations():
+def register_update_annotations(
+    graph_id,
+    annotation_checkboxes_id,
+    page_selector_id,
+    annotations_store_id,
+    chunk_limits_store_id
+):
     @callback(
-        Output("meg-signal-graph", "figure", allow_duplicate=True),
-        Input("update-button", "n_clicks"),
-        State("meg-signal-graph", "figure"),  # Current figure to update
-        State("annotation-checkboxes", "value"),  # Annotations to show based on the checklist
-        State("annotation-checkboxes", "options"),
-        State("page-selector", "value"),
-        State("annotations-store", "data"),
-        State("chunk-limits-store", "data"),
+        Output(graph_id, "figure", allow_duplicate=True),
+        Input(graph_id, "figure"),  # Current figure to update
+        State(annotation_checkboxes_id, "value"),  # Annotations to show based on the checklist
+        State(annotation_checkboxes_id, "options"),
+        State(page_selector_id, "value"),
+        State(annotations_store_id, "data"),
+        State(chunk_limits_store_id, "data"),
         prevent_initial_call=True,
-        supress_callback_exceptions=True
+        suppress_callback_exceptions=True
     )
-    def update_annotations(n_clicks, fig_dict, annotations_to_show, annotation_options, page_selection, annotations, chunk_limits):
+    def update_annotations(fig_dict, annotations_to_show, annotation_options, page_selection, annotations, chunk_limits):
         """Update annotations visibility based on the checklist selection."""
         # Default time range in case the figure doesn't contain valid x-axis range data
 
-        if not n_clicks or not annotations_to_show or len(annotations_to_show)==0:
+        if not annotations_to_show or len(annotations_to_show) == 0:
             return dash.no_update  # No annotations available, return the same graph
 
         time_range = chunk_limits[int(page_selection)]
@@ -61,14 +64,14 @@ def register_update_annotations():
             description = row["description"]
             duration = row['duration']
 
-                # Assign a consistent color for each description
+            # Assign a consistent color for each description
             if description not in description_colors:
                 description_colors[description] = next(color_palette)
 
             color = description_colors[description]  # Get assigned color
 
             if str(description) in annotations_to_show:
-                 #Check the duration and add either a vertical line or a rectangle
+                # Check the duration and add either a vertical line or a rectangle
                 if duration == 0:
                     # Vertical line if duration is 0
                     new_shapes.append(
@@ -111,7 +114,7 @@ def register_update_annotations():
                         showarrow=False,  # No arrow needed
                         font=dict(size=10, color=color),  # Customize font
                         align="center",
-                        textangle =-90
+                        textangle=-90
                     )
                 )
 
@@ -121,16 +124,23 @@ def register_update_annotations():
 
         return fig_patch
         
-def register_update_annotation_graph():
+def register_update_annotation_graph(
+    update_button_id,
+    page_selector_id,
+    annotation_checkboxes_id,
+    annotations_store_id,
+    annotation_graph_id,
+    chunk_limits_store_id
+):
     @callback(
-        Output("annotation-graph", "figure"),
-        Input("update-button", "n_clicks"),
-        Input("page-selector", "value"),
-        State("annotation-checkboxes", "options"),
-        State("annotation-checkboxes", "value"),
-        State("annotations-store", "data"),
-        State("annotation-graph", "figure"),
-        State("chunk-limits-store", "data"),
+        Output(annotation_graph_id, "figure"),
+        Input(update_button_id, "n_clicks"),
+        Input(page_selector_id, "value"),
+        State(annotation_checkboxes_id, "options"),
+        State(annotation_checkboxes_id, "value"),
+        State(annotations_store_id, "data"),
+        State(annotation_graph_id, "figure"),
+        State(chunk_limits_store_id, "data"),
         prevent_initial_call=True
     )
     def update_annotation_graph(n_clicks, page_selection, annotation_options, annotations_to_show, annotations_data, annotation_fig, chunk_limits):
@@ -180,7 +190,6 @@ def register_update_annotation_graph():
                 tickmode='array',
                 tickvals=tick_vals,
                 ticktext=tick_labels,
-                # ticklen=0.1,  # Shorter ticks
                 tickfont=dict(size=10),  # Smaller font size
                 showticklabels=True,
                 gridcolor="red",  # Subtle grid color
@@ -192,39 +201,38 @@ def register_update_annotation_graph():
             ),
             shapes=shapes,
             paper_bgcolor="white",  # Light background for clarity
-            plot_bgcolor= "rgba(0,0,0,0)",  # Keep the plot transparent
+            plot_bgcolor="rgba(0,0,0,0)",  # Keep the plot transparent
             margin=dict(l=10, r=0, t=10, b=100)  # Adjust margins for better spacing
         )
 
-
         return fig_patch
     
-def register_move_to_next_annotation():
+def register_move_to_next_annotation(
+    prev_spike_id,
+    next_spike_id,
+    graph_id,
+    annotation_checkboxes_id,
+    annotations_store_id,
+    page_selector_id,
+    chunk_limits_store_id
+):
     @callback(
-        Output("meg-signal-graph", "figure", allow_duplicate=True),
-        Input("prev-spike", "n_clicks"),
-        Input("next-spike", "n_clicks"),
-        State("meg-signal-graph", "figure"),
-        State("annotation-checkboxes", "value"),
-        State("annotations-store", "data"),
-        State("page-selector", "value"),
-        State("chunk-limits-store", "data"),
-        State("montage-radio", "value"),
-        State("channel-region-checkboxes", "value"),
-        State("montage-store", "data"),
-        State("offset-display", "children"),
-        State("folder-store", "data"),
-        State("frequency-store", "data"),
-        State("colors-radio", "value"),
-        State("sensitivity-analysis-store", "data"),
-        prevent_initial_call = True
+        Output(graph_id, "figure", allow_duplicate=True),
+        Input(prev_spike_id, "n_clicks"),
+        Input(next_spike_id, "n_clicks"),
+        State(graph_id, "figure"),
+        State(annotation_checkboxes_id, "value"),
+        State(annotations_store_id, "data"),
+        State(page_selector_id, "value"),
+        State(chunk_limits_store_id, "data"),
+        prevent_initial_call=True
     )
-    def move_to_next_annotation(prev_spike, next_spike, graph, annotations_to_show, annotations_data, page_selection, chunk_limits, montage_selection, channel_selection, montage_store, offset_selection, folder_path, freq_data, color_selection, sensitivity_analysis_store):
+    def move_to_next_annotation(prev_spike, next_spike, graph, annotations_to_show, annotations_data, page_selection, chunk_limits):
 
         if not annotations_data or not annotations_to_show:
             return dash.no_update  # No annotations available, return the same graph
         
-        if len(annotations_to_show)==0 or len(annotations_data)==0:
+        if len(annotations_to_show) == 0 or len(annotations_data) == 0:
             return dash.no_update
 
         # Extract x-coordinates (onset times) of spikes from annotations
@@ -244,9 +252,9 @@ def register_move_to_next_annotation():
             current_x_center = spike_x_positions[0]  # Default to first spike
 
         # Determine next or previous spike
-        if dash.ctx.triggered_id == "next-spike":
+        if dash.ctx.triggered_id == next_spike_id:
             next_spike_x = next((x for x in spike_x_positions if x > current_x_center), spike_x_positions[-1])
-        elif dash.ctx.triggered_id == "prev-spike":
+        elif dash.ctx.triggered_id == prev_spike_id:
             next_spike_x = next((x for x in reversed(spike_x_positions) if x < current_x_center), spike_x_positions[0])
         else:
             return graph  # No valid button click

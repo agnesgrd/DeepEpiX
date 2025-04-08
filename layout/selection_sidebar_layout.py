@@ -3,7 +3,23 @@ import dash_bootstrap_components as dbc
 import static.constants as c
 from layout import input_styles, box_styles, button_styles
 
-def create_selection():
+def create_selection(
+    montage_radio_id,
+    check_all_button_id,
+    clear_all_button_id,
+    channel_region_checkboxes_id,
+    check_all_annotations_btn_id,
+    clear_all_annotations_btn_id,
+    delete_annotations_btn_id,
+    annotation_checkboxes_id,
+    delete_confirmation_modal_id,
+    cancel_delete_btn_id,
+    confirm_delete_btn_id,
+    offset_decrement_id,
+    offset_display_id,
+    offset_increment_id,
+    colors_radio_id
+):
     return html.Div([
 
         # Montage Selection
@@ -13,14 +29,14 @@ def create_selection():
                 style={"fontWeight": "bold", "fontSize": "14px", "marginBottom": "8px"}
             ),
             dcc.RadioItems(
-                id="montage-radio",
-                options = [],
+                id=montage_radio_id,
+                options=[],
                 inline=False,
                 style={"margin": "10px 0", "fontSize": "12px"},
                 persistence=True,
                 persistence_type="local"
             ),
-        ], style = box_styles["classic"]),
+        ], style=box_styles["classic"]),
 
         # Channel Selection
         html.Div([
@@ -32,7 +48,7 @@ def create_selection():
             html.Div([
                 dbc.Button(
                     "Check All",
-                    id="check-all-channels-btn",
+                    id=check_all_button_id,
                     color="success",
                     outline=True,
                     size="sm",
@@ -46,7 +62,7 @@ def create_selection():
                 ),
                 dbc.Button(
                     "Clear All",
-                    id="clear-all-channels-btn",
+                    id=clear_all_button_id,
                     color="warning",
                     outline=True,
                     size="sm",
@@ -61,7 +77,7 @@ def create_selection():
             ], style={"display": "flex", "justifyContent": "space-between", "gap": "4%"}),  # Align buttons side by side
 
             dcc.Checklist(
-                id="channel-region-checkboxes",
+                id=channel_region_checkboxes_id,
                 options=[
                     {
                         'label': f"{region_code} ({len(channels)})",
@@ -93,7 +109,7 @@ def create_selection():
             html.Div([
                 dbc.Button(
                     "Check All",
-                    id="check-all-annotations-btn",
+                    id=check_all_annotations_btn_id,
                     color="success",
                     outline=True,
                     size="sm",
@@ -107,7 +123,7 @@ def create_selection():
                 ),
                 dbc.Button(
                     "Clear All",
-                    id="clear-all-annotations-btn",
+                    id=clear_all_annotations_btn_id,
                     color="warning",
                     outline=True,
                     size="sm",
@@ -123,7 +139,7 @@ def create_selection():
 
             dbc.Button(
                 "Delete Selected",
-                id="delete-annotations-btn",
+                id=delete_annotations_btn_id,
                 color="danger",
                 outline=True,
                 size="sm",
@@ -138,13 +154,12 @@ def create_selection():
             ),
 
             dcc.Checklist(
-                id="annotation-checkboxes",
+                id=annotation_checkboxes_id,
                 inline=False,
                 style={"margin": "10px 0", "fontSize": "12px"},
                 persistence=True,
                 persistence_type="local"
             ),
-
 
             # Confirmation Modal
             dbc.Modal(
@@ -152,15 +167,15 @@ def create_selection():
                     dbc.ModalHeader("Confirm Deletion"),
                     dbc.ModalBody(id="delete-modal-body", children="Are you sure you want to delete the selected annotations?"),
                     dbc.ModalFooter([
-                        dbc.Button("Cancel", id="cancel-delete-btn", color="secondary", n_clicks=0),
-                        dbc.Button("Delete", id="confirm-delete-btn", color="danger", n_clicks=0)
+                        dbc.Button("Cancel", id=cancel_delete_btn_id, color="secondary", n_clicks=0),
+                        dbc.Button("Delete", id=confirm_delete_btn_id, color="danger", n_clicks=0)
                     ])
                 ],
-                id="delete-confirmation-modal",
+                id=delete_confirmation_modal_id,
                 is_open=False,
             )
 
-        ], style = box_styles["classic"]),
+        ], style=box_styles["classic"]),
 
         # Offset Selection
         html.Div([
@@ -170,9 +185,9 @@ def create_selection():
             ),
             html.Div(
                 children=[
-                    dbc.Button("-", id="offset-decrement", color="primary", size="sm", n_clicks=0),
+                    dbc.Button("-", id=offset_decrement_id, color="primary", size="sm", n_clicks=0),
                     html.Span(
-                        id="offset-display", 
+                        id=offset_display_id,
                         children="5",  # Default offset value
                         style={
                             "margin": "0 10px",  # Space between buttons
@@ -180,7 +195,7 @@ def create_selection():
                             "fontSize": "12px"
                         }
                     ),
-                    dbc.Button("+", id="offset-increment", color="primary", size="sm", n_clicks=0),
+                    dbc.Button("+", id=offset_increment_id, color="primary", size="sm", n_clicks=0),
                 ],
                 style={
                     "display": "flex", 
@@ -197,15 +212,12 @@ def create_selection():
                 style={"fontWeight": "bold", "fontSize": "14px", "marginBottom": "8px"}
             ),
             dcc.RadioItems(
-                id="colors-radio",
-                options = [{'label':'blue', 'value': 'blue'}, {'label':'rainbow', 'value': 'rainbow'}],
+                id=colors_radio_id,
+                options=[{'label': 'blue', 'value': 'blue'}, {'label': 'rainbow', 'value': 'rainbow'}],
                 value='rainbow',
                 inline=False,
                 style={"margin": "10px 0", "fontSize": "12px"},
-                # persistence=True,
-                # persistence_type="local"
             ),
-        ], style = box_styles["classic"]),
-
+        ], style=box_styles["classic"]),
 
     ])

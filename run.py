@@ -50,7 +50,7 @@ app.layout = html.Div(
                                 "font-size": "30px",  # Larger icon size
                                 "color": "black",  # Icon color
                             },
-                            children=[dbc.DropdownMenuItem(f"{page['name']}", id=f"{page['path']}", href=page["relative_path"]) for page in dash.page_registry.values()],
+                            children=[dbc.DropdownMenuItem(f"{page['name']}", id=f"{page['path']}", href=page['path']) for page in dash.page_registry.values()],
                             style={
                             "display": "flex"
                             },

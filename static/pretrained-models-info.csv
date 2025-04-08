@@ -1,0 +1,6 @@
+Model name,Description,Creation date,Training mode,Epochs number
+best_model_sfcn.keras,,21/02/2025,5 CV,
+pytorch_model.pth,,28/01/2025,5 CV,
+sfcn_time_all_best_model.h5,,31/01/2025,,
+tensorflow_light_features_model.keras,lightweight 2D CNN + feature-based ANN,28/01/2025,,ANN: 5 / CNN: 15
+tensorflow_model.h5,,28/01/2025,,

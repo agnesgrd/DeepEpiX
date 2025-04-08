@@ -1,86 +1,91 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 
-def create_graph_container():
+def create_graph_container(
+    update_button_id="update-button",
+    update_container_id="update-container",
+    page_buttons_container_id="page-buttons-container",
+    page_selector_id="page-selector",
+    next_spike_buttons_container_id="next-spike-buttons-container",
+    prev_spike_id="prev-spike",
+    next_spike_id="next-spike",
+    loading_id="loading-graph",
+    signal_graph_id="meg-signal-graph",
+    annotation_graph_id="annotation-graph"
+):
     return html.Div(
         [
+            # Update Button
             html.Div(
-                id = "update-container",
+                id=update_container_id,
                 style={
                     "position": "absolute",
                     "top": "15px",
                     "left": "15px",
                     "background-color": "rgba(0,0,0,0)",
-                    # "padding": "5px",
                     "border-radius": "5px",
                     "box-shadow": "2px 2px 5px rgba(0,0,0,0.2)",
                     "z-index": "1000",
-                    "opacity": 0.8  # Slight transparency
+                    "opacity": 0.8
                 },
                 children=[
-                        dbc.Button(
-                        [
-                            html.I(className="bi bi-arrow-clockwise")
-                        ],
-                        id="update-button",
+                    dbc.Button(
+                        [html.I(className="bi bi-arrow-clockwise")],
+                        id=update_button_id,
                         n_clicks=0,
                         className="btn btn-primary"
                     )
                 ]
             ),
 
-            # Page selector (positioned on top-left)
+            # Page Buttons
             html.Div(
-                id="page-buttons-container",
+                id=page_buttons_container_id,
                 style={
                     "position": "absolute",
                     "top": "15px",
                     "left": "300px",
                     "background-color": "rgba(0,0,0,0)",
-                    # "padding": "5px",
                     "border-radius": "5px",
                     "box-shadow": "2px 2px 5px rgba(0,0,0,0.2)",
                     "z-index": "1000",
-                    "opacity": 0.8  # Slight transparency
+                    "opacity": 0.8
                 },
                 children=[
                     dcc.RadioItems(
-                        id="page-selector",
-                        options=[],  # Initially empty
-                        value=0  # Default to the first page
+                        id=page_selector_id,
+                        options=[],
+                        value=0
                     )
                 ]
             ),
 
-            # Page selector (positioned on top-left)
+            # Prev / Next Spike Buttons
             html.Div(
-                id="next-spike-buttons-container",
+                id=next_spike_buttons_container_id,
                 style={
                     "position": "absolute",
                     "top": "15px",
                     "left": "600px",
                     "background-color": "rgba(0,0,0,0)",
-                    #"padding": "5px",
                     "border-radius": "5px",
                     "box-shadow": "2px 2px 5px rgba(0,0,0,0.2)",
                     "z-index": "1000",
-                    "opacity": 0.8  # Slight transparency
+                    "opacity": 0.8
                 },
                 children=[
-                    dbc.Button("Previous", id="prev-spike", color="primary", outline=True, n_clicks=0),
-                    dbc.Button("Next", id="next-spike", color="primary", outline=True, n_clicks=0)
+                    dbc.Button("Previous", id=prev_spike_id, color="primary", outline=True, n_clicks=0),
+                    dbc.Button("Next", id=next_spike_id, color="primary", outline=True, n_clicks=0)
                 ]
             ),
 
-                # A loading spinner (refresh icon)
+            # Signal Graph with loading
             dcc.Loading(
-                id="loading-graph",
-                type="circle",  # You can use "dot", "circle", "default" or "pulse" here
+                id=loading_id,
+                type="circle",
                 children=[
-                    # The output Graph component
-                            # MEG Signal Graph (base graph)
                     dcc.Graph(
-                        id="meg-signal-graph",
+                        id=signal_graph_id,
                         figure={
                             'data': [],
                             'layout': {
@@ -94,71 +99,57 @@ def create_graph_container():
                                 'title': 'MEG Signal Visualization',
                                 'margin': {'l': 0, 'r': 0, 't': 0, 'b': 0},
                                 'hovermode': 'closest'
-                                
                             },
                         },
                         config={
                             "responsive": True,
-                            'doubleClick': 'reset',  # Reset zoom on double-click
-                            },
+                            'doubleClick': 'reset'
+                        },
                         style={"width": "100%", "height": "80vh"}
                     ),
                 ]
             ),
 
-            
-            # Annotation Graph (overlay graph)
+            # Annotation Graph
             dcc.Graph(
-                id="annotation-graph",
+                id=annotation_graph_id,
                 figure={
                     'data': [],
                     'layout': {
                         'xaxis': {
-                            'title': '',  # Hide title for overlay
-                            'showgrid': False,  # Remove grid lines for cleaner overlay
+                            'title': '',
+                            'showgrid': False,
                             'zeroline': False
                         },
                         'yaxis': {
-                            'title': 'Events',  # Hide y-axis completely
-                            'titlefont': {
-                                'color': 'rgba(0,0,0,0)'  # Transparent text
-                            },
+                            'title': 'Events',
+                            'titlefont': {'color': 'rgba(0,0,0,0)'},
                             'showgrid': False,
                             'tickvals': [0],
                             'ticktext': ['MRF67-2805'],
                             'ticklabelposition': 'outside right',
                             'side': 'right',
-                            'tickfont': {
-                                'color': 'rgba(0, 0, 0, 0)'  # Transparent text
-                            },
-                            'range': [0, 1],  # Adjust based on the annotation data
+                            'tickfont': {'color': 'rgba(0, 0, 0, 0)'},
+                            'range': [0, 1],
                         },
                         'margin': {'l': 10, 'r': 0, 't': 0, 'b': 20},
-                        'paper_bgcolor': 'rgba(0,0,0,0)',  # Transparent background
-                        'plot_bgcolor': 'rgba(0,0,0,0)',  # Transparent plot area
+                        'paper_bgcolor': 'rgba(0,0,0,0)',
+                        'plot_bgcolor': 'rgba(0,0,0,0)',
                     },
                 },
-                config={"staticPlot": True},  # Disable interaction
+                config={"staticPlot": True},
                 style={
-                    "width": "100%",  # Ensure full width for both graphs
-                    "height": "8vh",  # Set height to 20% of the screen height
-                    "pointerEvents": "none",  # Allow interactions with the MEG graph
+                    "width": "100%",
+                    "height": "8vh",
+                    "pointerEvents": "none"
                 }
             )
         ],
         style={
-            "position": "relative",  # Ensures absolute positioning inside this container
+            "position": "relative",
             "display": "flex",
             "flexDirection": "column",
             "width": "100%",
-            "height": "100vh",  # Full screen height
+            "height": "100vh"
         }
     )
-
-        # html.Div(id="page-buttons-container", 
-        #     style=box_styles["classic"], 
-        #     children=[dcc.RadioItems(
-        #         id="page-selector",
-        #         options=[],  # Initially empty
-        #         value=0  # Default to the first page
-        #     )]),

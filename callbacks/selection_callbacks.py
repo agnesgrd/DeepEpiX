@@ -4,63 +4,55 @@ import static.constants as c
 import callbacks.utils.annotation_utils as au
 from dash.exceptions import PreventUpdate
 
-
-
-def register_page_buttons_display():
-    # Callback to generate page buttons based on the chunk limits in the store
+def register_page_buttons_display(chunk_limits_store_id, page_buttons_container_id, page_selector_id):
     @callback(
-        Output("page-buttons-container", "children"),
-        Input("chunk-limits-store", "data"),
+        Output(page_buttons_container_id, "children"),
+        Input(chunk_limits_store_id, "data"),
         prevent_initial_call=False
     )
     def update_buttons(chunk_limits):
         if not chunk_limits:
-            return dash.no_update  # Default to the first page
+            return dash.no_update
         
         return html.Div(
-            # RadioItems for the page buttons
             dcc.RadioItems(
-                id="page-selector",
+                id=page_selector_id,
                 options=[
-                    {"label": html.Span(
-                    str(i + 1),
-                    style={
-                        "textDecoration": "underline" if i == 0 else "none",  # Underline selected number
-                    })
-                    , "value": i} for i in range(len(chunk_limits))
+                    {
+                        "label": html.Span(
+                            str(i + 1),
+                            style={"textDecoration": "underline" if i == 0 else "none"}
+                        ),
+                        "value": i
+                    } for i in range(len(chunk_limits))
                 ],
-                value=0,  # Default selected page
-                className="btn-group",  # Group styling
-                inputClassName="btn-check",  # Bootstrap class for hidden radio inputs
-                labelClassName="btn btn-outline-primary",  # Default button style
-                inputStyle={"display": "none"},  # Hide the input completely
-            ),
+                value=0,
+                className="btn-group",
+                inputClassName="btn-check",
+                labelClassName="btn btn-outline-primary",
+                inputStyle={"display": "none"},
+            )
         )
 
-def register_update_page_button_styles():
-    # Callback to handle button click and update styles for all buttons
+def register_update_page_button_styles(page_selector_id, chunk_limits_store_id):
     @callback(
-        Output("page-selector", "options"),
-        Input("page-selector", "value"),
-        State("chunk-limits-store", "data"),
+        Output(page_selector_id, "options"),
+        Input(page_selector_id, "value"),
+        State(chunk_limits_store_id, "data"),
         prevent_initial_call=True
     )
     def update_button_styles(selected_value, chunk_limits):
-        # Update styles dynamically for each button
-        if not chunk_limits or not selected_value:
-            return dash.no_update  # Default to the first page
+        if not chunk_limits:
+            return dash.no_update
         
         return [
             {
                 "label": html.Span(
                     str(i + 1),
-                    style={
-                        "textDecoration": "underline" if i == selected_value else "none",  # Underline selected number
-                    },
+                    style={"textDecoration": "underline" if i == selected_value else "none"}
                 ),
-                "value": i,
-            }
-            for i in range(len(chunk_limits))
+                "value": i
+            } for i in range(len(chunk_limits))
         ]
     
 def register_manage_channels_checklist():
@@ -86,13 +78,19 @@ def register_manage_channels_checklist():
 
         return dash.no_update
     
-def register_manage_annotations_checklist():
+def register_manage_annotations_checklist(
+    check_all_annotations_btn_id,
+    clear_all_annotations_btn_id,
+    annotation_checkboxes_id
+):
     @callback(
-        Output("annotation-checkboxes", "value", allow_duplicate=True),
-        [Input("check-all-annotations-btn", "n_clicks"),
-        Input("clear-all-annotations-btn", "n_clicks")],
-        State("annotation-checkboxes", "options"),
-        prevent_initial_call = True
+        Output(annotation_checkboxes_id, "value", allow_duplicate=True),
+        [
+            Input(check_all_annotations_btn_id, "n_clicks"),
+            Input(clear_all_annotations_btn_id, "n_clicks")
+        ],
+        State(annotation_checkboxes_id, "options"),
+        prevent_initial_call=True
     )
     def manage_checklist(check_all_clicks, clear_all_clicks, options):
         # Determine which button was clicked
@@ -102,10 +100,10 @@ def register_manage_annotations_checklist():
             return dash.no_update
         triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
 
-        if triggered_id == "check-all-annotations-btn":
+        if triggered_id == check_all_annotations_btn_id:
             all_options = [option['value'] for option in options]
             return all_options  # Select all regions
-        elif triggered_id == "clear-all-annotations-btn":
+        elif triggered_id == clear_all_annotations_btn_id:
             return []  # Clear all selections
 
         return dash.no_update
@@ -192,14 +190,17 @@ def register_cancel_or_confirm_annotation_suppression():
 
         return is_open, dash.no_update
     
-def register_callbacks_annotation_names():
+def register_callbacks_annotation_names(
+    annotation_checkboxes_id,
+    annotations_store_id
+):
     # Callback to populate the checklist options and default value dynamically
     @callback(
-        Output("annotation-checkboxes", "options"),
-        Output("annotation-checkboxes", "value"),
-        Input("annotations-store", "data"),
-        State("annotation-checkboxes", "value"),
-        prevent_initial_call = False
+        Output(annotation_checkboxes_id, "options"),
+        Output(annotation_checkboxes_id, "value"),
+        Input(annotations_store_id, "data"),
+        State(annotation_checkboxes_id, "value"),
+        prevent_initial_call=False
     )
     def display_annotation_names_checklist(annotations_store, current_value):
         if not annotations_store:
@@ -209,7 +210,7 @@ def register_callbacks_annotation_names():
 
         options = [{'label': f"{name} ({count})", 'value': f"{name}"} for name, count in description_counts.items()]
         value = [f"{name}" for name in (current_value or []) if name in description_counts.keys()]
-        return options, value # Set all annotations as default selected
+        return options, value  # Set all annotations as default selected
     
 def register_callbacks_montage_names():
     # Callback to populate the checklist options and default value dynamically
