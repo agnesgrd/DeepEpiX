@@ -45,17 +45,36 @@ app.layout = html.Div(
                         # Panel tabs (navigation links)
                         html.I(dbc.DropdownMenu(
                             toggle_style={
-                                "border": "none",  # No border for the button
-                                "background": "none",  # Transparent background
-                                "font-size": "30px",  # Larger icon size
-                                "color": "black",  # Icon color
+                                "border": "none",
+                                "background": "none",
+                                "font-size": "30px",
+                                "color": "black",
                             },
-                            children=[dbc.DropdownMenuItem(f"{page['name']}", id=f"{page['path']}", href=page['path']) for page in dash.page_registry.values()],
-                            style={
-                            "display": "flex"
-                            },
-                            className = "bi bi-list")
-                        ),
+                            children=[
+                                dbc.DropdownMenuItem("Dataset", header=True),
+                                dbc.DropdownMenuItem("Home", href="/"),
+
+                                dbc.DropdownMenuItem(divider=True),
+                                
+                                dbc.DropdownMenuItem("Visualization", header=True),
+                                dbc.DropdownMenuItem("Raw Signal", href="/viz/raw-signal"),
+                                dbc.DropdownMenuItem("ICA", href="/viz/ica"),
+
+                                dbc.DropdownMenuItem(divider=True),
+
+                                dbc.DropdownMenuItem("Model", header=True),
+                                dbc.DropdownMenuItem("Performance", href="/model/performance"),
+                                dbc.DropdownMenuItem("Fine-Tuning", href="/model/fine-tuning"),
+
+                                dbc.DropdownMenuItem(divider=True),
+
+                                dbc.DropdownMenuItem("Settings", header=True),
+                                dbc.DropdownMenuItem("Montage", href="/settings/montage"),
+                                dbc.DropdownMenuItem("Help", href="/settings/help"),
+                            ],
+                            style={"display": "flex"},
+                            className="bi bi-list"
+))
                     ],
                     style={
                         "display": "flex",

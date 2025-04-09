@@ -6,7 +6,7 @@ from layout import input_styles
 import static.constants as c
 
 
-dash.register_page(__name__, name="Settings", path="/settings")
+dash.register_page(__name__, name="Settings", path="/settings/montage")
 
 
 

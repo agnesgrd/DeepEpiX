@@ -70,7 +70,7 @@ from callbacks.anom_detect_callbacks import (
     register_display_anom_detect
 )
 
-dash.register_page(__name__, name="Data Viz & Analyze", href='/data-viz-analyze')
+dash.register_page(__name__, name="Data Viz & Analyze", path='/viz/raw-signal')
 
 layout = html.Div([
     

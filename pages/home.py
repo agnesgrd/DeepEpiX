@@ -324,7 +324,7 @@ def preprocess_meg_data(n_clicks, folder_path, freq_data, heartbeat_ch_name):
             for chunk_idx in chunk_limits:
                 start_time, end_time = chunk_idx
                 raw_df = pu.get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw)
-            return "Preprocessed and saved data", "/viz", annotations_dict, chunk_limits
+            return "Preprocessed and saved data", "/viz/raw-signal", annotations_dict, chunk_limits
         
         except Exception as e:
             return f"Error during preprocessing : {str(e)}", dash.no_update, None, None

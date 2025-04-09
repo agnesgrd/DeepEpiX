@@ -19,7 +19,7 @@ from callbacks.annotation_callbacks import register_update_annotations, register
 import layout.graph_layout as gl
 from layout.ica_sidebar_layout import create_sidebar
 
-dash.register_page(__name__, name="ICA", href='/ica')
+dash.register_page(__name__, name="ICA", path='/viz/ica')
 
 
 layout = html.Div([
@@ -50,35 +50,35 @@ layout = html.Div([
 
 ])
 
-# Callback to generate page buttons based on the chunk limits in the store
-@callback(
-    Output("page-buttons-ica-container", "children"),
-    Input("chunk-limits-store", "data"),
-    prevent_initial_call=False
-)
-def update_buttons(chunk_limits):
-    if not chunk_limits:
-        return dash.no_update  # Default to the first page
+# # Callback to generate page buttons based on the chunk limits in the store
+# @callback(
+#     Output("page-buttons-container-ica", "children"),
+#     Input("chunk-limits-store", "data"),
+#     prevent_initial_call=False
+# )
+# def update_buttons(chunk_limits):
+#     if not chunk_limits:
+#         return dash.no_update  # Default to the first page
     
-    return html.Div(
-        # RadioItems for the page buttons
-        dcc.RadioItems(
-            id="page-selector-ica",
-            options=[
-                {"label": html.Span(
-                str(i + 1),
-                style={
-                    "textDecoration": "underline" if i == 0 else "none",  # Underline selected number
-                })
-                , "value": i} for i in range(len(chunk_limits))
-            ],
-            value=0,  # Default selected page
-            className="btn-group",  # Group styling
-            inputClassName="btn-check",  # Bootstrap class for hidden radio inputs
-            labelClassName="btn btn-outline-primary",  # Default button style
-            inputStyle={"display": "none"},  # Hide the input completely
-        ),
-    )
+#     return html.Div(
+#         # RadioItems for the page buttons
+#         dcc.RadioItems(
+#             id="page-selector-ica",
+#             options=[
+#                 {"label": html.Span(
+#                 str(i + 1),
+#                 style={
+#                     "textDecoration": "underline" if i == 0 else "none",  # Underline selected number
+#                 })
+#                 , "value": i} for i in range(len(chunk_limits))
+#             ],
+#             value=0,  # Default selected page
+#             className="btn-group",  # Group styling
+#             inputClassName="btn-check",  # Bootstrap class for hidden radio inputs
+#             labelClassName="btn btn-outline-primary",  # Default button style
+#             inputStyle={"display": "none"},  # Hide the input completely
+#         ),
+#     )
 
 register_page_buttons_display(
     chunk_limits_store_id="chunk-limits-store",

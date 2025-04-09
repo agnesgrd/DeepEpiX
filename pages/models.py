@@ -14,7 +14,7 @@ import callbacks.utils.graph_utils as gu
 from sklearn.metrics import precision_score, recall_score, f1_score
 import numpy as np
 
-dash.register_page(__name__, name = "Model performance", href="model-performance")
+dash.register_page(__name__, name = "Model performance", path="/model/performance")
 
 layout = html.Div([
 

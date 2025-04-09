@@ -2,7 +2,7 @@
 import dash
 from dash import html
 
-dash.register_page(__name__, name="Model fine-tuning", href="model-fine-tuning")
+dash.register_page(__name__, name="Fine-Tuning", path="/model/fine-tuning")
 
 layout = html.Div([
     html.H1("Not a page yet"),
