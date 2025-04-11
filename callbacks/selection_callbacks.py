@@ -212,13 +212,13 @@ def register_callbacks_annotation_names(
         value = [f"{name}" for name in (current_value or []) if name in description_counts.keys()]
         return options, value  # Set all annotations as default selected
     
-def register_callbacks_montage_names():
+def register_callbacks_montage_names(montage_radio_id):
     # Callback to populate the checklist options and default value dynamically
     @callback(
-        Output("montage-radio", "options"),
-        Output("montage-radio", "value"),
+        Output(montage_radio_id, "options"),
+        Output(montage_radio_id, "value"),
         Input("montage-store", "data"),
-        State("montage-radio", "value"),
+        State(montage_radio_id, "value"),
         prevent_initial_call=False
     )
     def display_montage_names_checklist(montage_store, value):

@@ -125,7 +125,9 @@ register_callbacks_annotation_names(
     annotations_store_id="annotations-store"
 )
 
-register_callbacks_montage_names()
+register_callbacks_montage_names(
+    montage_radio_id="montage-radio"
+)
 
 register_update_graph_time_channel()
 

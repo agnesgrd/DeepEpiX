@@ -6,6 +6,7 @@ import mne
 from layout import input_styles, box_styles
 from callbacks.utils import preprocessing_utils as pu
 from callbacks.utils import folder_path_utils as fpu
+from collections import Counter
 from callbacks.utils import annotation_utils as au
 import plotly.graph_objects as go
 import numpy as np
@@ -19,7 +20,9 @@ layout = html.Div([
     
     # Explanation of what the user needs to do
     html.Div([
-        html.H1("Choose MEG Data Folder"),
+        html.H3([
+            html.I(className="bi bi-1-circle-fill", style={"marginRight": "10px", "fontSize": "1.2em"}),
+            "Choose MEG Data Folder"]),
         html.Div([
             dbc.Row([
                 dbc.Col(
@@ -55,7 +58,10 @@ layout = html.Div([
             html.Div(
                 id="frequency-inputs",
                 children=[
-                    html.H3("Frequency Parameters for Signal Processing", style={"margin-bottom": "15px"}),
+                    html.H3([
+                        html.I(className="bi bi-2-circle-fill", style={"marginRight": "10px", "fontSize": "1.2em"}),
+                         "Set Frequency Parameters for Signal Preprocessing"]),
+                    # html.H3("Frequency Parameters for Signal Processing", style={"margin-bottom": "15px"}),
 
                     html.Div([
                         html.Label("Resampling Frequency (Hz): "),
@@ -76,6 +82,11 @@ layout = html.Div([
                         html.Label("Notch filter Frequency (Hz): "),
                         dbc.Input(id="notch-freq", type="number", value=50, step=1, min=0, style=input_styles["number-in-box"]),
                     ], style={"padding": "10px"}),
+
+                    html.H3([
+                        html.I(className="bi bi-3-circle-fill", style={"marginRight": "10px", "fontSize": "1.2em"}),
+                         "Give hint on channel name for heartbeat detection"]),
+                    # html.H3("Frequency Parameters for Signal Processing", style={"margin-bottom": "15px"}),
 
                     html.Div([
                         html.Label("Channel Name for Heartbeat Detection (ex: MRF52-2805, default = None): "),
@@ -103,21 +114,73 @@ layout = html.Div([
                 }
             ),
 
-            # PSD Graph (Right Side)
             html.Div(
-                id="psd",
-                children=[
-                    html.H3("Power Spectral Density", style={"margin-bottom": "15px"}),
+                id="analysis", 
+                children = [
+                    dcc.Tabs(
+                        id="tabs",
+                        value='raw-info-tab',  # Default selected tab
+                        children=[
+                            dcc.Tab(label='Raw Info', value='raw-info-tab', children=[
+                                html.Div(id="raw-info-container", children=[
 
-                    dbc.Button("Compute & Display", id="compute-display-psd-button", color="success", n_clicks=0),
+                                    dcc.Loading(
+                                        type="default",
+                                        children=[
+                                            dash.dash_table.DataTable(
+                                                id='raw-info-table',
+                                                columns=[
+                                                    {"name": "Property", "id": "Property"},
+                                                    {"name": "Value", "id": "Value"}
+                                                ],
+                                                data=[],  # To be filled via callback
+                                                style_cell={
+                                                    "textAlign": "left",
+                                                    "padding": "10px",
+                                                    "whiteSpace": "normal",
+                                                    "height": "auto"
+                                                },
+                                                style_header={
+                                                    "backgroundColor": "#f8f9fa",
+                                                    "fontWeight": "bold"
+                                                },
+                                                style_table={"overflowX": "auto", "marginTop": "15px"},
+                                            )
+                                        ]
+                                    )
+                                ])
+                            ]),
+                            dcc.Tab(label='Power Spectral Density', value='psd-tab', children=[
+                                # Channel Statistics Section
+                                html.Div(id="psd-container", children=[
 
-                    dcc.Graph(id="psd-graph"),
+                                    dbc.Button("Compute & Display", id="compute-display-psd-button", color="success", n_clicks=0, style = {"marginTop": "15px"}),
 
-                    dcc.Loading(
-                            id="loading",
-                            type="default",
-                            children=[html.Div(id="psd-status", style={"margin-top": "10px"})]
-                        ),
+                                    dcc.Graph(id="psd-graph", style={"display": "none"}),
+
+                                    dcc.Loading(
+                                            id="loading",
+                                            type="default",
+                                            children=[html.Div(id="psd-status", style={"margin-top": "10px"})]
+                                        ),
+                                    # You can add additional content related to channel statistics
+                                ]),
+                            ]),
+                            dcc.Tab(label='Event Statistics', value='events-tab', children=[
+                                # Event Statistics Section
+                                html.Div(id="event-stats-container", children=[
+                                    # You can add content related to event analysis, like event count over time
+                                ], style = {"marginTop": "15px"}),
+                            ]),
+                        ],
+                        style={
+                            "display": "flex",
+                            "flexDirection": "row",  # Ensure tabs are displayed in a row (horizontal)
+                            "alignItems": "center",  # Center the tabs vertically within the parent container
+                            "width": "100%",  # Full width of the container
+                            "borderBottom": "1px solid #ddd"  # Optional, adds a bottom border to separate from content
+                        }
+                    ),
                 ],
                 style={
                     "padding": "15px",
@@ -125,10 +188,12 @@ layout = html.Div([
                     "border": "1px solid #ddd",
                     "borderRadius": "8px",
                     "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",
-                    "width": "60%",  # Set width for right panel
+                    "width": "60%",  # Adjust the width as needed
                 }
             ),
         ],
+
+
         style={
             "display": "none",
             "flexDirection": "row",  # Side-by-side layout
@@ -171,6 +236,82 @@ def handle_valid_folder_path(folder_path):
             if folder_path.endswith(".ds"):
                 return folder_path, False
     return dash.no_update, dash.no_update
+
+@callback(
+    Output("raw-info-table", "data"),
+    Input("load-button", "n_clicks"),
+    State("folder-store", "data"),
+    prevent_initial_call=True
+)
+def populate_raw_info(n_clicks, folder_path):
+    if not folder_path:
+        return dash.no_update
+
+    raw = mne.io.read_raw_ctf(folder_path, preload=False, verbose=False)
+    info = raw.info
+
+    data = [
+        {"Property": "File name", "Value": raw.filenames[0] if raw.filenames else "Unknown"},
+        {"Property": "Number of channels", "Value": info['nchan']},
+        {"Property": "Sampling frequency (Hz)", "Value": info['sfreq']},
+        {"Property": "Highpass filter", "Value": info['highpass']},
+        {"Property": "Lowpass filter", "Value": info['lowpass']},
+        {"Property": "Duration (s)", "Value": round(raw.times[-1], 2)},
+        {"Property": "Channel names (preview)", "Value": ', '.join(info['ch_names'][:5]) + "..." if len(info['ch_names']) > 5 else ', '.join(info['ch_names'])},
+        {"Property": "Bad channels", "Value": ', '.join(info['bads']) if info['bads'] else "None"},
+        {"Property": "Measurement date", "Value": str(info['meas_date'])},
+        {"Property": "Experimenter", "Value": info.get('experimenter', 'Unknown')},
+        {"Property": "Comps (SSP/ICA)", "Value": f"{len(info.get('comps', []))} components"},
+        {"Property": "Projections (SSP)", "Value": f"{len(info.get('projs', []))} projections"},
+        {"Property": "Digitized points", "Value": f"{len(info.get('dig', []))} points" if info.get('dig') else "None"},
+        {"Property": "CTF Head Transform", "Value": "Available" if info.get('ctf_head_t') else "None"},
+        {"Property": "Device to Head Transform", "Value": "Available" if info.get('dev_head_t') else "None"},
+    ]
+
+    return data
+
+@callback(
+    Output("event-stats-container", "children"),
+    Input("tabs", "value"),
+    State("folder-store", "data"),
+    prevent_initial_call=True
+)
+def populate_events_statistics(selected_tab, folder_path):
+    if selected_tab != "events-tab" or not folder_path:
+        return dash.no_update
+
+    raw = mne.io.read_raw_ctf(folder_path, preload=False, verbose=False)
+    annotations = raw.annotations
+
+    if len(annotations) == 0:
+        return html.P("No annotations found in this recording.")
+
+    # Count annotation descriptions
+    description_counts = Counter(annotations.description)
+
+    # Build a stats table
+    table_header = [html.Thead(html.Tr([html.Th("Event Name"), html.Th("Count")]))]
+    table_body = [
+        html.Tr([html.Td(desc), html.Td(count)]) for desc, count in description_counts.items()
+    ]
+    annotation_table = dbc.Table(table_header + [html.Tbody(table_body)], bordered=True, striped=True, hover=True)
+
+    # Optionally show total number and a few more stats
+    stats_summary = html.Ul([
+        html.Li(f"Total annotations: {len(annotations)}"),
+        html.Li(f"Unique event types: {len(description_counts)}"),
+        html.Li(f"First event starts at {annotations.onset[0]:.2f} s"),
+        html.Li(f"Last event ends at {(annotations.onset[-1] + annotations.duration[-1]):.2f} s"),
+    ])
+
+    return html.Div([
+        annotation_table,
+        html.Hr(),
+        html.H5("Event Summary"),
+        stats_summary,
+    ])
+
+    
 
 @callback(
     [Output("frequency-container", "style"),
@@ -222,6 +363,7 @@ def handle_frequency_parameters(resample_freq, high_pass_freq, low_pass_freq, no
 @callback(
     Output("psd-status", "children"),
     Output("psd-graph", "figure"),
+    Output("psd-graph", "style"),
     Input("compute-display-psd-button", "n_clicks"),
     State("folder-store", "data"),
     State("frequency-store", "data"),
@@ -230,7 +372,7 @@ def handle_frequency_parameters(resample_freq, high_pass_freq, low_pass_freq, no
 def display_psd(n_clicks, folder_path, freq_data):
 
     if folder_path is None or freq_data is None:
-        return "Please fill in all frequency parameters.", dash.no_update
+        return "Please fill in all frequency parameters.", dash.no_update, dash.no_update
     
     if n_clicks > 0:
     
@@ -285,7 +427,18 @@ def display_psd(n_clicks, folder_path, freq_data):
             template="plotly_white"
         )
 
-        return None, psd_fig
+            # Example: calculate variance for each channel
+        variances = np.var(raw.get_data(), axis=-1)
+        threshold=0.001
+        bad_channels = np.where(variances > threshold)[0]  # Apply a threshold for bad channels
+        
+        # Create a bar chart for channel variance
+        fig = go.Figure(data=[go.Bar(x=raw.info['ch_names'], y=variances)])
+        fig.update_layout(title="Channel Variance (Bad Channels Highlighted)",
+                        xaxis_title="Channels",
+                        yaxis_title="Variance")
+
+        return None, fig, {}
 
 @callback(
     Output("preprocess-status", "children", allow_duplicate=True),

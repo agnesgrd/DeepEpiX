@@ -20,6 +20,14 @@ input_styles = {
         "borderStyle": "solid",
         "borderRadius": "5px",
     },
+    "name":{
+        "width": "20%",
+        "padding": "10px",
+        "fontSize": "16px",
+        "borderWidth": "1px",
+        "borderStyle": "solid",
+        "borderRadius": "5px",
+    },
     "number-in-box":{
         "width": "50%",
         "padding": "10px",
