@@ -83,7 +83,6 @@ box_styles = {
     },
     "classic": {
         "padding": "15px",
-        "backgroundColor": "#fff",
         "border": "1px solid #ddd",  # Grey border
         "borderRadius": "8px",  # Rounded corners for the channel section
         "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",

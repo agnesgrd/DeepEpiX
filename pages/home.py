@@ -49,7 +49,7 @@ layout = html.Div([
             ])
         ], style={"padding": "10px"}),
 
-    ], style={"padding": "15px", "backgroundColor": "#fff", "border": "1px solid #ddd","borderRadius": "8px", "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)", "marginBottom": "20px"}),
+    ], style={"padding": "15px", "border": "1px solid #ddd","borderRadius": "8px", "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)", "marginBottom": "20px"}),
 
     html.Div(
         id="frequency-container",
@@ -105,7 +105,6 @@ layout = html.Div([
                 ],
                 style={
                     "padding": "15px",
-                    "backgroundColor": "#fff",
                     "border": "1px solid #ddd",
                     "borderRadius": "8px",
                     "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",
@@ -117,11 +116,11 @@ layout = html.Div([
             html.Div(
                 id="analysis", 
                 children = [
-                    dcc.Tabs(
+                    dbc.Tabs(
                         id="tabs",
-                        value='raw-info-tab',  # Default selected tab
+                        active_tab='raw-info-tab',  # Default selected tab
                         children=[
-                            dcc.Tab(label='Raw Info', value='raw-info-tab', children=[
+                            dbc.Tab(label='Raw Info', tab_id="raw-info-tab", children=[
                                 html.Div(id="raw-info-container", children=[
 
                                     dcc.Loading(
@@ -150,7 +149,7 @@ layout = html.Div([
                                     )
                                 ])
                             ]),
-                            dcc.Tab(label='Power Spectral Density', value='psd-tab', children=[
+                            dbc.Tab(label='Power Spectral Density', tab_id="psd-tab", children=[
                                 # Channel Statistics Section
                                 html.Div(id="psd-container", children=[
 
@@ -166,7 +165,7 @@ layout = html.Div([
                                     # You can add additional content related to channel statistics
                                 ]),
                             ]),
-                            dcc.Tab(label='Event Statistics', value='events-tab', children=[
+                            dbc.Tab(label='Event Statistics', tab_id="events-tab", children=[
                                 # Event Statistics Section
                                 html.Div(id="event-stats-container", children=[
                                     # You can add content related to event analysis, like event count over time
@@ -184,7 +183,6 @@ layout = html.Div([
                 ],
                 style={
                     "padding": "15px",
-                    "backgroundColor": "#fff",
                     "border": "1px solid #ddd",
                     "borderRadius": "8px",
                     "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",
@@ -272,7 +270,7 @@ def populate_raw_info(n_clicks, folder_path):
 
 @callback(
     Output("event-stats-container", "children"),
-    Input("tabs", "value"),
+    Input("tabs", "active_tab"),
     State("folder-store", "data"),
     prevent_initial_call=True
 )
@@ -427,18 +425,7 @@ def display_psd(n_clicks, folder_path, freq_data):
             template="plotly_white"
         )
 
-            # Example: calculate variance for each channel
-        variances = np.var(raw.get_data(), axis=-1)
-        threshold=0.001
-        bad_channels = np.where(variances > threshold)[0]  # Apply a threshold for bad channels
-        
-        # Create a bar chart for channel variance
-        fig = go.Figure(data=[go.Bar(x=raw.info['ch_names'], y=variances)])
-        fig.update_layout(title="Channel Variance (Bad Channels Highlighted)",
-                        xaxis_title="Channels",
-                        yaxis_title="Variance")
-
-        return None, fig, {}
+        return None, psd_fig, {}
 
 @callback(
     Output("preprocess-status", "children", allow_duplicate=True),
@@ -483,12 +470,3 @@ def preprocess_meg_data(n_clicks, folder_path, freq_data, heartbeat_ch_name):
             return f"Error during preprocessing : {str(e)}", dash.no_update, None, None
 
     return None, dash.no_update, None, None
-    
-
-
-
-
-
-
-
-

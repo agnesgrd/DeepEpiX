@@ -7,7 +7,7 @@ import dash
 app = Dash(__name__,
            use_pages=True,
         #    suppress_callback_exceptions=True,
-           external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP])
+           external_stylesheets=[dbc.themes.CYBORG, dbc.icons.BOOTSTRAP])
 
 # app.enable_dev_tools(debug=True)
 
@@ -48,7 +48,7 @@ app.layout = html.Div(
                                 "border": "none",
                                 "background": "none",
                                 "font-size": "30px",
-                                "color": "black",
+                                "color": "white",
                             },
                             children=[
                                 dbc.DropdownMenuItem("Dataset", header=True),

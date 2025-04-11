@@ -106,7 +106,6 @@ layout = html.Div([
             ],  # This closes the `children` list
             style={
                 "padding": "15px", 
-                "backgroundColor": "#fff", 
                 "border": "1px solid #ddd",
                 "borderRadius": "8px", 
                 "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)", 
@@ -145,7 +144,6 @@ layout = html.Div([
             ],
             style={
                 "padding": "15px",
-                "backgroundColor": "#fff",
                 "border": "1px solid #ddd",
                 "borderRadius": "8px",
                 "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",
@@ -252,7 +250,6 @@ layout = html.Div([
             ],
             style={
                 "padding": "15px",
-                "backgroundColor": "#fff",
                 "border": "1px solid #ddd",
                 "borderRadius": "8px",
                 "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",
@@ -284,7 +281,6 @@ layout = html.Div([
             ],
             style={
                 "padding": "15px",
-                "backgroundColor": "#fff",
                 "border": "1px solid #ddd",
                 "borderRadius": "8px",
                 "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",
@@ -393,8 +389,8 @@ def handle_create_button(n_clicks, new_montage_name, montage_store_data):
     # Check if the name already exists in the montage store
     if n_clicks > 0:
         return (
-            {"padding": "15px", "backgroundColor": "#fff", "border": "1px solid #ddd", "borderRadius": "8px", "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)", "width": "60%"},
-            {"padding": "15px", "backgroundColor": "#fff", "border": "1px solid #ddd", "borderRadius": "8px", "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)", "width": "20%"},
+            {"padding": "15px", "border": "1px solid #ddd", "borderRadius": "8px", "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)", "width": "60%"},
+            {"padding": "15px", "border": "1px solid #ddd", "borderRadius": "8px", "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)", "width": "20%"},
             True
         )
 
