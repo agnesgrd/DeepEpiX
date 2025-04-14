@@ -105,9 +105,21 @@ def create_graph_container(
                             "responsive": True,
                             'doubleClick': 'reset'
                         },
-                        style={"width": "100%", "height": "80vh"}
+                            style={
+                            "width": "100%",
+                            "height": "80vh",
+                            "borderRadius": "10px",
+                            "overflow": "hidden",
+                            "boxShadow": "0 4px 10px rgba(0,0,0,0.1)"
+                        }
                     ),
-                ]
+                ],
+                overlay_style={
+                    "backgroundColor": "rgba(255, 255, 255, 0.5)",
+                    "pointerEvents": "none",  # So the graph stays interactive
+                    "visibility": "visible"  # This is the key: don't hide the child
+                }
+
             ),
 
             # Annotation Graph

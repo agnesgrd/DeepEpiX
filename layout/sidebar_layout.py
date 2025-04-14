@@ -33,8 +33,8 @@ def create_sidebar():
                     colors_radio_id="colors-radio"
                 ), label='Select', tab_id='selection-tab'), # create_selection()
                 dbc.Tab(create_analyze(), label='Analyze', tab_id='analyzing-tab'), # create_analyze()
-                dbc.Tab(create_predict(), label='Predict', tab_id='prediction-tab'), #create_prediction()
-                dbc.Tab(create_anom_detect(), label='Anomaly', tab_id='anom-detection-tab'), #create_prediction()
+                dbc.Tab(create_predict(), label='SpikePred', tab_id='prediction-tab'), #create_prediction()
+                dbc.Tab(create_anom_detect(), label='AnomDetect', tab_id='anom-detection-tab'), #create_prediction()
                 dbc.Tab(create_save(), label='Save', tab_id='saving-tab'), #create_prediction()
             ],
             id="sidebar-tabs",
@@ -43,13 +43,13 @@ def create_sidebar():
         ),
 
     ], style={
-        # "padding": "20px",
+        "padding": "0 20px",
         "height": "100%",
         "display": "flex",
         "flexDirection": "column",
         "justifyContent": "flex-start",  # Align content at the top
         "gap": "20px",  # Space between elements
-        "width": "250px",  # Sidebar width is now fixed
+        "width": "275px",  # Sidebar width is now fixed
         "boxSizing": "border-box",
         "fontSize": "12px",
         # "backgroundColor": "#f9f9f9",  # Light background color for the sidebar
