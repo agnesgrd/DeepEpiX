@@ -217,6 +217,8 @@ def create_selection(
                 value='rainbow',
                 inline=False,
                 style={"margin": "10px 0", "fontSize": "12px"},
+                persistence=True,
+                persistence_type="local"
             ),
         ], style=box_styles["classic"]),
 

@@ -11,9 +11,24 @@ import random
 import base64
 import numpy as np
 import matplotlib.pyplot as plt
+from layout.main_layout import box_styles
+import itertools
+import pandas as pd
 
 
 dash.register_page(__name__, name="Settings", path="/settings/montage")
+
+
+# Define a rainbow palette for group headers
+rainbow_colors = itertools.cycle([
+    "#FF4136",  # red
+    "#FF851B",  # orange
+    "#FFDC00",  # yellow
+    "#2ECC40",  # green
+    "#0074D9",  # blue
+    "#B10DC9",  # purple
+    "#F012BE",  # pink/fuchsia
+])
 
 layout = html.Div([
 
@@ -68,41 +83,17 @@ layout = html.Div([
                         target="montage-help-icon",
                         placement="right"
                     ),
-                dash.dash_table.DataTable(
-                    id="saved-montages-table",
-                    columns=[
-                        {"name": "Montage Name", "id": "montage_name"},
-                        {"name": "Channels", "id": "channels"},
-                        {"name": "Actions", "id": "actions"},
-                    ],
-                    data=[],  # To be populated with saved montages
-                    style_table={
-                        "overflowX": "auto", 
-                        "width": "50%",  # Reduce table width
-                        "margin": "0 auto"  # Center the table on the page
-                        },
-                    style_cell={
-                        "textAlign": "center",  # Center text in all cells
-                        "padding": "5px",  # Add padding for better readability
-                        "fontFamily": "Arial, sans-serif",  # Consistent font
-                        "fontSize": "14px",  # Adjust font size
-                        "border": "1px solid #ddd"  # Add light borders
-                    },
-                    style_header={
-                        "fontWeight": "bold",  # Bold headers
-                        "textAlign": "center",  # Center text in headers
-                        "backgroundColor": "#f4f4f4",  # Light background for headers
-                        "borderBottom": "2px solid #ccc"  # Slightly thicker bottom border
-                    },
-                    style_data_conditional=[
-                        {
-                            "if": {"column_id": "channels"},
-                            "whiteSpace": "nowrap",  # Prevent text wrapping
-                            "overflow": "auto",  # Allow scrolling
-                            "maxWidth": "150px",  # Adjust width as needed
-                        }
-                    ]
+
+                html.Div(
+                    id="saved-montages-table",  # Placeholder for the table
+                    style={
+                        "overflowX": "auto",
+                        "width": "60%",
+                        "margin": "20px auto",
+                        "padding": "10px"
+                    }
                 )
+
             ],  # This closes the `children` list
             style={
                 "padding": "15px", 
@@ -179,7 +170,15 @@ layout = html.Div([
                         *[
                             html.Div(
                                 [
-                                    html.H3(group),  # Smaller font size for the group name
+                                    html.H5(
+                                        group,
+                                        style={
+                                            "fontSize": "14px",
+                                            "fontWeight": "bold",
+                                            "marginBottom": "5px",
+                                            "color": next(rainbow_colors)
+                                        }
+                                    ),
                                     dbc.Button(
                                         "Check All",
                                         id=f"check-all-channels-to-pick-btn-{group}",
@@ -215,7 +214,7 @@ layout = html.Div([
                                         style={"marginTop": "10px", "fontSize": "10px"}  # Smaller font size for checklist items
                                     )
                                 ],
-                                style={"flex": "1 0 6%", "padding": "5px"}
+                                style={"flex": "1 0 120px", "padding": "5px"}
                             )
                             for idx, (group, channels) in enumerate(c.GROUP_CHANNELS_BY_REGION.items())
                         ],
@@ -223,30 +222,73 @@ layout = html.Div([
                     style={"display": "none"}
                 ),
 
-                # Random Pick Method Container (initially hidden)
                 html.Div(
                     id="random-pick-method-container",
                     children=[
-                        *[
-                            html.Div(
-                                [
-                                    html.H3(group),
-                                    dbc.Input(
-                                        id=f"random-pick-count-{group}",
-                                        type="number",
-                                        min=0,
-                                        step=1,
-                                        value=0,
-                                        max=len(channels),
-                                        style={"width": "100%"}
-                                    )
-                                ],
-                                style={"flex": "1 0 6%", "padding": "5px"}
+                        html.Div([
+                            html.H5("Apply % to each group:"),
+                            dbc.Input(
+                                id="random-pick-count-%",
+                                type="number",
+                                min=0,
+                                max=100,
+                                step=1,
+                                value=0,
+                                placeholder="e.g. 10 for 10%",
+                                style={"width": "80px", "fontSize": "14px"}
                             )
-                            for group, channels in c.GROUP_CHANNELS_BY_REGION.items()
-                        ],
-                    ], style={"display": "none"},
-                ),
+                        ], style={"marginBottom": "20px", "padding": "10px"}),
+
+                        html.Hr(),
+
+                        html.Div(
+                            children=[
+                                html.Div(
+                                    children=[
+                                        html.H5(
+                                            group,
+                                            style={
+                                                "fontSize": "14px",
+                                                "fontWeight": "bold",
+                                                "marginBottom": "5px",
+                                                "color": next(rainbow_colors)
+                                            }
+                                        ),
+                                        dbc.Input(
+                                            id=f"random-pick-count-{group}",
+                                            type="number",
+                                            min=0,
+                                            step=1,
+                                            value=0,
+                                            max=len(channels),
+                                            style={
+                                                "width": "50%",
+                                                "fontSize": "14px",
+                                                "padding": "5px"
+                                            }
+                                        )
+                                    ],
+                                    style={
+                                        "flex": "1 0 170px",
+                                        "padding": "8px",
+                                        # "border": "1px solid #e5e5e5",
+                                        # "borderRadius": "8px",
+                                        # # "backgroundColor": "#f9f9f9",
+                                        # "boxShadow": "inset 0 1px 2px rgba(0,0,0,0.05)"
+                                    }
+                                )
+                                for group, channels in c.GROUP_CHANNELS_BY_REGION.items()
+                            ],
+                            style={
+                                "display": "flex",
+                                "flexWrap": "wrap",
+                                "gap": "10px",
+                                "padding": "10px"
+                            }
+                        )
+                    ],
+                    style={"display": "none"}
+                )
             ],
             style={
                 "padding": "15px",
@@ -299,67 +341,90 @@ layout = html.Div([
 ])
 
 @callback(
-    Output("saved-montages-table", "data"),  # Update the DataTable with new montage data
-    Input("refresh-button", "n_clicks"),  # Triggered by clicking the refresh button
-    Input("montage-store", "data"),  # Get the data from the montage-store component
+    Output("saved-montages-table", "children"),
+    Input("montage-store", "data"),
     prevent_initial_call=False
 )
-def display_montage(n_clicks_refresh, montage_store_data):
-    """Update the DataTable with a new montage when the 'Save' button is clicked"""
+def update_montage_table(data):
+    if not data:
+        return html.Div("No montages saved yet.", style={"textAlign": "center", "color": "#888"})
 
-    if not montage_store_data:
-        return None  # Do nothing if the montage store is empty
-    
-    # Prepare the data for the DataTable
-    saved_montages = []
+    table_header = html.Thead(
+        html.Tr([
+            html.Th("Montage Name"),
+            html.Th("Channels"),
+            html.Th("Delete"),
+        ])
+    )
 
-    # Iterate through the montage store data to prepare rows for the table
-    for montage_name, channels in montage_store_data.items():
-        saved_montages.append({
-            "montage_name": montage_name,
-            "channels": ", ".join(channels),  # Join selected channels into a single string
-            "actions": '🗑️'
+    table_body = html.Tbody([
+        html.Tr([
+            html.Td(montage_name),
+            html.Td(", ".join(channels), style={
+                        "whiteSpace": "nowrap",  # Prevent wrapping
+                        "overflowX": "auto",  # Enable horizontal scrolling
+                        "maxWidth": "200px",  # Adjust the max width
+                        # "textOverflow": "ellipsis",  # Add ellipsis for long texts
+                        "padding": "10px"  # Padding for readability
+                    }),
+            html.Td(
+                dbc.Button(
+                    html.I(className="bi bi-trash"),
+                    id={"type": "delete-montage-btn", "index": montage_name},
+                    color="danger",
+                    size="sm"
+                )
+            )
+        ])
+        for montage_name, channels in data.items()
+    ])
 
-        })
+    return dbc.Table(
+        children=[table_header, table_body],
+        bordered=True,
+        striped=True,
+        hover=True,
+        responsive=True,
+        size="sm",
+        class_name="table-light text-center"
+    )
 
-    # Return the data for the DataTable
-    return saved_montages
 
-@callback(
-    Output("montage-store", "data"),
-    Input("saved-montages-table", "active_cell"),  # Trigger on click on the table cell
-    State("saved-montages-table", "data"),
-    State("montage-store", "data"),  # Get the current montage store data
-    prevent_initial_call=True
-)
-def delete_montage(active_cell, montages_tab, montage_store_data):
-    print(active_cell)
-    if active_cell:
-        # Get the row index and column index of the clicked cell
-        row_index = active_cell['row']
+# @callback(
+#     Output("montage-store", "data"),
+#     Input("saved-montages-table", "active_cell"),  # Trigger on click on the table cell
+#     State("saved-montages-table", "data"),
+#     State("montage-store", "data"),  # Get the current montage store data
+#     prevent_initial_call=True
+# )
+# def delete_montage(active_cell, montages_tab, montage_store_data):
+#     print(active_cell)
+#     if active_cell:
+#         # Get the row index and column index of the clicked cell
+#         row_index = active_cell['row']
 
-        # Get the name of the montage in the clicked row
-        montage_to_delete = montages_tab[row_index]
-        print(montage_to_delete)
+#         # Get the name of the montage in the clicked row
+#         montage_to_delete = montages_tab[row_index]
+#         print(montage_to_delete)
 
-        montage_name_to_delete = montage_to_delete["montage_name"]
+#         montage_name_to_delete = montage_to_delete["montage_name"]
 
-        # Remove the montage from the montage store data
-        montage_store_data.pop(montage_name_to_delete)
+#         # Remove the montage from the montage store data
+#         montage_store_data.pop(montage_name_to_delete)
         
-        return montage_store_data
-    return dash.no_update
+#         return montage_store_data
+#     return dash.no_update
 
 @callback(
     Output("montage-store", "data", allow_duplicate=True),
-    Output("saved-montages-table", "data", allow_duplicate=True),
+    # Output("saved-montages-table", "data", allow_duplicate=True),
     Input("delete-all-button", "n_clicks"), # Trigger on click on the table cell
     prevent_initial_call=True
 )
 def delete_all_montage(n_clicks):
     if n_clicks and n_clicks>0:
-        return {}, []
-    return dash.no_update, dash.no_update
+        return {}
+    return dash.no_update
 
 @callback(
     Output("create-button", "disabled"),
@@ -410,6 +475,27 @@ def update_selection_method_ui(method):
         return {"display": "none"}, {"display": "flex", "flexWrap": "wrap", "justifyContent": "space-between"}
 
     return dash.no_update, dash.no_update  # fallback
+
+@callback(
+    [
+        Output(f"random-pick-count-{group}", "value")
+        for group in c.GROUP_CHANNELS_BY_REGION
+    ],
+    Input("random-pick-count-%", "value"),
+    prevent_initial_call=True
+)
+def apply_percentage_to_groups(global_percent):
+    if not global_percent or global_percent <= 0:
+        # Do not update if empty or zero
+        return dash.no_update
+
+    updated_values = []
+    for group, channels in c.GROUP_CHANNELS_BY_REGION.items():
+        total_channels = len(channels)
+        computed_value = round((global_percent / 100.0) * total_channels)
+        updated_values.append(computed_value)
+
+    return updated_values
 
 @callback(
     Output("montage-store", "data", allow_duplicate=True),
@@ -540,23 +626,6 @@ def update_meg_layout(*args):
     return f"data:image/png;base64,{encoded_image}"
 
 
-@callback(
-    # Outputs: Reset all checklist values to empty
-    [
-        Output(f"montage-checklist-{group}", "value", allow_duplicate=True) for group in c.GROUP_CHANNELS_BY_REGION_PREFIX
-    ],
-    # Inputs: Detecting "Clear All" button clicks
-    [
-        Input(f"clear-all-channels-to-pick-btn-{group}", "n_clicks") for group in c.GROUP_CHANNELS_BY_REGION_PREFIX
-    ],
-    prevent_initial_call=True
-)
-def clear_all_checklists(*n_clicks):
-    # Return an empty list for each group when any "Clear All" button is clicked
-    return [[] for _ in n_clicks]
-
-# Iterate over each group in GROUP_CHANNELS_BY_REGION_PREFIX
-
 def register_check_all_channels_by_group(group):
     @callback(
         # Outputs: Set all checklists' value to the full list of channels for the specific group
@@ -572,10 +641,7 @@ def register_check_all_channels_by_group(group):
             print(c.GROUP_CHANNELS_BY_REGION[group])
             return c.GROUP_CHANNELS_BY_REGION[group]  # Return the full list of channels for that group
         return dash.no_update
-    
-for group in c.GROUP_CHANNELS_BY_REGION_PREFIX:
-    register_check_all_channels_by_group(group)
-
+      
 def register_clean_all_channels_by_group(group):
     @callback(
         # Outputs: Clear the checklist for the specific group
@@ -593,5 +659,6 @@ def register_clean_all_channels_by_group(group):
     
 for group in c.GROUP_CHANNELS_BY_REGION_PREFIX:
     register_clean_all_channels_by_group(group)
+    register_check_all_channels_by_group(group)
 
 

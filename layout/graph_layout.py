@@ -153,7 +153,10 @@ def create_graph_container(
                 style={
                     "width": "100%",
                     "height": "8vh",
-                    "pointerEvents": "none"
+                    "pointerEvents": "none",
+                    "borderRadius": "10px",
+                    "overflow": "hidden",
+                    "boxShadow": "0 4px 10px rgba(0,0,0,0.1)"
                 }
             )
         ],

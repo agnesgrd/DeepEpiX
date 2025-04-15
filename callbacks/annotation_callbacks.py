@@ -55,7 +55,18 @@ def register_update_annotations(
         new_annotations = []
 
         # Define a color palette (extend as needed)
-        color_palette = itertools.cycle(["red", "blue", "green", "purple", "orange", "brown", "pink"])
+        color_palette = itertools.cycle([
+                "#e6194b",  # strong red
+                "#3cb44b",  # vivid green
+                "#0082c8",  # vivid blue
+                "#f58231",  # bright orange
+                "#911eb4",  # strong purple
+                "#46f0f0",  # cyan
+                "#f032e6",  # magenta (stronger than light pink)
+                "#d62728",  # deep red
+                "#2ca02c",  # dark green
+                "#1f77b4",  # standard matplotlib blue
+            ])
 
         # Dictionary to store description-to-color mapping
         description_colors = {}
