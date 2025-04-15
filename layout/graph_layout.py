@@ -9,6 +9,7 @@ def create_graph_container(
     next_spike_buttons_container_id="next-spike-buttons-container",
     prev_spike_id="prev-spike",
     next_spike_id="next-spike",
+    annotation_dropdown_id="annotation-dropdown",
     loading_id="loading-graph",
     signal_graph_id="meg-signal-graph",
     annotation_graph_id="annotation-graph"
@@ -20,7 +21,7 @@ def create_graph_container(
                 id=update_container_id,
                 style={
                     "position": "absolute",
-                    "top": "15px",
+                    "top": "5px",
                     "left": "15px",
                     "background-color": "rgba(0,0,0,0)",
                     "border-radius": "5px",
@@ -33,8 +34,11 @@ def create_graph_container(
                         [html.I(className="bi bi-arrow-clockwise")],
                         id=update_button_id,
                         n_clicks=0,
-                        className="btn btn-primary"
-                    )
+                        outline=True,
+                        color="primary"
+                        # className="btn btn-primary"
+                    ),
+                    dbc.Tooltip("Refresh the graph after modifying the display parameters", target=update_button_id, placement="top"),
                 ]
             ),
 
@@ -43,7 +47,7 @@ def create_graph_container(
                 id=page_buttons_container_id,
                 style={
                     "position": "absolute",
-                    "top": "15px",
+                    "top": "5px",
                     "left": "300px",
                     "background-color": "rgba(0,0,0,0)",
                     "border-radius": "5px",
@@ -59,23 +63,65 @@ def create_graph_container(
                     )
                 ]
             ),
+            dbc.Tooltip("The graph is divided in multiple page.", target=page_buttons_container_id, placement="top"),
 
             # Prev / Next Spike Buttons
             html.Div(
                 id=next_spike_buttons_container_id,
                 style={
                     "position": "absolute",
-                    "top": "15px",
+                    "top": "5px",
                     "left": "600px",
                     "background-color": "rgba(0,0,0,0)",
                     "border-radius": "5px",
                     "box-shadow": "2px 2px 5px rgba(0,0,0,0.2)",
                     "z-index": "1000",
-                    "opacity": 0.8
+                    "opacity": 0.8, 
+                    "display":"flex"
                 },
                 children=[
-                    dbc.Button("Previous", id=prev_spike_id, color="primary", outline=True, n_clicks=0),
-                    dbc.Button("Next", id=next_spike_id, color="primary", outline=True, n_clicks=0)
+                    dbc.Button(
+                        html.I(className="bi bi-arrow-left-circle"),
+                        id=prev_spike_id,
+                        color="link",  # optional, you can also keep 'primary'
+                        n_clicks=0,
+                        style={
+                            "backgroundColor": "transparent",
+                            "border": "none",
+                            "boxShadow": "none",
+                            "fontSize": "1.5rem",
+                            "padding": "0.25rem",
+                            "color": "#007bff",  # You can adjust the color if needed
+                            "cursor": "pointer"
+                        }
+                    ),
+                    dbc.Tooltip("Move graph to previous spike", target=prev_spike_id, placement="top"),
+                    dcc.Dropdown(
+                        id=annotation_dropdown_id,
+                        persistence=True,
+                        persistence_type="local",
+                        clearable=False,
+                        style={
+                            "width": "110px",
+                            "fontSize": "10px"
+                        }
+                    ),
+                    dbc.Button(
+                        html.I(className="bi bi-arrow-right-circle"),
+                        id=next_spike_id,
+                        color="link",  # optional, you can also keep 'primary'
+                        n_clicks=0,
+                        style={
+                            "backgroundColor": "transparent",
+                            "border": "none",
+                            "boxShadow": "none",
+                            "fontSize": "1.5rem",
+                            "padding": "0.25rem",
+                            "color": "#007bff",  # You can adjust the color if needed
+                            "cursor": "pointer"
+                        }
+                    ),
+                    dbc.Tooltip("Move graph to next spike", target=next_spike_id, placement="top"),
                 ]
             ),
 

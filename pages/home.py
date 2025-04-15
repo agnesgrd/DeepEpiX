@@ -85,12 +85,25 @@ layout = html.Div([
 
                     html.H3([
                         html.I(className="bi bi-3-circle-fill", style={"marginRight": "10px", "fontSize": "1.2em"}),
-                         "Give hint on channel name for heartbeat detection"]),
+                         "Give Hint on Channel for Heartbeat Detection"]),
                     # html.H3("Frequency Parameters for Signal Processing", style={"margin-bottom": "15px"}),
 
                     html.Div([
-                        html.Label("Channel Name for Heartbeat Detection (ex: MRF52-2805, default = None): "),
-                        dbc.Input(id="heartbeat-channel", type="text", style=input_styles["number-in-box"]),
+                        html.Label("Channel Name:"),
+                        dbc.Input(id="heartbeat-channel", type="text", placeholder="None", style=input_styles["number-in-box"]),
+                        dbc.Tooltip(
+                                """
+                                ch_name : None | str\n
+
+                                - The name of the channel to use for MNE ECG peak detection. 
+                                - If None (default), ECG channel is used if present. 
+                                - If None and no ECG channel is present, a synthetic ECG channel is created from the cross-channel average. 
+                                - This synthetic channel can only be created from MEG channels.
+                                """,
+                                target="heartbeat-channel",
+                                placement="right",
+                                class_name="custom-tooltip"
+                            ),
                     ], style={"padding": "10px"}),
 
                     html.Div([
@@ -169,7 +182,7 @@ layout = html.Div([
                                 # Event Statistics Section
                                 html.Div(id="event-stats-container", children=[
                                     # You can add content related to event analysis, like event count over time
-                                ], style = {"marginTop": "15px"}),
+                                ], style = {"marginTop": "15px", "width":"70%"}),
                             ]),
                         ],
                         style={
@@ -292,7 +305,7 @@ def populate_events_statistics(selected_tab, folder_path):
     table_body = [
         html.Tr([html.Td(desc), html.Td(count)]) for desc, count in description_counts.items()
     ]
-    annotation_table = dbc.Table(table_header + [html.Tbody(table_body)], bordered=True, striped=True, hover=True)
+    annotation_table = dbc.Table(table_header + [html.Tbody(table_body)], bordered=True, striped=True, hover=True, size="sm")
 
     # Optionally show total number and a few more stats
     stats_summary = html.Ul([
@@ -425,7 +438,7 @@ def display_psd(n_clicks, folder_path, freq_data):
             template="plotly_white"
         )
 
-        return None, psd_fig, {}
+        return None, psd_fig, {"padding": "10px", "borderRadius": "10px", "boxShadow": "0 4px 10px rgba(0,0,0,0.1)"}
 
 @callback(
     Output("preprocess-status", "children", allow_duplicate=True),

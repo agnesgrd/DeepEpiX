@@ -201,7 +201,7 @@ def create_sidebar():
             persistence_type = "local"
         ),
     ], style={
-        # "padding": "20px",
+        "padding": "0 20px",
         "height": "100%",
         "display": "flex",
         "flexDirection": "column",

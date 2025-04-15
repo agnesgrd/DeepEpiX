@@ -238,7 +238,6 @@ register_update_annotation_graph(
     update_button_id="update-button-ica",
     page_selector_id="page-selector-ica",
     annotation_checkboxes_id="annotation-checkboxes-ica",
-    annotations_store_id="annotations-store",
     annotation_graph_id="annotation-graph-ica",
     chunk_limits_store_id="chunk-limits-store"
 )
@@ -251,14 +250,12 @@ register_manage_annotations_checklist(
 
 register_callbacks_annotation_names(
     annotation_checkboxes_id="annotation-checkboxes-ica",
-    annotations_store_id="annotations-store"
 )
 
 register_update_annotations(
     graph_id="graph-ica",
     annotation_checkboxes_id="annotation-checkboxes-ica",
     page_selector_id="page-selector-ica",
-    annotations_store_id="annotations-store",
     chunk_limits_store_id="chunk-limits-store"
 )
 
@@ -266,8 +263,8 @@ register_move_to_next_annotation(
     prev_spike_id="prev-spike-ica",
     next_spike_id="next-spike-ica",
     graph_id="graph-ica",
+    annotation_dropdown_id="annotation-checkboxes-ica",
     annotation_checkboxes_id="annotation-checkboxes-ica",
-    annotations_store_id="annotations-store",
     page_selector_id="page-selector-ica",
     chunk_limits_store_id="chunk-limits-store"
 )

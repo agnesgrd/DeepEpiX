@@ -31,7 +31,7 @@ def register_callbacks_annotations_to_save_names():
 
         options = [{'label': f"{name} ({count})", 'value': f"{name}"} for name, count in description_counts.items()]
         value = [f"{name}" for name in description_counts.keys()]
-        return options, dash.no_update  # Set all annotations as default selected
+        return options, value  # Set all annotations as default selected
         
 def register_manage_annotations_to_save_checklist():
     @callback(

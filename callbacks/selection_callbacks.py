@@ -98,6 +98,7 @@ def register_manage_annotations_checklist(
 
         if not ctx.triggered:
             return dash.no_update
+        
         triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
 
         if triggered_id == check_all_annotations_btn_id:
@@ -107,6 +108,8 @@ def register_manage_annotations_checklist(
             return []  # Clear all selections
 
         return dash.no_update
+    
+
     
 # def register_check_new_annotation_by_default():
 #     @callback(
@@ -191,26 +194,43 @@ def register_cancel_or_confirm_annotation_suppression():
         return is_open, dash.no_update
     
 def register_callbacks_annotation_names(
-    annotation_checkboxes_id,
-    annotations_store_id
+    annotation_checkboxes_id
+    
 ):
     # Callback to populate the checklist options and default value dynamically
     @callback(
         Output(annotation_checkboxes_id, "options"),
-        Output(annotation_checkboxes_id, "value"),
-        Input(annotations_store_id, "data"),
-        State(annotation_checkboxes_id, "value"),
+        Input("annotations-store", "data"),
         prevent_initial_call=False
     )
-    def display_annotation_names_checklist(annotations_store, current_value):
+    def display_annotation_names_checklist(annotations_store):
         if not annotations_store:
-            return dash.no_update, dash.no_update
-        
+            return dash.no_update
+                
         description_counts = au.get_annotation_descriptions(annotations_store)
 
         options = [{'label': f"{name} ({count})", 'value': f"{name}"} for name, count in description_counts.items()]
         # value = [f"{name}" for name in (current_value or []) if name in description_counts.keys()]
-        return options, dash.no_update  # Set all annotations as default selected
+        return options  # Set all annotations as default selected
+    
+def register_callbacks_annotation_names_dropdown(
+    annotation_dropdown_id,
+    annotation_checkboxes_id
+    
+):
+    # Callback to populate the checklist options and default value dynamically
+    @callback(
+        Output(annotation_dropdown_id, "options"),
+        Input(annotation_checkboxes_id, "value"),
+        prevent_initial_call=False
+    )
+    def display_annotation_names_checklist(annotations_value):
+        if not annotations_value:
+            return dash.no_update
+
+        options = [{"label": "All Selected", "value": "__ALL__"}]+[{'label': f"{name}", 'value': f"{name}"} for name in annotations_value]
+
+        return options
     
 def register_callbacks_montage_names(montage_radio_id):
     # Callback to populate the checklist options and default value dynamically

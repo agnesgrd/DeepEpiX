@@ -10,7 +10,6 @@ def register_update_annotations(
     graph_id,
     annotation_checkboxes_id,
     page_selector_id,
-    annotations_store_id,
     chunk_limits_store_id
 ):
     @callback(
@@ -19,7 +18,7 @@ def register_update_annotations(
         State(annotation_checkboxes_id, "value"),  # Annotations to show based on the checklist
         State(annotation_checkboxes_id, "options"),
         State(page_selector_id, "value"),
-        State(annotations_store_id, "data"),
+        State("annotations-store", "data"),
         State(chunk_limits_store_id, "data"),
         prevent_initial_call=True,
         suppress_callback_exceptions=True
@@ -139,7 +138,6 @@ def register_update_annotation_graph(
     update_button_id,
     page_selector_id,
     annotation_checkboxes_id,
-    annotations_store_id,
     annotation_graph_id,
     chunk_limits_store_id
 ):
@@ -149,7 +147,7 @@ def register_update_annotation_graph(
         Input(page_selector_id, "value"),
         State(annotation_checkboxes_id, "options"),
         State(annotation_checkboxes_id, "value"),
-        State(annotations_store_id, "data"),
+        State("annotations-store", "data"),
         State(annotation_graph_id, "figure"),
         State(chunk_limits_store_id, "data"),
         prevent_initial_call=True
@@ -222,8 +220,8 @@ def register_move_to_next_annotation(
     prev_spike_id,
     next_spike_id,
     graph_id,
+    annotation_dropdown_id,
     annotation_checkboxes_id,
-    annotations_store_id,
     page_selector_id,
     chunk_limits_store_id
 ):
@@ -232,19 +230,23 @@ def register_move_to_next_annotation(
         Input(prev_spike_id, "n_clicks"),
         Input(next_spike_id, "n_clicks"),
         State(graph_id, "figure"),
+        State(annotation_dropdown_id, "value"),
         State(annotation_checkboxes_id, "value"),
-        State(annotations_store_id, "data"),
+        State("annotations-store", "data"),
         State(page_selector_id, "value"),
         State(chunk_limits_store_id, "data"),
         prevent_initial_call=True
     )
-    def move_to_next_annotation(prev_spike, next_spike, graph, annotations_to_show, annotations_data, page_selection, chunk_limits):
+    def move_to_next_annotation(prev_spike, next_spike, graph, annotations_to_show, selected_annotations, annotations_data, page_selection, chunk_limits):
 
         if not annotations_data or not annotations_to_show:
             return dash.no_update  # No annotations available, return the same graph
         
         if len(annotations_to_show) == 0 or len(annotations_data) == 0:
             return dash.no_update
+        
+        if annotations_to_show == "__ALL__":
+            annotations_to_show = selected_annotations
 
         # Extract x-coordinates (onset times) of spikes from annotations
         spike_x_positions = [

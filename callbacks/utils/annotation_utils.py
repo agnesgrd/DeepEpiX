@@ -78,3 +78,23 @@ def get_annotations_dataframe(raw, heartbeat_ch_name):
     annotations_dict = df_combined.to_dict(orient="records")
     
     return annotations_dict, math.floor(time_secs[-1]*100)/100
+
+def get_annotations(prediction_or_truth, annotations_df):
+    """
+    Function to retrieve annotation onsets (timestamps) based on the selected prediction or ground truth.
+    
+    Parameters:
+    - prediction_or_truth (str): Either the model's prediction or the ground truth label.
+    - annotations_df (pandas.DataFrame): DataFrame containing the annotations with onset times and other info.
+    
+    Returns:
+    - List of onset times for the selected annotation type.
+    """
+    if isinstance(prediction_or_truth, str):
+        prediction_or_truth = [prediction_or_truth]
+
+    # Filter annotations where 'description' matches any of the provided descriptions
+    filtered_annotations = annotations_df[annotations_df["description"].isin(prediction_or_truth)]
+
+    # Return the onsets (index) as a list
+    return filtered_annotations.index.tolist()

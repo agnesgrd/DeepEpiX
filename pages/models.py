@@ -22,9 +22,26 @@ layout = html.Div([
 		html.Div(
 			id="your-models-container",
 			children=[
-				html.H1("Your Models"),
-				# Section to display saved montages
-				html.P("Here you can see your pre-trained models.", style={"marginBottom": "10px"}),
+				html.Div(children=[
+					html.H1([
+						"Your Models",
+						html.I(
+							className="bi bi-info-circle-fill", id="models-help-icon", style={
+											"fontSize": "0.8em",
+											"cursor": "pointer",
+											"verticalAlign": "middle",
+											"marginLeft": "15px"
+										})
+									], style={"margin": "0px"}),
+					# Section to display saved montages
+										# Tooltip for the info icon
+					dbc.Tooltip(
+						"Here you can see your pretrained models and, if applicable, compute performance using already stored predictions.",
+						target="models-help-icon",
+						placement="right"
+					),
+                ], style={"display": "flex", "justifyContent": "center", "alignItems": "center", "gap": "20px", "margin": "30px"}),
+
 				dash.dash_table.DataTable(
 					id="pretrained-models-table",
 					columns=[{"name": col, "id": col} for col in pd.read_csv("static/pretrained-models-info.csv")],
@@ -325,11 +342,11 @@ def display_more_info_button(selected_rows):
 	Output("model-info", "style"),
 	Input("more-info-button", "n_clicks"),
 	State("params-pretrained-models-dropdown", "value"),
-	prevent_initial_call=False
+	prevent_initial_call=True
 )
 def display_model_info(n_clicks, selected_model):
 	if not selected_model or n_clicks == 0:
-		return "Select a model and click 'More Info'."
+		return dash.no_update, dash.no_update
 	model_name = selected_model
 	return run_model_info(model_name), {'whiteSpace': 'pre-wrap', 'wordBreak': 'break-word', 'fontFamily': 'monospace', 'fontSize': '13px', 'backgroundColor': '#f4f4f4', 'padding': '10px'}
 
@@ -339,7 +356,7 @@ def display_model_info(n_clicks, selected_model):
 	Output("ground-truth-checkboxes", "options"),
 	Output("ground-truth-checkboxes", "value"),
 	Input("annotations-store", "data"),
-	prevent_initial_call = True
+	prevent_initial_call = False
 )
 def display_model_names_checklist(annotations_store):
 	description_counts = au.get_annotation_descriptions(annotations_store)
@@ -413,6 +430,9 @@ def compute_performance(n_clicks, model_prediction, ground_truth, tolerance, thr
 	# Convert annotations to DataFrame
 	annotations_df = pd.DataFrame(annotations).set_index("onset")  # Ensure onset is the index
 
+	print("annotations_df", annotations_df)
+
+	print("model_prediction", model_prediction)
 	# Filter annotations for selected model prediction and ground truth
 	model_onsets = au.get_annotations(model_prediction, annotations_df)  # Example: [0.5, 1.2, 2.3, ...]
 	gt_onsets = au.get_annotations(ground_truth, annotations_df)  # Example: [0.6, 1.1, 2.5, ...]

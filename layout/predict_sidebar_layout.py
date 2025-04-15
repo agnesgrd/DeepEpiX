@@ -32,6 +32,7 @@ def create_predict():
     html.Div([
         html.Label("Threshold:", style={**label_styles["classic"]}),
         dbc.Input(id="threshold", type="number", value=0.5, step=0.01, min=0, max=1, style=input_styles["small-number"]),
+        dbc.Tooltip("Controls how confident the model must be to detect a spike.", target="threshold", placement="left"),
     ], style={"marginBottom": "20px"}),
 
     # Compute sensitvity analysis at the end
@@ -46,7 +47,8 @@ def create_predict():
             value="Yes",  # Default selection
             inline=True,  # Display buttons in a row
             style={"margin-left": "10px"}
-        )
+        ),
+        dbc.Tooltip("SmoothGrad is an explainability technique that averages the gradients of the loss with respect to the input, over multiple noisy versions of the input. This reduces noise and highlights the regions in the time series that have the greatest influence on the model's predictions.", target="sensitivity-analysis", placement="left"),
     ], style={"marginBottom": "20px"}),
 
     # Compute sensitvity analysis at the end
@@ -61,7 +63,8 @@ def create_predict():
             value="Yes",  # Default selection
             inline=True,  # Display buttons in a row
             style={"margin-left": "10px"}
-        )
+        ),
+        dbc.Tooltip("Instead of setting the spike prediction to the middle of the window, this method adjusts the onset to the exact timestep where the Global Field Power (GFP) is at its maximum. This ensures more precise alignment with the probable spikes.", target="adjust-onset", placement="left"),
     ], style={"marginBottom": "20px"}),
 
     # Run Prediction Button
