@@ -24,23 +24,18 @@ def calculate_channel_offset(num_channels, plot_height=900, min_gap=30):
     # Ensure there's enough space between each trace to avoid overlap.
     # We leave space for the desired minimum gap between traces.
     total_gap_needed = (num_channels - 1) * min_gap
-    print('total gap needed', total_gap_needed)
 
     # Calculate the optimal offset based on the plot height and the required gap.
     optimal_channel_offset = (plot_height - total_gap_needed) / (num_channels - 1) if num_channels > 1 else min_gap
-    print('optimal channel offset', optimal_channel_offset)
     
     # Ensure the offset is a positive value
     optimal_channel_offset = max(optimal_channel_offset, min_gap)
 
-    print('reel optimal', optimal_channel_offset)
-    
     return optimal_channel_offset
 
 def get_y_axis_ticks(selected_channels, channel_offset = c.DEFAULT_Y_AXIS_OFFSET):
     
     channel_offset = (channel_offset if channel_offset != None else c.DEFAULT_Y_AXIS_OFFSET)
-    print("channel offset applied", channel_offset)
     y_axis_ticks = np.arange(len(selected_channels)) * channel_offset
     return y_axis_ticks
 
@@ -96,7 +91,6 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
 
     raw_df = pu.get_preprocessed_dataframe(folder_path, freq_data, time_range[0], time_range[1])
 
-    print(raw_df.dtypes)
     print(f"Step 1: Preprocessing completed in {time.time() - start_time:.2f} seconds.")
 
     # Filter time range
@@ -172,7 +166,6 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
     #     )
 
     if 'smoothGrad' in color_selection:
-        print(filter.shape)
         # Add scatter plot using px.scatter
         # Convert time range to integer indices
         time_range_indices = np.arange(round(time_range[0] * 150), round(time_range[1] * 150)+1).astype(int)
@@ -196,7 +189,6 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
         fig.add_traces(scatter_fig.data)
 
     elif 'anomDetect' in color_selection:
-        print(filter.shape)
 
         time_range_indices = np.arange(round(time_range[0] * 150), round(time_range[1] * 150)+1).astype(int)
         channel_indices = np.where(np.isin(c.ALL_CH_NAMES, selected_channels))[0]

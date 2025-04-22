@@ -144,10 +144,9 @@ def compute_ica(n_clicks, folder_path, chunk_limits, n_components, ica_method, m
 def update_ica_graph(n_clicks, page_selection, folder_path, chunk_limits, n_components, ica_method, max_iter, decim, graph):
     """Update ICA signal visualization."""
 
-    print(dash.callback_context.triggered_id)
-    # Check if the graph is already populated
-    if graph and 'data' in graph and graph['data']:  # if there's already data in the figure
-        return graph
+    # # Check if the graph is already populated
+    # if graph and 'data' in graph and graph['data']:  # if there's already data in the figure
+    #     return graph
     
     if None in (page_selection, folder_path, chunk_limits, n_components, ica_method, max_iter, decim):
         return dash.no_update

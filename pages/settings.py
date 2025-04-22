@@ -43,7 +43,7 @@ layout = html.Div([
                     html.Div(
                         style={"display": "flex", "justifyContent": "center", "alignItems": "center", "gap": "20px", "margin": "30px"},
                         children=[
-                            html.H1([
+                            html.H3([
                                 "Your Montage ",
                                 html.I(className="bi bi-info-circle-fill", id="montage-help-icon", style={
                                     "fontSize": "0.8em",
@@ -638,7 +638,6 @@ def register_check_all_channels_by_group(group):
         # Only perform action if button is clicked
         if n_click and n_click > 0:
             # Get the group name directly from the group being processed in the loop
-            print(c.GROUP_CHANNELS_BY_REGION[group])
             return c.GROUP_CHANNELS_BY_REGION[group]  # Return the full list of channels for that group
         return dash.no_update
       

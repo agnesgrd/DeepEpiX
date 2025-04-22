@@ -51,7 +51,6 @@ def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw
                 raw.resample(resample_freq)
 
             # Crop the raw data to the chunk's time range
-            print(raw.times)
             raw_chunk = raw.copy().crop(tmin=start_time, tmax=end_time)
 
             # Transform the raw data into a dataframe

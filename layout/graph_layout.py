@@ -21,7 +21,7 @@ def create_graph_container(
                 id=update_container_id,
                 style={
                     "position": "absolute",
-                    "top": "5px",
+                    "top": "15px",
                     "left": "15px",
                     "background-color": "rgba(0,0,0,0)",
                     "border-radius": "5px",
@@ -47,7 +47,7 @@ def create_graph_container(
                 id=page_buttons_container_id,
                 style={
                     "position": "absolute",
-                    "top": "5px",
+                    "top": "15px",
                     "left": "300px",
                     "background-color": "rgba(0,0,0,0)",
                     "border-radius": "5px",
@@ -70,7 +70,7 @@ def create_graph_container(
                 id=next_spike_buttons_container_id,
                 style={
                     "position": "absolute",
-                    "top": "5px",
+                    "top": "15px",
                     "left": "600px",
                     "background-color": "rgba(0,0,0,0)",
                     "border-radius": "5px",

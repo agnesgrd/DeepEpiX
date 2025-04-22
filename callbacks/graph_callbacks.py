@@ -32,6 +32,8 @@ def register_update_graph_time_channel():
     )
     def update_graph_time_channel(n_clicks, page_selection, montage_selection, channel_selection, folder_path, offset_selection, color_selection, chunk_limits,freq_data, montage_store, graph, sensitivity_analysis_store, anom_detect_store):
         """Update MEG signal visualization based on time and channel selection."""
+        if graph and 'data' in graph and graph['data']:  # if there's already data in the figure
+            return graph, None
         
         if n_clicks == 0:
             return dash.no_update, dash.no_update

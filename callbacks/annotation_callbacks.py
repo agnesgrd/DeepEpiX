@@ -93,8 +93,8 @@ def register_update_annotations(
                             y1=y_max,
                             xref="x",
                             yref="y",
-                            line=dict(color=color, width=2, dash="dot"),
-                            opacity=0.25
+                            line=dict(color=color, width=3, dash="dot"),
+                            opacity=1
                         )
                     )
                 else:
@@ -110,14 +110,14 @@ def register_update_annotations(
                             yref="y",
                             line=dict(color=color, width=2),
                             fillcolor=color,  # Set the color of the rectangle
-                            opacity=0.25
+                            opacity=1
                         )
                     )
                 # Add the label in the margin
                 new_annotations.append(
                     dict(
-                        x=row.name - 0.02,
-                        y=0.98,  # Slightly above the graph in the margin
+                        x=row.name - 0.05,
+                        y=0,  # Slightly above the graph in the margin
                         xref="x",
                         yref="paper",  # Use paper coordinates for the y-axis (margins)
                         text=description,  # Annotation text
@@ -163,7 +163,6 @@ def register_update_annotation_graph(
         try:
             annotations_df = pd.DataFrame(annotations_data).set_index("onset")
         except Exception as e:
-            print("Error creating DataFrame:", e)
             return dash.no_update
 
         # Create the annotation graph

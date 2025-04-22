@@ -18,12 +18,14 @@ dash.register_page(__name__, name = "Model performance", path="/model/performanc
 
 layout = html.Div([
 
+	dcc.Location(id="url", refresh=True), 
+
 	html.Div([
 		html.Div(
 			id="your-models-container",
 			children=[
 				html.Div(children=[
-					html.H1([
+					html.H3([
 						"Your Models",
 						html.I(
 							className="bi bi-info-circle-fill", id="models-help-icon", style={
@@ -71,225 +73,198 @@ layout = html.Div([
 		),
 	]),
 
-	html.Div([
-		html.H2("Model Parameters"),
+	html.Div(id="model-playground", children = [
+		
 		html.Div([
-			dbc.Row([
-				dbc.Col(
-					dcc.Dropdown(
-						id="params-pretrained-models-dropdown",
-						options=pu.get_model_options("all"),
-						placeholder="Select ...",
+			html.H4("Model Performances"),
+			html.Div([
+				dbc.Row([
+					dbc.Col(
+						html.Div([
+							dcc.Dropdown(
+								id="performance-pretrained-models-dropdown",
+								options=pu.get_model_options("all"),
+								placeholder="Select ...",
+								style = {"marginBottom": "8px"}
+							),
+						]),
+						width=4
 					),
-					width=4
-				),
-				dbc.Col(
-					dbc.Button(
-						"More info",
-						id="more-info-button",
-						color="success",
-						disabled=True,
-						n_clicks=0
-					),
-				)
-			])
-		], style={"padding": "10px"}),
-
-		html.Pre(id="model-info", style={"display": "none"})
-	], style=box_styles["classic"]),
-	
-	html.Div([
-		html.H2("Model Performances"),
-		dbc.Checklist(
-			id="performance-annotation-checkboxes",
-			inline=False,
-			style={"margin": "10px 0", "fontSize": "12px"},
-			persistence=True,
-			persistence_type="local"
-		),
-		html.Div([
-			dbc.Row([
-				dbc.Col(
-					html.Div([
-						dcc.Dropdown(
-							id="performance-pretrained-models-dropdown",
-							options=pu.get_model_options("all"),
-							placeholder="Select ...",
-							style = {"marginBottom": "8px"}
+					dbc.Col(
+						dbc.Button(
+							"Compute performances",
+							id="compute-performances-button",
+							color="success",
+							disabled=True,
+							n_clicks=0
 						),
-					]),
-					width=4
-				),
-				dbc.Col(
-					dbc.Button(
-						"Compute performances",
-						id="compute-performances-button",
-						color="success",
-						disabled=True,
-						n_clicks=0
-					),
-				)
-			])
-		], style={"padding": "10px"}),
-
-		html.Div([
-			dbc.Row([
-				dbc.Col(
-					html.Div([
-						html.Label(
-							"Model prediction:",
-							style={"fontWeight": "bold", "fontSize": "14px"}
-						),
-						dbc.RadioItems(
-							id="model-prediction-radio",
-							value="Yes",  # Default selection
-							inline=False,  # Display buttons in a row
-							persistence=True,
-							persistence_type="local",
-							style={"margin": "10px 0", "fontSize": "12px"}
-						)
-					], style = box_styles["classic"]),
-					width=2
-				),
-				dbc.Col(
-					html.Div([
-						html.Label(
-							"Ground truth:",
-							style={"fontWeight": "bold", "fontSize": "14px"}
-						),
-						dbc.Checklist(
-							id="ground-truth-checkboxes",
-							inline=False,
-							style={"margin": "10px 0", "fontSize": "12px"},
-							persistence=True,
-							persistence_type="local"
-						)
-					], style = box_styles["classic"]),
-					width=2
-				)
-			]),
-
-		], style={"padding": "10px"}),
-
-		html.Div([
-			dbc.Row([
-				dbc.Col(
-					html.Div([
-						html.Label(
-							"Tolerance (ms):",
-							style={"fontWeight": "bold", "fontSize": "14px"}
-						),
-						dbc.Input(id="performance-tolerance", type="number", value=200, step=10, min=0, max=1000, style=input_styles["small-number"]),
-					], style = box_styles["classic"]),
-					width=1
-				),
-				dbc.Col(
-					html.Div([
-						html.Label(
-							"Threshold (if test model):",
-							style={"fontWeight": "bold", "fontSize": "14px"}
-						),
-						dbc.Input(id="performance-threshold", type="number", value=0.5, step=0.01, min=0, max=1, style=input_styles["small-number"]),
-					], style = box_styles["classic"]),
-					width=2
-				)
-			])
-		], style={"padding": "10px"}),
-
-		# Div to toggle visibility of tables
-		html.Div(
-			id="performance-results-div",
-			children=[
-				html.Div([
-					# Use a row div to create a 2-column layout
-					dbc.Row(
-						[
-							dbc.Col(
-								# First column for Confusion Matrix
-								html.Div([
-									html.H4("Confusion Matrix"),
-									dash_table.DataTable(
-										id="confusion-matrix-table",
-										columns=[
-											{"name": "", "id": ""},
-											{"name": "Predicted Negative", "id": "Predicted Negative"},
-											{"name": "Predicted Positive", "id": "Predicted Positive"}
-										],
-										style_table={"overflowX": "auto"},
-										style_cell={"textAlign": "center", "padding": "8px"},
-										style_header={"fontWeight": "bold", "backgroundColor": "#f0f0f0"},
-										style_cell_conditional=[
-											# Style for the header of the empty column to make it bold
-											{
-												'if': {'column_id': ''},
-												'fontWeight': 'bold',
-												'backgroundColor': '#f0f0f0',  # Set a background color if needed
-												'color': 'black'
-											}],
-										data=[]  # Empty data initially, will be updated
-									)
-								], style = {"font-size": "14px"}),
-							width = 3),
-							dbc.Col(
-								# Second column for Performance Metrics
-								html.Div([
-									html.H4("Performance Metrics"),
-									dash_table.DataTable(
-										id="performance-metrics-table",
-										columns=[
-											{"name": "Metric", "id": "Metric"},
-											{"name": "Value", "id": "Value"}
-										],
-										style_table={"overflowX": "auto"},
-										style_cell={"textAlign": "center", "padding": "8px"},
-										style_header={"fontWeight": "bold", "backgroundColor": "#f0f0f0"},
-										style_cell_conditional=[
-											# Style for the header of the empty column to make it bold
-											{
-												'if': {'column_id': 'Metric'},
-												'fontWeight': 'bold',
-												'backgroundColor': '#f0f0f0',  # Set a background color if needed
-												'color': 'black'
-											}],
-										data=[]  # Empty data initially, will be updated
-									)
-								], style = {"font-size": "14px"}),
-							width = 2),
-						]  # Display as a flex row
 					)
 				])
-			],
-			style={"display": "none"})  # Initially hidden			
+			], style={"padding": "10px"}),
 
-	], style=box_styles["classic"]),
 
-	# Explanation of what the user needs to do
-	html.Div([
-		html.H2("Edit Models"),
-		html.P("Here you can create your models before training them."),
-		html.Div([
-			dbc.Row([
-				dbc.Col(
-					dbc.Input(
-						id="new-model-name",
-						type="text",
-						placeholder="Model name...",
-						style=input_styles["path"]
+
+			html.Div([
+				dbc.Tabs([
+					dbc.Tab(
+						label="Model Prediction",
+						children=[
+							html.Div([
+								dbc.RadioItems(
+									id="model-prediction-radio",
+									value="Yes",  # Default selection
+									inline=False,  # Display buttons in a row
+									persistence=True,
+									persistence_type="local",
+									style={"margin": "20px 0", "fontSize": "14px", "padding":"10px"}
+								)
+							], style = {"padding": "10px"})
+						]
 					),
-					width=4
-				),
-				dbc.Col(
-					dbc.Button(
-					"Create",
-					id="create-model-button",
-					color="success",
-					disabled=True,
-					n_clicks=0
+					
+					dbc.Tab(
+						label="Ground Truth",
+						children=[
+							html.Div([
+								dbc.Checklist(
+									id="ground-truth-checkboxes",
+									inline=False,
+									style={"margin": "10px 0", "fontSize": "14px"},
+									persistence=True,
+									persistence_type="local"
+								)
+							], style = {"padding": "10px"}),
+						]
+					),
+					
+					dbc.Tab(
+						label="Performance Settings",
+						children=[
+							html.Div([
+								html.Label(
+									"Tolerance (ms):",
+									style={"fontWeight": "bold", "fontSize": "14px"}
+								),
+								dbc.Input(id="performance-tolerance", type="number", value=200, step=10, min=0, max=1000, style=input_styles["number"]),
+
+								html.Label(
+									"Threshold:",
+									style={"fontWeight": "bold", "fontSize": "14px"}
+								),
+								dbc.Input(id="performance-threshold", type="number", value=0.5, step=0.01, min=0, max=1, style=input_styles["number"]),
+							], style = {"padding": "10px"}),
+						]
+					),
+										
+				], style={
+					"display": "flex",
+					"flexDirection": "row",  # Ensure tabs are displayed in a row (horizontal)
+					"alignItems": "center",  # Center the tabs vertically within the parent container
+					"width": "50%",  # Full width of the container
+					"borderBottom": "1px solid #ddd"  # Optional, adds a bottom border to separate from content
+				})
+			]),
+			
+			html.Hr(),
+
+			# Placeholder divs for the tables, will be defined in the callback
+			html.Div(
+				id="performance-results-div",
+				children=[
+					# Tab 1: Confusion Matrix Table
+					html.Div([
+						html.H4("Confusion Matrix"),  # Title for the Confusion Matrix table
+						html.Div(id="confusion-matrix-table"),  # Placeholder for Confusion Matrix table
+					], style={"marginBottom": "20px"}),  # Add margin between sections
+					
+					# Tab 2: Performance Metrics Table
+					html.Div([
+						html.H4("Performance Metrics"),  # Title for the Performance Metrics table
+						html.Div(id="performance-metrics-table"),  # Placeholder for Performance Metrics table
+					], style={"marginTop": "20px"})  # Add margin between sections
+
+				],
+				style={"display": "none", "marginTop": "20px"}  # Initially hidden, margin for spacing
+			),
+	
+
+		], style={
+			"padding": "15px",
+			"border": "1px solid #ddd",
+			"borderRadius": "8px",
+			"boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",
+			"width": "60%"}  # Adjust the width as needed,
+		),
+
+		html.Div([
+			html.H4("Model Parameters"),
+			html.Div([
+				dbc.Row([
+					dbc.Col(
+						dcc.Dropdown(
+							id="params-pretrained-models-dropdown",
+							options=pu.get_model_options("all"),
+							placeholder="Select ...",
+						),
+						width=4
+					),
+					dbc.Col(
+						dbc.Button(
+							"More info",
+							id="more-info-button",
+							color="success",
+							disabled=True,
+							n_clicks=0
+						),
 					)
-				)
-			])
-		], style={"padding": "10px"}),
-	], style=box_styles["classic"])
+				])
+			], style={"padding": "10px"}),
+
+			html.Pre(id="model-info", style={"display": "none"})
+		], style={
+			"padding": "15px",
+			"border": "1px solid #ddd",
+			"borderRadius": "8px",
+			"boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",
+			"width": "40%"}  # Adjust the width as needed,
+		),
+        
+	], style = {
+			"display": "flex",
+            "flexDirection": "row",  # Side-by-side layout
+            "alignItems": "flex-start",  # Align to top
+            "gap": "20px",  # Add spacing between elements
+            "width": "100%"  # Ensure full width
+
+        }),
+
+	# # Explanation of what the user needs to do
+	# html.Div([
+	# 	html.H2("Edit Models"),
+	# 	html.P("Here you can create your models before training them."),
+	# 	html.Div([
+	# 		dbc.Row([
+	# 			dbc.Col(
+	# 				dbc.Input(
+	# 					id="new-model-name",
+	# 					type="text",
+	# 					placeholder="Model name...",
+	# 					style=input_styles["path"]
+	# 				),
+	# 				width=4
+	# 			),
+	# 			dbc.Col(
+	# 				dbc.Button(
+	# 				"Create",
+	# 				id="create-model-button",
+	# 				color="success",
+	# 				disabled=True,
+	# 				n_clicks=0
+	# 				)
+	# 			)
+	# 		])
+	# 	], style={"padding": "10px"}),
+	# ], style=box_styles["classic"])
 
 ])
 
@@ -362,8 +337,8 @@ def display_model_names_checklist(annotations_store):
 	description_counts = au.get_annotation_descriptions(annotations_store)
 	options = [{'label': f"{name} ({count})", 'value': f"{name}"} for name, count in description_counts.items()]
 	value = [f"{name}" for name in description_counts.keys()]
-	pred_options =  options + [{'label': html.Span("test model", style={'color': 'blue', 'fontWeight': 'bold'}), 'value': f"test model"}]
-	return pred_options, "test model", options, dash.no_update  # Set all annotations as default selected
+	pred_options =  options + [{'label': html.Span("run prediction", style={'color': 'blue', 'fontWeight': 'bold'}), 'value': f"run prediction"}]
+	return pred_options, "run prediction", options, dash.no_update  # Set all annotations as default selected
 
 @callback(
 	Output("compute-performances-button", "disabled"),
@@ -412,9 +387,11 @@ def compute_matches(model_onsets, gt_onsets, delta):
 	return true_positive, false_positive, false_negative
 
 @callback(
+	Output("url", "pathname", allow_duplicate=True),
+	# Output("sidebar-tabs", "active_tab", allow_duplicate=True),
 	Output("performance-results-div", "style"),  # Output component
-	Output("confusion-matrix-table", "data"),
-	Output("performance-metrics-table", "data"),  # Output component
+	Output("confusion-matrix-table", "children"),
+	Output("performance-metrics-table", "children"),  # Output component
 	Input("compute-performances-button", "n_clicks"),  # Trigger when button is clicked
 	State("model-prediction-radio", "value"),  # Selected model prediction
 	State("ground-truth-checkboxes", "value"),  # Selected ground truth(s)
@@ -425,14 +402,14 @@ def compute_matches(model_onsets, gt_onsets, delta):
 )
 def compute_performance(n_clicks, model_prediction, ground_truth, tolerance, threshold, annotations):
 	if not model_prediction or not ground_truth or tolerance is None:
-		return "Error: Missing inputs. Please select model predictions, ground truth, and delta."
+		return dash.no_update, "Error: Missing inputs. Please select model predictions, ground truth, and delta.", dash.no_update, dash.no_update
+	
+	if model_prediction == "run prediction":
+		return "/viz/raw-signal", dash.no_update, dash.no_update, dash.no_update
 	
 	# Convert annotations to DataFrame
 	annotations_df = pd.DataFrame(annotations).set_index("onset")  # Ensure onset is the index
 
-	print("annotations_df", annotations_df)
-
-	print("model_prediction", model_prediction)
 	# Filter annotations for selected model prediction and ground truth
 	model_onsets = au.get_annotations(model_prediction, annotations_df)  # Example: [0.5, 1.2, 2.3, ...]
 	gt_onsets = au.get_annotations(ground_truth, annotations_df)  # Example: [0.6, 1.1, 2.5, ...]
@@ -450,11 +427,6 @@ def compute_performance(n_clicks, model_prediction, ground_truth, tolerance, thr
 	recall = true_positive / (true_positive + false_negative) if (true_positive + false_negative) > 0 else 0
 	f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
 
-	# # Compute performance metrics
-	# precision = precision_score(y_true, y_pred, zero_division=0)
-	# recall = recall_score(y_true, y_pred, zero_division=0)
-	# f1 = f1_score(y_true, y_pred, zero_division=0)
-
 	# Confusion Matrix Data
 	conf_matrix_data = {
 		"Metric": ["True Positive", "False Positive", "False Negative", "True Negative"],
@@ -471,49 +443,33 @@ def compute_performance(n_clicks, model_prediction, ground_truth, tolerance, thr
 		"Value": [f"{precision:.3f}", f"{recall:.3f}", f"{f1:.3f}"]
 	}
 
-	# Display results
-	results = f"""
-	**Performance Metrics:**
-	- **Precision:** {precision:.3f}
-	- **Recall:** {recall:.3f}
-	- **F1 Score:** {f1:.3f}
-	"""
+	confusion_matrix_data = dbc.Table(
+		[
+			html.Thead(html.Tr([html.Th(""), html.Th("Predicted Negative"), html.Th("Predicted Positive")])),
+			html.Tbody([
+				html.Tr([html.Td(row[""]), html.Td(row["Predicted Negative"]), html.Td(row["Predicted Positive"])])
+				for row in conf_matrix_data
+			])
+		],
+		bordered=True,
+		hover=True,
+		responsive=True,
+		striped=True,
+	)
 
-	# Create Dash tables
-	confusion_matrix_df = pd.DataFrame(conf_matrix_data)
-	performance_metrics_df = pd.DataFrame(perf_metrics_data)
+	# Convert performance metrics data to dbc.Table
+	performance_metrics_data = dbc.Table(
+		[
+			html.Thead(html.Tr([html.Th("Metric"), html.Th("Value")])),
+			html.Tbody([
+				html.Tr([html.Td(perf_metrics_data["Metric"][i]), html.Td(perf_metrics_data["Value"][i])])
+				for i in range(len(perf_metrics_data["Metric"]))
+			])
+		],
+		bordered=True,
+		hover=True,
+		responsive=True,
+		striped=True,
+	)
 
-	print(confusion_matrix_df)
-
-	confusion_matrix = dash_table.DataTable(
-				id='confusion-matrix-table',
-				columns=[{"name": col, "id": col} for col in confusion_matrix_df.columns],
-				data=confusion_matrix_df.to_dict('records'),
-				style_table={"overflowX": "auto"},
-				style_cell={"textAlign": "center", "padding": "8px"},
-				style_header={"fontWeight": "bold", "backgroundColor": "#f0f0f0"},
-			)
-	
-	performance_metrics = dash_table.DataTable(
-				id='performance-metrics-table',
-				columns=[{"name": col, "id": col} for col in performance_metrics_df.columns],
-				data=performance_metrics_df.to_dict('records'),
-				style_table={"overflowX": "auto"},
-				style_cell={"textAlign": "center", "padding": "8px"},
-				style_header={"fontWeight": "bold", "backgroundColor": "#f0f0f0"},
-			)
-	
-	# Confusion Matrix Data
-	conf_matrix_data = [
-		{"": "Actual Negative", "Predicted Negative": "nan", "Predicted Positive": false_positive},
-		{"": "Actual Positive", "Predicted Negative": false_negative, "Predicted Positive": true_positive}
-	]
-
-	# Performance Metrics Data
-	perf_metrics_data = [
-		{"Metric": "Precision", "Value": f"{precision:.3f}"},
-		{"Metric": "Recall", "Value": f"{recall:.3f}"},
-		{"Metric": "F1 Score", "Value": f"{f1:.3f}"}
-	]
-
-	return {"display": "block"}, conf_matrix_data, perf_metrics_data
+	return dash.no_update, {"display": "block"}, confusion_matrix_data, performance_metrics_data

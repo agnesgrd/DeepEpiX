@@ -90,7 +90,6 @@ def register_execute_predict_script_anom_detect():
                 str(threshold),  # Ensure threshold is passed as a string 
                 "NO"
             ]
-            print(command)
 
         elif "PyTorch" in venv:
             # Activate PyTorch venv and run script
@@ -107,15 +106,7 @@ def register_execute_predict_script_anom_detect():
             ]
 
         try: 
-                # Start timing
-            start_time = time.time()
-
             subprocess.run(command, env=env, text=True) #stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-            # End timing
-            end_time = time.time()
-            elapsed_time = end_time - start_time
-            print(f"Model testing executed in {elapsed_time:.2f} seconds")
 
         except Exception as e:
             return f"Error running model: {e}", dash.no_update, dash.no_update, dash.no_update, dash.no_update
@@ -123,6 +114,7 @@ def register_execute_predict_script_anom_detect():
         # Load the DataFrame from CSV
         predictions_csv_path = Path.cwd() / f"results/{os.path.basename(model_path)}_predictions.csv"
         result = pd.read_csv(predictions_csv_path)
+        result['onset']=result['onset'].round(2)
         
         prediction_table = dash_table.DataTable(
             columns=[{"name": col, "id": col} for col in result.columns],

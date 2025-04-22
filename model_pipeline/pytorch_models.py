@@ -192,7 +192,6 @@ def test_model_dash(model_name, X_test_ids, output_path, threshold, adjust_onset
 
             sample = get_win_data_signal(f,cur_win,cur_sub,params.dim)
             sample = torch.tensor(sample,dtype = torch.float32).to(device)
-            print(sample.shape)
 
             y_pred_probas.append(torch.squeeze(model(sample)).cpu().numpy())
 
@@ -220,7 +219,6 @@ def test_model_dash(model_name, X_test_ids, output_path, threshold, adjust_onset
                 peak_time = find_peak_gfp(gfp, times)  # Find max GFP time
                 adjusted_onset = ((y_timing_data[win] - window.shape[0]/2) / params.sfreq) + peak_time  # Align event to GFP peak
                 adjusted_onsets.append(round(adjusted_onset, 3))
-                print(peak_time)
             else:
                 adjusted_onsets.append(round(y_timing_data[win]/params.sfreq, 3))
 

@@ -1,5 +1,5 @@
 # run.py
-from dash import Dash, html, dcc
+from dash import Dash, html, dcc, clientside_callback, Input, Output
 import dash_bootstrap_components as dbc
 import os
 import dash
@@ -7,7 +7,7 @@ import dash
 app = Dash(__name__,
            use_pages=True,
         #    suppress_callback_exceptions=True,
-           external_stylesheets=[dbc.themes.CYBORG, dbc.icons.BOOTSTRAP])
+           external_stylesheets=[dbc.icons.BOOTSTRAP, dbc.themes.CYBORG])
 
 # app.enable_dev_tools(debug=True)
 
@@ -73,8 +73,8 @@ app.layout = html.Div(
                                 dbc.DropdownMenuItem("Help", href="/settings/help"),
                             ],
                             style={"display": "flex"},
-                            className="bi bi-list"
-))
+                            className="bi bi-list"  
+                        ))
                     ],
                     style={
                         "display": "flex",

@@ -401,7 +401,6 @@ def test_model_dash(model_name, X_test_ids, output_path, threshold=0.5, adjust_o
                 peak_time = find_peak_gfp(gfp, times)  # Find max GFP time
                 adjusted_onset = ((y_timing_data[win] - window.shape[0]/2) / params.sfreq) + peak_time  # Align event to GFP peak
                 adjusted_onsets.append(round(adjusted_onset, 3))
-                print(peak_time)
             else:
                 adjusted_onsets.append(round(y_timing_data[win]/params.sfreq, 3))
 
