@@ -32,8 +32,8 @@ def register_update_graph_time_channel():
     )
     def update_graph_time_channel(n_clicks, page_selection, montage_selection, channel_selection, folder_path, offset_selection, color_selection, chunk_limits,freq_data, montage_store, graph, sensitivity_analysis_store, anom_detect_store):
         """Update MEG signal visualization based on time and channel selection."""
-        if graph and 'data' in graph and graph['data']:  # if there's already data in the figure
-            return graph, None
+        # if graph and 'data' in graph and graph['data']:  # if there's already data in the figure
+        #     return graph, None
         
         if n_clicks == 0:
             return dash.no_update, dash.no_update
@@ -67,8 +67,12 @@ def register_update_graph_time_channel():
 
         # Get the current x-axis center
         xaxis_range = graph["layout"]["xaxis"].get("range", [])
-        if xaxis_range[1] < time_range[0] or xaxis_range[0] > time_range[1]:
+        print(xaxis_range)
+        print(time_range)
+        if xaxis_range[1] <= time_range[0] or xaxis_range[0] >= time_range[1]:
             xaxis_range = [time_range[0], time_range[0]+10]
+
+        print(xaxis_range)
 
         # Reading back
         if "smoothGrad" in color_selection:
