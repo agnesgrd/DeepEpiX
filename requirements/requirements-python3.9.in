@@ -11,3 +11,4 @@ dash-bootstrap-components
 dash-extensions
 gunicorn
 flask
+orjson

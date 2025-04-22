@@ -34,7 +34,7 @@ def create_sidebar():
                 ), label='Select', tab_id='selection-tab'), # create_selection()
                 dbc.Tab(create_analyze(), label='Analyze', tab_id='analyzing-tab'), # create_analyze()
                 dbc.Tab(create_predict(), label='SpikePred', tab_id='prediction-tab'), #create_prediction()
-                dbc.Tab(create_anom_detect(), label='AnomDetect', tab_id='anom-detection-tab'), #create_prediction()
+                # dbc.Tab(create_anom_detect(), label='AnomDetect', tab_id='anom-detection-tab'), #create_prediction()
                 dbc.Tab(create_save(), label='Save', tab_id='saving-tab'), #create_prediction()
             ],
             id="sidebar-tabs",

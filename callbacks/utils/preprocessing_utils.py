@@ -134,49 +134,6 @@ def get_ica_sources_for_chunk(folder_path, start_time, end_time, n_components, i
 
     return ica_df_standardized
 
-
-# def get_ica(folder_path, ica, start_time, end_time, raw=None):
-#     """
-#     Compute ICA of the MEG data and cache each chunks.
-#     """
-    
-#     # Helper function to preprocess a chunk of the data
-#     def ica_by_chunk(folder_path, ica, start_time, end_time, raw):
-
-#         if raw is None:
-#             # Load the MEG data 
-#             # Assuming folder_path is where the data is stored and chunk_limits is the relevant chunk for analysis
-#             raw = mne.io.read_raw_ctf(folder_path, preload=True).pick("meg")  # Example for FIF format
-
-#             # High-pass filtering to remove low-frequency drifts (1 Hz cutoff recommended)
-#             raw = raw.filter(l_freq=1.0, h_freq=None)  # Apply 1 Hz high-pass filter
-
-#         raw_chunk = raw.copy().crop(tmin=start_time, tmax=end_time)
-            
-#         ica_sources = ica.get_sources(raw_chunk)
-
-#         ica_sources.resample(300)
-
-#         # Transform the raw data into a dataframe
-#         ica_df = ica_sources.to_data_frame(index="time")  # Get numerical data (channels × time)
-
-#         # Standardization per channel
-#         ica_df_standardized = (ica_df - ica_df.mean()) / ica_df.std()
-
-
-#         return ica_df_standardized
-
-#     # Function to load and process the data in chunks, caching each piece
-#     @cache.memoize()
-#     def compute_ica_on_chunk(folder_path, ica, start_time, end_time, raw):
-#         try:
-#             chunk_df = ica_by_chunk(folder_path, ica, start_time, end_time, raw)
-#             return chunk_df
-#         except Exception as e:
-#             return f"Error during ICA: {str(e)}"
-
-#     # Process and return the result in JSON format
-#     return compute_ica_on_chunk(folder_path, ica, start_time, end_time, raw)
  
 def update_chunk_limits(total_duration):
     # Define chunk duration (in seconds) and total duration
