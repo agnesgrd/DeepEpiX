@@ -9,20 +9,10 @@ import math
 app = dash.get_app()
 
 cache = Cache(app.server, config={
-    # 'CACHE_TYPE': 'redis',
-    # 'CACHE_REDIS_HOST': 'localhost',    # Redis server hostname
-    # 'CACHE_REDIS_PORT': 6379,          # Redis server port
-    # 'CACHE_REDIS_DB': 0,               # Redis database index
-    # 'CACHE_REDIS_URL': 'redis://localhost:6379/0',  # Redis connection URL
     'CACHE_TYPE': 'FileSystemCache',
-    # 'CACHE_TYPE': 'filesystem',
     'CACHE_DIR': 'cache-directory',
     'CACHE_DEFAULT_TIMEOUT': 84000,
-    # 'CACHE_THRESHOLD': 50 # higher numbers will store more data in the filesystem / redis cache
 })
-
-cache.clear()
-
 
 ################################# RAW DATA PREPROCESSING (FILTERING, SUBSAMPLING) #################################################################
 
@@ -34,7 +24,7 @@ def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw
     :param freq_data: Dictionary containing frequency parameters for preprocessing.
     :param chunk_duration: Duration of each chunk in seconds (default is 3 minutes).
     :param cache: Cache object to store preprocessed chunks.
-    :return: Processed dataframe in JSON format.
+    :return: Processed dataframe in pandas format.
     """
     # Helper function to preprocess a chunk of the data
     def preprocess_chunk(folder_path, freq_data, start_time, end_time, raw):
@@ -65,7 +55,7 @@ def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw
             return f"Error during preprocessing chunk: {str(e)}"
 
     # Function to load and process the data in chunks, caching each piece
-    @cache.memoize()
+    @cache.memoize(make_name=f"{folder_path}:{freq_data}:{start_time}:{end_time}")
     def process_data_in_chunks(folder_path, freq_data, start_time, end_time, raw):
         try:
             chunk_df = preprocess_chunk(folder_path, freq_data, start_time, end_time, raw)
