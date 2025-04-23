@@ -1,8 +1,6 @@
 # run.py
-from dash import Dash, html, dcc, clientside_callback, Input, Output
+from dash import Dash, html, dcc, page_container
 import dash_bootstrap_components as dbc
-import os
-import dash
 
 app = Dash(__name__,
            use_pages=True,
@@ -80,7 +78,7 @@ app.layout = html.Div(
                 # Main content container (display content based on the tab selected)
                 html.Div(
                     children=[
-                        dash.page_container,
+                        page_container,
                     ],
                     style={"width": "100%", "display": "inline-block"}  # Main content area
                 ),
