@@ -1,17 +1,22 @@
-import config
-from pathlib import Path
-import pickle
-import mne
-import dash
-from flask_caching import Cache
+# Standard library
 import math
+import pickle
+from pathlib import Path
+
+# Third-party libraries
+import dash
+import mne
+from flask_caching import Cache
+
+# Local modules
+import config
 
 app = dash.get_app()
 
 cache = Cache(app.server, config={
-    'CACHE_TYPE': 'FileSystemCache',
-    'CACHE_DIR': 'cache-directory',
-    'CACHE_DEFAULT_TIMEOUT': 84000,
+    'CACHE_TYPE': config.CACHE_TYPE,
+    'CACHE_DIR': config.CACHE_DIR,
+    'CACHE_DEFAULT_TIMEOUT': config.CACHE_DEFAULT_TIMEOUT
 })
 
 ################################# RAW DATA PREPROCESSING (FILTERING, SUBSAMPLING) #################################################################
@@ -26,8 +31,10 @@ def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw
     :param cache: Cache object to store preprocessed chunks.
     :return: Processed dataframe in pandas format.
     """
-    # Helper function to preprocess a chunk of the data
-    def preprocess_chunk(folder_path, freq_data, start_time, end_time, raw):
+    # Function to load and process the data in chunks, caching each piece
+
+    @cache.memoize(make_name=f"{folder_path}:{freq_data}:{start_time}:{end_time}")
+    def process_data_in_chunks(folder_path, freq_data, start_time, end_time, raw=None):
         try:
             if raw is None:
                 raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
@@ -47,19 +54,9 @@ def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw
             raw_df = raw_chunk.to_data_frame(picks="meg", index="time")  # Get numerical data (channels × time)
 
             # Standardization per channel
-            raw_df_standardized = raw_df - raw_df.mean(axis = 0) #.apply(lambda x: scaler.fit_transform(x.values.reshape(-1, 1)).flatten(), axis=0)
+            raw_df_standardized = raw_df - raw_df.mean(axis = 0)
 
             return raw_df_standardized
-
-        except Exception as e:
-            return f"Error during preprocessing chunk: {str(e)}"
-
-    # Function to load and process the data in chunks, caching each piece
-    @cache.memoize(make_name=f"{folder_path}:{freq_data}:{start_time}:{end_time}")
-    def process_data_in_chunks(folder_path, freq_data, start_time, end_time, raw):
-        try:
-            chunk_df = preprocess_chunk(folder_path, freq_data, start_time, end_time, raw)
-            return chunk_df
 
         except Exception as e:
             return f"Error during processing: {str(e)}"

@@ -7,8 +7,9 @@ HOST = "127.0.0.1"
 ENV = "development"
 
 ##### Cache settings ##########
-CACHE_TIMEOUT = 300  # in seconds
-SESSION_COOKIE_NAME = "my_app_session"
+CACHE_TYPE = 'FileSystemCache'
+CACHE_DIR = 'cache-directory'
+CACHE_DEFAULT_TIMEOUT = 84000 # seconds
 
 ##### Useful path ##########
 MODEL_DIR = "models/"

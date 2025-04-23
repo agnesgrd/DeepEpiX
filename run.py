@@ -1,6 +1,7 @@
 # run.py
 from dash import Dash, html, dcc, page_container
 import dash_bootstrap_components as dbc
+import config
 
 app = Dash(__name__,
            use_pages=True,
@@ -92,4 +93,4 @@ app.layout = html.Div(
 server = app.server
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8080)
+    app.run(debug=config.DEBUG, port=config.PORT)

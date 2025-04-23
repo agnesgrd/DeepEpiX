@@ -145,7 +145,7 @@ layout = html.Div([
 
                                     dbc.Button("Compute & Display", id="compute-display-psd-button", color="success", n_clicks=0, style = {"marginTop": "15px"}),
 
-                                    dcc.Graph(id="psd-graph", style={"display": "none"}),
+                                    # dcc.Graph(id="psd-graph", style={"display": "none"}),
 
                                     dcc.Loading(id="loading", type="default", children=[
                                         
@@ -330,18 +330,20 @@ def handle_frequency_parameters(resample_freq, high_pass_freq, low_pass_freq, no
   
 @callback(
     Output("psd-status", "children"),
-    Output("psd-graph", "figure"),
-    Output("psd-graph", "style"),
+    # Output("psd-graph", "figure"),
+    # Output("psd-graph", "style"),
     Input("compute-display-psd-button", "n_clicks"),
     State("folder-store", "data"),
     State("frequency-store", "data"),
+    running=[
+        (Output("compute-display-psd-button", "disabled"), True, False)],
     prevent_initial_call=True
 )
 def display_psd(n_clicks, folder_path, freq_data):
     """ Compute and display power spectrum decomposition depending on the frequency parameters stored."""
 
     if folder_path is None or freq_data is None:
-        return "Please fill in all frequency parameters.", dash.no_update, dash.no_update
+        return "Please fill in all frequency parameters."
     
     if n_clicks > 0:
     
@@ -357,9 +359,6 @@ def display_psd(n_clicks, folder_path, freq_data):
         
         raw.notch_filter(freqs=notch_freq)
 
-        # Create the PSD plot using Plotly
-        psd_fig = go.Figure()
-
         # Compute Power Spectral Density (PSD)
         psd_data = raw.compute_psd(method='welch', fmin=high_pass_freq, fmax=low_pass_freq, n_fft=2048, picks='meg', n_jobs=-1)
         psd, freqs = psd_data.get_data(return_freqs=True)
@@ -367,11 +366,11 @@ def display_psd(n_clicks, folder_path, freq_data):
         # Convert PSD to dB (as MNE does by default)
         psd_dB = 10 * np.log10(psd)
 
-        # Create a Plotly figure to mimic MNE’s PSD plot
+        # Create a Plotly figure
         psd_fig = go.Figure()
 
         # Plot multiple channels with transparency for better readability
-        for ch_idx, ch_name in enumerate(config.ALL_CH_NAMES_PREFIX):  # Plot only first 10 channels
+        for ch_idx, ch_name in enumerate(config.ALL_CH_NAMES_PREFIX):
             psd_fig.add_trace(go.Scatter(
                 x=freqs,
                 y=psd_dB[ch_idx],  
@@ -393,10 +392,10 @@ def display_psd(n_clicks, folder_path, freq_data):
                 type="linear",
                 showgrid=True
             ),
-            template="plotly_white"
+            # template="plotly_white"
         )
 
-        return None, psd_fig, {"padding": "10px", "borderRadius": "10px", "boxShadow": "0 4px 10px rgba(0,0,0,0.1)"}
+        return dcc.Graph(figure = psd_fig, style={"padding": "10px", "borderRadius": "10px", "boxShadow": "0 4px 10px rgba(0,0,0,0.1)"})
 
 @callback(
     Output("preprocess-status", "children", allow_duplicate=True),
@@ -413,7 +412,7 @@ def display_psd(n_clicks, folder_path, freq_data):
     prevent_initial_call=True
 )
 def preprocess_meg_data(n_clicks, folder_path, freq_data, heartbeat_ch_name):
-    """Preprocess MEG data and save it."""
+    """Preprocess MEG data and save it, store annotations and chunk limits in memory."""
 
     if n_clicks > 0:
 
