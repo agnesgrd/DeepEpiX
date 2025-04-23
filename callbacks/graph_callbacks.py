@@ -2,7 +2,7 @@ import traceback
 import plotly.graph_objects as go
 import dash
 from dash import Input, Output, State, Patch, callback, ClientsideFunction, clientside_callback
-import static.constants as c
+import config
 import callbacks.utils.graph_utils as gu
 import traceback
 import plotly.graph_objects as go
@@ -52,8 +52,8 @@ def register_update_graph_time_channel():
             selected_channels = [
                 channel
                 for region_code in channel_selection
-                if region_code in c.GROUP_CHANNELS_BY_REGION
-                for channel in c.GROUP_CHANNELS_BY_REGION[region_code]
+                if region_code in config.GROUP_CHANNELS_BY_REGION
+                for channel in config.GROUP_CHANNELS_BY_REGION[region_code]
             ]
 
             if not selected_channels:

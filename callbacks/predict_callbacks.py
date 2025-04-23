@@ -2,9 +2,9 @@ import dash
 from dash import Output, Input, State, dash_table, callback
 import subprocess
 import pandas as pd
-import static.constants as c
+import config
 from pathlib import Path
-import static.constants as c
+import config
 import os
 import sys
 import time

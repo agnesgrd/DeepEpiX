@@ -5,7 +5,7 @@ from io import BytesIO
 import base64
 import matplotlib.pyplot as plt
 import callbacks.utils.graph_utils as gu
-import static.constants as c
+import config
 import callbacks.utils.graph_utils as gu
 
 

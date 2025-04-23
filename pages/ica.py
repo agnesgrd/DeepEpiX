@@ -6,7 +6,7 @@ import os
 import mne
 import plotly.graph_objects as go
 import numpy as np
-import static.constants as c
+import config
 from callbacks.utils import preprocessing_utils as pu
 from callbacks.utils import graph_utils as gu
 import plotly.express as px

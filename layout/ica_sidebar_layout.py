@@ -1,6 +1,6 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-import static.constants as c
+import config
 from layout import input_styles, box_styles, button_styles
 from layout.selection_sidebar_layout import create_selection
 

@@ -10,7 +10,7 @@ from collections import Counter
 from callbacks.utils import annotation_utils as au
 import plotly.graph_objects as go
 import numpy as np
-import static.constants as c
+import config
 from dash.exceptions import PreventUpdate
 
 # Register the page
@@ -413,7 +413,7 @@ def display_psd(n_clicks, folder_path, freq_data):
         psd_fig = go.Figure()
 
         # Plot multiple channels with transparency for better readability
-        for ch_idx, ch_name in enumerate(c.ALL_CH_NAMES_PREFIX):  # Plot only first 10 channels
+        for ch_idx, ch_name in enumerate(config.ALL_CH_NAMES_PREFIX):  # Plot only first 10 channels
             psd_fig.add_trace(go.Scatter(
                 x=freqs,
                 y=psd_dB[ch_idx],  

@@ -1,6 +1,6 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-import static.constants as c
+import config
 from layout import input_styles, box_styles, button_styles
 
 def create_selection(
@@ -83,7 +83,7 @@ def create_selection(
                         'label': f"{region_code} ({len(channels)})",
                         'value': region_code
                     }
-                    for region_code, channels in c.GROUP_CHANNELS_BY_REGION.items()
+                    for region_code, channels in config.GROUP_CHANNELS_BY_REGION.items()
                 ],
                 value=["MRF", "MLF"],  # Default selected regions
                 inline=False,

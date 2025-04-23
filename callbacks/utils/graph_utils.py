@@ -1,5 +1,5 @@
 import numpy as np
-import static.constants as c
+import config
 from sklearn.preprocessing import StandardScaler
 from callbacks.utils import preprocessing_utils as pu
 import plotly.express as px
@@ -33,9 +33,9 @@ def calculate_channel_offset(num_channels, plot_height=900, min_gap=30):
 
     return optimal_channel_offset
 
-def get_y_axis_ticks(selected_channels, channel_offset = c.DEFAULT_Y_AXIS_OFFSET):
+def get_y_axis_ticks(selected_channels, channel_offset = config.DEFAULT_Y_AXIS_OFFSET):
     
-    channel_offset = (channel_offset if channel_offset != None else c.DEFAULT_Y_AXIS_OFFSET)
+    channel_offset = (channel_offset if channel_offset != None else config.DEFAULT_Y_AXIS_OFFSET)
     y_axis_ticks = np.arange(len(selected_channels)) * channel_offset
     return y_axis_ticks
 
@@ -113,7 +113,7 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
 
     # Create a dictionary mapping channels to their colors
     if color_selection == "rainbow":
-        color_map = {channel: c.CHANNEL_TO_COLOR[channel] for channel in selected_channels}
+        color_map = {channel: config.CHANNEL_TO_COLOR[channel] for channel in selected_channels}
     elif color_selection == "blue":
         color_map = {channel: "#00008B" for channel in selected_channels}
     elif "smoothGrad" in color_selection or "anomDetect" in color_selection:
@@ -169,7 +169,7 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
         # Add scatter plot using px.scatter
         # Convert time range to integer indices
         time_range_indices = np.arange(round(time_range[0] * 150), round(time_range[1] * 150)+1).astype(int)
-        channel_indices = np.where(np.isin(c.ALL_CH_NAMES, selected_channels))[0]
+        channel_indices = np.where(np.isin(config.ALL_CH_NAMES, selected_channels))[0]
         filtered_sa_array = filter[time_range_indices[:, None], channel_indices]
         scatter_df = shifted_filtered_raw_df.melt(id_vars=["Time"], var_name="Channel", value_name="Value")
         scatter_df["Color"] = filtered_sa_array.flatten('F')  # Flatten color array
@@ -191,7 +191,7 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
     elif 'anomDetect' in color_selection:
 
         time_range_indices = np.arange(round(time_range[0] * 150), round(time_range[1] * 150)+1).astype(int)
-        channel_indices = np.where(np.isin(c.ALL_CH_NAMES, selected_channels))[0]
+        channel_indices = np.where(np.isin(config.ALL_CH_NAMES, selected_channels))[0]
         filtered_sa_array = filter[time_range_indices[:, None], channel_indices]
         scatter_df = shifted_filtered_raw_df.melt(id_vars=["Time"], var_name="Channel", value_name="Value")
         scatter_df["Color"] = filtered_sa_array.flatten('F')  # Flatten color array
@@ -327,7 +327,7 @@ def generate_small_graph_time_channel(selected_channels, time_range, folder_path
     shifted_filtered_raw_df = filtered_raw_df + np.tile(y_axis_ticks, (len(filtered_raw_df), 1))
     print(f"Step 5: Channel offset calculation completed in {time.time() - offset_start_time:.2f} seconds.")
     # Create a dictionary mapping channels to their colors
-    color_map = {channel: c.CHANNEL_TO_COLOR[channel] for channel in selected_channels}
+    color_map = {channel: config.CHANNEL_TO_COLOR[channel] for channel in selected_channels}
     # Use Plotly Express for efficient figure generation
     fig_start_time = time.time()
     shifted_filtered_raw_df["Time"] = filtered_times  # Add time as a column for Plotly Express

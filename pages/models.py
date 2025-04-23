@@ -7,7 +7,7 @@ from layout import input_styles, box_styles
 import pandas as pd
 import os
 import subprocess
-import static.constants as c
+import config
 from callbacks.utils import predict_utils as pu
 from callbacks.utils import annotation_utils as au
 import callbacks.utils.graph_utils as gu
@@ -270,7 +270,7 @@ layout = html.Div([
 
 # Function to run the model analysis in the correct environment
 def run_model_info(model_name):
-	model_path = os.path.join(c.MODEL_DIR, model_name)
+	model_path = os.path.join(config.MODEL_DIR, model_name)
 	
 	if model_name.endswith((".h5", ".keras")):
 		# Activate TensorFlow venv and run script

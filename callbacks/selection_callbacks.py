@@ -1,6 +1,6 @@
 import dash
 from dash import html, dcc, Input, Output, State, callback
-import static.constants as c
+import config
 import callbacks.utils.annotation_utils as au
 from dash.exceptions import PreventUpdate
 
@@ -71,7 +71,7 @@ def register_manage_channels_checklist():
         triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
 
         if triggered_id == "check-all-channels-btn":
-            all_regions = list(c.GROUP_CHANNELS_BY_REGION.keys())
+            all_regions = list(config.GROUP_CHANNELS_BY_REGION.keys())
             return all_regions  # Select all regions
         elif triggered_id == "clear-all-channels-btn":
             return []  # Clear all selections

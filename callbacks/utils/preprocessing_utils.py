@@ -1,4 +1,4 @@
-import static.constants as c
+import config
 from pathlib import Path
 import pickle
 import mne
@@ -127,7 +127,7 @@ def get_ica_sources_for_chunk(folder_path, start_time, end_time, n_components, i
  
 def update_chunk_limits(total_duration):
     # Define chunk duration (in seconds) and total duration
-    chunk_duration = c.CHUNK_RECORDING_DURATION
+    chunk_duration = config.CHUNK_RECORDING_DURATION
 
     # Calculate start and end times for the selected chunk
     chunk_limits = []

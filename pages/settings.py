@@ -3,7 +3,7 @@ import dash
 from dash import html, dcc, Input, Output, State, callback
 import dash_bootstrap_components as dbc
 from layout import input_styles
-import static.constants as c
+import config
 import mne
 import os
 import io
@@ -216,7 +216,7 @@ layout = html.Div([
                                 ],
                                 style={"flex": "1 0 120px", "padding": "5px"}
                             )
-                            for idx, (group, channels) in enumerate(c.GROUP_CHANNELS_BY_REGION.items())
+                            for idx, (group, channels) in enumerate(config.GROUP_CHANNELS_BY_REGION.items())
                         ],
                     ],
                     style={"display": "none"}
@@ -277,7 +277,7 @@ layout = html.Div([
                                         # "boxShadow": "inset 0 1px 2px rgba(0,0,0,0.05)"
                                     }
                                 )
-                                for group, channels in c.GROUP_CHANNELS_BY_REGION.items()
+                                for group, channels in config.GROUP_CHANNELS_BY_REGION.items()
                             ],
                             style={
                                 "display": "flex",
@@ -479,7 +479,7 @@ def update_selection_method_ui(method):
 @callback(
     [
         Output(f"random-pick-count-{group}", "value")
-        for group in c.GROUP_CHANNELS_BY_REGION
+        for group in config.GROUP_CHANNELS_BY_REGION
     ],
     Input("random-pick-count-%", "value"),
     prevent_initial_call=True
@@ -490,7 +490,7 @@ def apply_percentage_to_groups(global_percent):
         return dash.no_update
 
     updated_values = []
-    for group, channels in c.GROUP_CHANNELS_BY_REGION.items():
+    for group, channels in config.GROUP_CHANNELS_BY_REGION.items():
         total_channels = len(channels)
         computed_value = round((global_percent / 100.0) * total_channels)
         updated_values.append(computed_value)
@@ -508,11 +508,11 @@ def apply_percentage_to_groups(global_percent):
     # Flat list of checklist values followed by random pick values
     *[
         State(f"montage-checklist-{group}", "value")
-        for group in c.GROUP_CHANNELS_BY_REGION_PREFIX
+        for group in config.GROUP_CHANNELS_BY_REGION_PREFIX
     ],
     *[
         State(f"random-pick-count-{group}", "value")
-        for group in c.GROUP_CHANNELS_BY_REGION_PREFIX
+        for group in config.GROUP_CHANNELS_BY_REGION_PREFIX
     ],
     prevent_initial_call=True
 )
@@ -526,7 +526,7 @@ def update_montage_store(n_clicks, new_montage_name, selection_method, montage_s
     if not montage_store_data:
         montage_store_data = {}
 
-    num_groups = len(c.GROUP_CHANNELS_BY_REGION_PREFIX)
+    num_groups = len(config.GROUP_CHANNELS_BY_REGION_PREFIX)
     checked_values = values[:num_groups]
     pick_values = values[num_groups:]
 
@@ -538,14 +538,14 @@ def update_montage_store(n_clicks, new_montage_name, selection_method, montage_s
                 selected_channels.extend(group_selected)
 
     elif selection_method == "random":
-        for i, group in enumerate(c.GROUP_CHANNELS_BY_REGION_PREFIX):
+        for i, group in enumerate(config.GROUP_CHANNELS_BY_REGION_PREFIX):
             pick_count = pick_values[i] or 0
             try:
                 pick_count = int(pick_count)
             except ValueError:
                 pick_count = 0
 
-            available_channels = c.GROUP_CHANNELS_BY_REGION[group]
+            available_channels = config.GROUP_CHANNELS_BY_REGION[group]
             if pick_count > 0:
                 import random
                 selected_channels.extend(random.sample(available_channels, min(pick_count, len(available_channels))))
@@ -562,24 +562,24 @@ def update_montage_store(n_clicks, new_montage_name, selection_method, montage_s
     Output("channels-layout-img", "src"),
     *[
         Input(f"montage-checklist-{group}", "value")
-        for group in c.GROUP_CHANNELS_BY_REGION_PREFIX
+        for group in config.GROUP_CHANNELS_BY_REGION_PREFIX
     ],
     *[
         Input(f"random-pick-count-{group}", "value")
-        for group in c.GROUP_CHANNELS_BY_REGION_PREFIX
+        for group in config.GROUP_CHANNELS_BY_REGION_PREFIX
     ],
     State("folder-store", "data"),
     State("selection-method-dropdown", "value"),
     prevent_initial_call=True
 )
 def update_meg_layout(*args):
-    num_groups = len(c.GROUP_CHANNELS_BY_REGION_PREFIX)
+    num_groups = len(config.GROUP_CHANNELS_BY_REGION_PREFIX)
     checked_values = args[:num_groups]
     pick_values = args[num_groups:2*num_groups]
     folder_path = args[-2]
     selection_method = args[-1]
 
-    selected_channels_by_group = [[] for _ in c.GROUP_CHANNELS_BY_REGION_PREFIX]
+    selected_channels_by_group = [[] for _ in config.GROUP_CHANNELS_BY_REGION_PREFIX]
 
     if selection_method == "checklist":
         for i, group_selected in enumerate(checked_values):
@@ -587,14 +587,14 @@ def update_meg_layout(*args):
                 selected_channels_by_group[i].extend(group_selected)
 
     elif selection_method == "random":
-        for i, group in enumerate(c.GROUP_CHANNELS_BY_REGION_PREFIX):
+        for i, group in enumerate(config.GROUP_CHANNELS_BY_REGION_PREFIX):
             pick_count = pick_values[i] or 0
             try:
                 pick_count = int(pick_count)
             except ValueError:
                 pick_count = 0
 
-            available_channels = c.GROUP_CHANNELS_BY_REGION[group]
+            available_channels = config.GROUP_CHANNELS_BY_REGION[group]
             if pick_count > 0:
                 selected = random.sample(available_channels, min(pick_count, len(available_channels)))
                 selected_channels_by_group[i].extend(selected)
@@ -638,7 +638,7 @@ def register_check_all_channels_by_group(group):
         # Only perform action if button is clicked
         if n_click and n_click > 0:
             # Get the group name directly from the group being processed in the loop
-            return c.GROUP_CHANNELS_BY_REGION[group]  # Return the full list of channels for that group
+            return config.GROUP_CHANNELS_BY_REGION[group]  # Return the full list of channels for that group
         return dash.no_update
       
 def register_clean_all_channels_by_group(group):
@@ -656,7 +656,7 @@ def register_clean_all_channels_by_group(group):
             return []
         return dash.no_update
     
-for group in c.GROUP_CHANNELS_BY_REGION_PREFIX:
+for group in config.GROUP_CHANNELS_BY_REGION_PREFIX:
     register_clean_all_channels_by_group(group)
     register_check_all_channels_by_group(group)
 
