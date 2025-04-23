@@ -113,7 +113,21 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
 
     # Create a dictionary mapping channels to their colors
     if color_selection == "rainbow":
-        color_map = {channel: config.CHANNEL_TO_COLOR[channel] for channel in selected_channels}
+        # Create a reverse mapping to quickly find the region of a channel
+        def map_channel_to_color():
+            channel_to_region = {}
+            for region, channels in config.GROUP_CHANNELS_BY_REGION.items():
+                for channel in channels:
+                    channel_to_region[channel] = region
+
+            channel_to_color = {}
+            for channels, region in channel_to_region.items():
+                channel_to_color[channels] = config.REGION_COLORS[region]
+            return channel_to_color
+
+        CHANNEL_TO_COLOR = map_channel_to_color()
+
+        color_map = {channel: CHANNEL_TO_COLOR[channel] for channel in selected_channels}
     elif color_selection == "blue":
         color_map = {channel: "#00008B" for channel in selected_channels}
     elif "smoothGrad" in color_selection or "anomDetect" in color_selection:
