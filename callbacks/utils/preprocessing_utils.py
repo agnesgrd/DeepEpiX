@@ -136,8 +136,7 @@ def update_chunk_limits(total_duration):
         start_time = chunk_idx * chunk_duration
         end_time = min(start_time + chunk_duration, total_duration)
         chunk_limits.append([start_time, end_time])
-        
-    # Return chunk limits in a dictionary to store in the dcc.Store
+
     return chunk_limits
 
 # tentative function to interpolate missing channels using mne 

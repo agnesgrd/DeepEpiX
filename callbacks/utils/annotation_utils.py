@@ -57,7 +57,6 @@ def get_heartbeat_event(raw, ch_name):
     return pd.DataFrame(event_list)
 
 def get_annotations_dataframe(raw, heartbeat_ch_name):
-    # raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
     
     annotations_df = raw.annotations.to_data_frame()
     
@@ -76,7 +75,7 @@ def get_annotations_dataframe(raw, heartbeat_ch_name):
 
     # Convert to dictionary format
     annotations_dict = df_combined.to_dict(orient="records")
-    
+
     return annotations_dict, math.floor(time_secs[-1]*100)/100
 
 def get_annotations(prediction_or_truth, annotations_df):

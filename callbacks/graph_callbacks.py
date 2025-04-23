@@ -28,9 +28,7 @@ def register_update_graph_time_channel():
         State("meg-signal-graph", "figure"),
         State("sensitivity-analysis-store", "data"),
         State("anomaly-detection-store", "data"),
-        running=[
-            (Output("update-button", "disabled"), True, False)
-        ],
+        running=[(Output("update-button", "disabled"), True, False)],
         prevent_initial_call=False
     )
     def update_graph_time_channel(n_clicks, page_selection, montage_selection, channel_selection, folder_path, offset_selection, color_selection, chunk_limits,freq_data, montage_store, graph, sensitivity_analysis_store, anom_detect_store):

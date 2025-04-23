@@ -43,7 +43,7 @@ layout = html.Div([
                     html.Div(
                         style={"display": "flex", "justifyContent": "center", "alignItems": "center", "gap": "20px", "margin": "30px"},
                         children=[
-                            html.H3([
+                            html.H4([
                                 "Your Montage ",
                                 html.I(className="bi bi-info-circle-fill", id="montage-help-icon", style={
                                     "fontSize": "0.8em",
@@ -66,7 +66,7 @@ layout = html.Div([
 
                             # Delete All Button
                             dbc.Button(
-                                html.I(className="bi bi-trash3-fill"),
+                                html.I(className="bi bi-trasH4-fill"),
                                 id="delete-all-button",
                                 color="danger",
                                 style={
@@ -110,7 +110,7 @@ layout = html.Div([
         html.Div(
             id="montage-name-container",
             children=[
-                html.H3([
+                html.H4([
                     html.I(className="bi bi-1-circle-fill", style={"marginRight": "10px", "fontSize": "1.2em"}),
                     "Create a new montage"]
                     , style={"margin-bottom": "15px"}),
@@ -147,7 +147,7 @@ layout = html.Div([
         html.Div(
             id="montage-selection-container",
             children=[
-                html.H3([
+                html.H4([
                     html.I(className="bi bi-2-circle-fill", style={"marginRight": "10px", "fontSize": "1.2em"}),  # Example icon
                     "Select channels"
                 ], style={"margin-bottom": "15px"}),
@@ -303,7 +303,7 @@ layout = html.Div([
         html.Div(
             id="channels-layout-container",
             children=[
-                html.H3([
+                html.H4([
                     html.I(className="bi bi-3-circle-fill", style={"marginRight": "10px", "fontSize": "1.2em"}),  # Example icon
                     "Save montage"
                 ], style={"margin-bottom": "15px"}),

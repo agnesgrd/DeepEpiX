@@ -25,7 +25,7 @@ layout = html.Div([
 			id="your-models-container",
 			children=[
 				html.Div(children=[
-					html.H3([
+					html.H4([
 						"Your Models",
 						html.I(
 							className="bi bi-info-circle-fill", id="models-help-icon", style={

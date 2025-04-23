@@ -1,5 +1,3 @@
-from dash import html, dcc
-
 # Common styles
 
 input_styles = {
@@ -78,6 +76,22 @@ box_styles = {
         "borderRadius": "8px",  # Rounded corners for the channel section
         "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",
         "marginBottom": "20px"  # Space between the sections
+    }
+}
+
+flexDirection = {
+    "row-flex": {
+        "flexDirection": "row",  # Side-by-side layout
+        "alignItems": "flex-start",  # Align to top
+        "gap": "20px",  # Add spacing between elements
+        "width": "100%"  # Ensure full width
+    },
+    "row-tabs": {
+        "display": "flex",
+        "flexDirection": "row",  # Ensure tabs are displayed in a row (horizontal)
+        "alignItems": "center",  # Center the tabs vertically within the parent container
+        "width": "100%",  # Full width of the container
+        "borderBottom": "1px solid #ddd"  # Optional, adds a bottom border to separate from content
     }
 }
 
