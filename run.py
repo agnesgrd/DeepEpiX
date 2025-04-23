@@ -6,17 +6,12 @@ import dash
 
 app = Dash(__name__,
            use_pages=True,
-        #    suppress_callback_exceptions=True,
            external_stylesheets=[dbc.icons.BOOTSTRAP, dbc.themes.CYBORG])
 
-# app.enable_dev_tools(debug=True)
-
-# Main layout with page container for dynamic content loading
 app.layout = html.Div(
     children=[
 
-        # This will track the URL and switch between pages based on tab selection
-        dcc.Location(id='url', refresh=False),
+        dcc.Location(id='url', refresh=False), # This will track the URL and switch between pages based on tab selection
 
         dcc.Store(id="folder-store", storage_type="session"),
         dcc.Store(id="chunk-limits-store", data=[], storage_type="session"),
@@ -85,7 +80,7 @@ app.layout = html.Div(
                 # Main content container (display content based on the tab selected)
                 html.Div(
                     children=[
-                        dash.page_container,  # Placeholder for dynamically loaded content
+                        dash.page_container,
                     ],
                     style={"width": "100%", "display": "inline-block"}  # Main content area
                 ),
