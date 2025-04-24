@@ -46,37 +46,77 @@ def build_table_raw_info(folder_path):
     raw = mne.io.read_raw_ctf(folder_path, preload=False, verbose=False)
     info = raw.info
 
-    data = [
-        {"Property": "File name", "Value": raw.filenames[0] if raw.filenames else "Unknown"},
-        {"Property": "Number of channels", "Value": info['nchan']},
-        {"Property": "Sampling frequency (Hz)", "Value": info['sfreq']},
-        {"Property": "Highpass filter", "Value": info['highpass']},
-        {"Property": "Lowpass filter", "Value": info['lowpass']},
-        {"Property": "Duration (s)", "Value": round(raw.times[-1], 2)},
-        {"Property": "Channel names (preview)", "Value": ', '.join(info['ch_names'][:5]) + "..." if len(info['ch_names']) > 5 else ', '.join(info['ch_names'])},
-        {"Property": "Bad channels", "Value": ', '.join(info['bads']) if info['bads'] else "None"},
-        {"Property": "Measurement date", "Value": str(info['meas_date'])},
-        {"Property": "Experimenter", "Value": info.get('experimenter', 'Unknown')},
-        {"Property": "Comps (SSP/ICA)", "Value": f"{len(info.get('comps', []))} components"},
-        {"Property": "Projections (SSP)", "Value": f"{len(info.get('projs', []))} projections"},
-        {"Property": "Digitized points", "Value": f"{len(info.get('dig', []))} points" if info.get('dig') else "None"},
-        {"Property": "CTF Head Transform", "Value": "Available" if info.get('ctf_head_t') else "None"},
-        {"Property": "Device to Head Transform", "Value": "Available" if info.get('dev_head_t') else "None"},
-    ]
-
-    info_table_header = html.Thead(html.Tr([html.Th("Property"), html.Th("Value")]))
-    info_table_body = html.Tbody([
-        html.Tr([html.Td(row["Property"]), html.Td(str(row["Value"]))]) for row in data
-    ])
-    info_table = dbc.Table(
-        [info_table_header, info_table_body],
-        bordered=True,
-        striped=True,
-        hover=True,
-        size="sm",
+    return dbc.Card(
+        dbc.CardBody([
+            html.H5([
+                html.I(className="bi bi-clipboard-data", style={"marginRight": "10px", "fontSize": "1.2em"}),
+                "Raw Data Overview"
+            ], className="card-title"),
+            html.Hr(),
+            dbc.ListGroup([
+                dbc.ListGroupItem([
+                    html.Strong("File: "),
+                    html.Span(f"{raw.filenames[0] if raw.filenames else 'Unknown'}")
+                ]),
+                dbc.ListGroupItem([
+                    html.Strong("Number of Channels: "),
+                    html.Span(f"{info['nchan']}")
+                ]),
+                dbc.ListGroupItem([
+                    html.Strong("Sampling Frequency: "),
+                    html.Span(f"{info['sfreq']} Hz")
+                ]),
+                dbc.ListGroupItem([
+                    html.Strong("High-pass Filter: "),
+                    html.Span(f"{info['highpass']} Hz")
+                ]),
+                dbc.ListGroupItem([
+                    html.Strong("Low-pass Filter: "),
+                    html.Span(f"{info['lowpass']} Hz")
+                ]),
+                dbc.ListGroupItem([
+                    html.Strong("Duration: "),
+                    html.Span(f"{round(raw.times[-1], 2)} seconds")
+                ]),
+                dbc.ListGroupItem([
+                    html.Strong("Channel Names: "),
+                    html.Span(f"{', '.join(info['ch_names'][:5]) + '...' if len(info['ch_names']) > 5 else ', '.join(info['ch_names'])}")
+                ]),
+                dbc.ListGroupItem([
+                    html.Strong("Bad Channels: "),
+                    html.Span(f"{', '.join(info['bads']) if info['bads'] else 'None'}")
+                ]),
+                dbc.ListGroupItem([
+                    html.Strong("Measurement Date: "),
+                    html.Span(f"{str(info['meas_date'])}")
+                ]),
+                dbc.ListGroupItem([
+                    html.Strong("Experimenter: "),
+                    html.Span(f"{info.get('experimenter', 'Unknown')}")
+                ]),
+                dbc.ListGroupItem([
+                    html.Strong("SSP/ICA Components: "),
+                    html.Span(f"{len(info.get('comps', []))} components")
+                ]),
+                dbc.ListGroupItem([
+                    html.Strong("Projections (SSP): "),
+                    html.Span(f"{len(info.get('projs', []))} projections")
+                ]),
+                dbc.ListGroupItem([
+                    html.Strong("Digitized Points: "),
+                    html.Span(f"{len(info.get('dig', []))} points" if info.get('dig') else "None")
+                ]),
+                dbc.ListGroupItem([
+                    html.Strong("CTF Head Transform: "),
+                    html.Span("Available" if info.get('ctf_head_t') else "None")
+                ]),
+                dbc.ListGroupItem([
+                    html.Strong("Device to Head Transform: "),
+                    html.Span("Available" if info.get('dev_head_t') else "None")
+                ])
+            ])
+        ])
     )
-
-    return html.Div([info_table])
 
 def build_table_events_statistics(folder_path):
 
@@ -96,17 +136,23 @@ def build_table_events_statistics(folder_path):
     ]
     annotation_table = dbc.Table(table_header + [html.Tbody(table_body)], bordered=True, striped=True, hover=True, size="sm")
 
-    # Show total number and a few more stats
-    stats_summary = html.Ul([
-        html.Li(f"Total annotations: {len(annotations)}"),
-        html.Li(f"Unique event types: {len(description_counts)}"),
-        html.Li(f"First event starts at {annotations.onset[0]:.2f} s"),
-        html.Li(f"Last event ends at {(annotations.onset[-1] + annotations.duration[-1]):.2f} s"),
-    ])
 
-    return html.Div([
+    # Summary stats
+    stats_summary = dbc.Card(
+        dbc.CardBody([
+            html.H5([
+                html.I(className="bi bi-bar-chart-line", style={"marginRight": "10px", "fontSize": "1.2em"}),
+                "Event Summary"
+            ], className="card-title"),
+            html.Hr(),
+            dbc.ListGroup([
+                dbc.ListGroupItem(f"Total annotations: {len(annotations)}"),
+                dbc.ListGroupItem(f"Unique event types: {len(description_counts)}"),
                 annotation_table,
-                html.Hr(),
-                html.H5("Event Summary"),
-                stats_summary,
+                dbc.ListGroupItem(f"First event starts at {annotations.onset[0]:.2f} s"),
+                dbc.ListGroupItem(f"Last event ends at {(annotations.onset[-1] + annotations.duration[-1]):.2f} s"),
             ])
+        ])
+    )
+
+    return stats_summary
