@@ -6,10 +6,7 @@ import config
 from pathlib import Path
 import config
 import os
-import sys
 import time
-
-
 
 def register_update_selected_model():
     @callback(
@@ -65,16 +62,15 @@ def register_execute_predict_script():
             missing_fields.append("Environment")
         if threshold is None:
             missing_fields.append("Threshold")
-
         if missing_fields:
             error_message = f"⚠️ Please fill in all required fields: {', '.join(missing_fields)}"
             return error_message, dash.no_update, dash.no_update, dash.no_update, dash.no_update
         
         if "TensorFlow" in venv:
-            ACTIVATE_ENV = f"{c.TENSORFLOW_ENV}/bin/python"        
-            # ACTIVATE_ENV = f"../{c.TENSORFLOW_ENV}/bin/python"
+            #ACTIVATE_ENV = f"{config.TENSORFLOW_ENV}/bin/python"        
+            ACTIVATE_ENV = f"../{config.TENSORFLOW_ENV}/bin/python"
         elif "PyTorch" in venv:
-            ACTIVATE_ENV = f"{Path.cwd()}/{c.TORCH_ENV}/bin/python"
+            ACTIVATE_ENV = f"../{config.TORCH_ENV}/bin/python"
         
         command = [
             ACTIVATE_ENV,
@@ -94,12 +90,12 @@ def register_execute_predict_script():
 
         # # Activate TensorFlow venv and run script
         # if "CONDA_PREFIX" in os.environ:
-        #     activate_env = f"conda run -n {c.TENSORFLOW_ENV} python"
+        #     activate_env = f"conda run -n {config.TENSORFLOW_ENV} python"
         # else:
         #     if os.name == "nt":
-        #         activate_env = f"{Path.cwd()}/{c.TENSORFLOW_ENV}/Scripts/python.exe"
+        #         activate_env = f"{Path.cwd()}/{config.TENSORFLOW_ENV}/Scripts/python.exe"
         #     else:
-        #         activate_env = f"{Path.cwd()}/{c.TENSORFLOW_ENV}/bin/python"
+        #         activate_env = f"{Path.cwd()}/{config.TENSORFLOW_ENV}/bin/python"
             
         # # else:
         # #     raise RuntimeError("No virtual environment detected. Please activate one before running the script.")

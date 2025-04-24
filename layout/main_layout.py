@@ -53,6 +53,12 @@ button_styles = {
         "borderRadius": "5px",
         "width": "100%",
         "margin": "10px 0"
+    },
+    "tiny": {
+        "fontSize": "10px",
+        "padding": "6px 12px",
+        "borderRadius": "5px",
+        "width": "48%"
     }
 }
 

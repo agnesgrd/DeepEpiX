@@ -23,7 +23,6 @@ from callbacks.selection_callbacks import (
     register_callbacks_sensivity_analysis
 )
 
-
 from callbacks.graph_callbacks import (
     register_update_graph_time_channel
 )
@@ -65,17 +64,10 @@ from callbacks.predict_callbacks import (
     register_update_selected_model
 )
 
-# from callbacks.anom_detect_callbacks import (
-#     register_update_selected_model_anom_detect,
-#     register_execute_predict_script_anom_detect,
-#     register_display_anom_detect
-# )
-
 dash.register_page(__name__, name="Data Viz & Analyze", path='/viz/raw-signal')
 
 layout = html.Div([
     
-
     Keyboard(
         captureKeys=["ArrowLeft", "ArrowRight"],  # Captures ArrowLeft and ArrowRight keys
         id="keyboard"
@@ -102,10 +94,11 @@ layout = html.Div([
         "height": "85vh",  # Use the full height of the viewport
         "width": "95vw",  # Use the full width of the viewport
         "overflow": "hidden",  # Prevent overflow in case of resizing
-        "boxSizing": "border-box"
+        "boxSizing": "border-box",
+        "gap": "20px",
     }),
     
-    html.Div(id="python-error", style={"padding": "10px", "font-style": "italic", "color": "#555"})
+    html.Div(id="python-error")
 
 ])
 
@@ -193,7 +186,6 @@ register_manage_annotations_checklist(
     annotation_checkboxes_id="annotation-checkboxes"
 )
 
-
 register_popup_annotation_suppression()
 
 register_cancel_or_confirm_annotation_suppression()
@@ -211,9 +203,3 @@ register_execute_predict_script()
 register_store_display_prediction()
 
 register_update_selected_model()
-
-# register_update_selected_model_anom_detect()
-
-# register_execute_predict_script_anom_detect()
-
-# register_display_anom_detect()

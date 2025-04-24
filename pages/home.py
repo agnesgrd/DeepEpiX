@@ -408,7 +408,8 @@ def display_psd(n_clicks, folder_path, freq_data):
     State("heartbeat-channel", "value"),
     running=[
         (Output("preprocess-display-button", "disabled"), True, False),
-        (Output("load-button", "disabled"), True, False)],
+        (Output("load-button", "disabled"), True, False),
+        (Output("compute-display-psd-button", "disabled"), True, False)],
     prevent_initial_call=True
 )
 def preprocess_meg_data(n_clicks, folder_path, freq_data, heartbeat_ch_name):

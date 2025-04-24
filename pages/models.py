@@ -274,10 +274,10 @@ def run_model_info(model_name):
 	
 	if model_name.endswith((".h5", ".keras")):
 		# Activate TensorFlow venv and run script
-		command = [f"{c.TENSORFLOW_ENV}/bin/python",f"model_pipeline/tensorflow_model_info.py" ,f"{model_path}"]
+		command = [f"{config.TENSORFLOW_ENV}/bin/python",f"model_pipeline/tensorflow_model_info.py" ,f"{model_path}"]
 	elif model_name.endswith(".pth"):
 		# Activate PyTorch venv and run script
-		command = [f"{c.TORCH_ENV}/bin/python",f"model_pipeline/pytorch_model_info.py" ,f"{model_path}"]
+		command = [f"{config.TORCH_ENV}/bin/python",f"model_pipeline/pytorch_model_info.py" ,f"{model_path}"]
 		# return "Functionality not available for Pytorch models."
 	else:
 		return "Unknown model format."

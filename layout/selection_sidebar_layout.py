@@ -1,7 +1,7 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 import config
-from layout import input_styles, box_styles, button_styles
+from layout import box_styles, button_styles
 
 def create_selection(
     montage_radio_id,
@@ -53,12 +53,7 @@ def create_selection(
                     outline=True,
                     size="sm",
                     n_clicks=0,
-                    style={
-                        "fontSize": "12px",
-                        "padding": "6px 12px",
-                        "borderRadius": "5px",
-                        "width": "48%",  # Adjusted width to fit side by side
-                    }
+                    style=button_styles["tiny"]
                 ),
                 dbc.Button(
                     "Clear All",
@@ -67,12 +62,7 @@ def create_selection(
                     outline=True,
                     size="sm",
                     n_clicks=0,
-                    style={
-                        "fontSize": "12px",
-                        "padding": "6px 12px",
-                        "borderRadius": "5px",
-                        "width": "48%",  # Adjusted width to fit side by side
-                    }
+                    style=button_styles["tiny"]
                 ),
             ], style={"display": "flex", "justifyContent": "space-between", "gap": "4%"}),  # Align buttons side by side
 
@@ -114,12 +104,7 @@ def create_selection(
                     outline=True,
                     size="sm",
                     n_clicks=0,
-                    style={
-                        "fontSize": "12px",
-                        "padding": "6px 12px",
-                        "borderRadius": "5px",
-                        "width": "48%",  # Adjusted width
-                    }
+                    style=button_styles["tiny"]
                 ),
                 dbc.Button(
                     "Clear All",
@@ -128,12 +113,7 @@ def create_selection(
                     outline=True,
                     size="sm",
                     n_clicks=0,
-                    style={
-                        "fontSize": "12px",
-                        "padding": "6px 12px",
-                        "borderRadius": "5px",
-                        "width": "48%",  # Adjusted width
-                    }
+                    style=button_styles["tiny"]
                 ),
             ], style={"display": "flex", "justifyContent": "space-between", "gap": "4%", "marginBottom": "6px"}),  # Align buttons side by side
 
