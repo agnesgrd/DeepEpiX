@@ -101,17 +101,12 @@ def create_analyze():
 
         # History Section
         html.Div([
-            html.H6("History", style={"fontWeight": "bold", "marginBottom": "10px"}),  # Title for the history section
+            html.H6([html.I(className=f"bi bi-activity"), " Annotations History"], style={"fontWeight": "bold", "marginBottom": "10px"}),  # Title for the history section
             html.Div(
                 id="history-log",  # Dynamic log area
                 style={
-                    "height": "150px",  # Adjust the height as needed
+                    "height": "200px",  # Adjust the height as needed
                     "overflowY": "auto",  # Scrollable if content exceeds height
-                    "border": "1px solid #ccc",  # Light border for clarity
-                    "borderRadius": "5px",
-                    "padding": "5px",
-                    "backgroundColor": "#f9f9f9",  # Light background
-                    "fontSize": "12px",
                 }
             ),
             dbc.Button(

@@ -35,12 +35,17 @@ def register_update_graph_time_channel():
         """Update MEG signal visualization based on time and channel selection."""
         # if graph and 'data' in graph and graph['data']:  # if there's already data in the figure
         #     return graph, None
+        print(chunk_limits)
+        print(page_selection)
         
         if n_clicks == 0:
             return dash.no_update, dash.no_update
         
-        if None in (page_selection, folder_path, offset_selection, color_selection, chunk_limits, freq_data):
-            return dash.no_update, "Please choose a subject to display in Home page."
+        if not folder_path:
+            return dash.no_update, "Please choose a subject to display on Home page."
+        
+        if None in (page_selection, offset_selection, color_selection, freq_data) or not chunk_limits:
+            return dash.no_update, "You have a subject in memory but its recording has not been preprocessed yet. Please go back on Home page to reprocess the signal."
         
         if (montage_selection == "channel selection" and not channel_selection):  # Check if data is missing
                 return dash.no_update, "Missing channel selection for graph rendering."

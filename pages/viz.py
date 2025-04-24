@@ -1,6 +1,6 @@
 # view.py
 import dash
-from dash import html
+from dash import html, dcc
 from dash_extensions import Keyboard
 
 # Layout imports
@@ -72,6 +72,8 @@ layout = html.Div([
         captureKeys=["ArrowLeft", "ArrowRight"],  # Captures ArrowLeft and ArrowRight keys
         id="keyboard"
     ),
+
+    dcc.Location(id='url', refresh=False),
 
     html.Div(
         [

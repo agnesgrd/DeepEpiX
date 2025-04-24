@@ -78,8 +78,8 @@ def register_add_spike_to_annotation():
         # Create a new row for the spike annotation
         annotations_data.append({"onset": spike_timestep, "duration": 0, "description": spike_name})
 
-        action = f"Added a spike <{spike_name}> at {spike_timestep} (s).\n"
-        history_data = hu.fill_history_data(history_data, action)
+        action = f"Added an event <{spike_name}> at {spike_timestep} (s).\n"
+        history_data = hu.fill_history_data(history_data, "annotations", action)
 
         # Ensure checkbox_values is a list before appending
         if checkbox_values is None:
@@ -136,8 +136,8 @@ def register_delete_selected_spike():
         for _, spike_deleted in spikes_to_delete.iterrows():
             spike_description = spike_deleted.get('description', 'Unknown description')  # Safely retrieve 'description'
             spike_timestep = spike_deleted.get('onset', 'Unknown timestep')  # Safely retrieve 'onset'
-            action = f"Deleted a spike <{spike_description}> at {spike_timestep} (s).\n" # Log or store the action as needed
-            history_data = hu.fill_history_data(history_data, action)
+            action = f"Deleted an event <{spike_description}> at {spike_timestep} (s).\n" # Log or store the action as needed
+            history_data = hu.fill_history_data(history_data, "annotations", action)
 
         # Filter out the identified rows from the original DataFrame
         annotations_df = annotations_df.drop(spikes_to_delete.index)

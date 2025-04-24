@@ -8,22 +8,51 @@ import plotly.graph_objects as go
 import os
 import mne
 import numpy as np
-from collections import Counter
 
 # Local Imports
 from layout import input_styles, box_styles, flexDirection
 from callbacks.utils import preprocessing_utils as pu
 from callbacks.utils import folder_path_utils as fpu
 from callbacks.utils import annotation_utils as au
-
-# Config and Exceptions
+from callbacks.utils import history_utils as hu
 import config
-from dash.exceptions import PreventUpdate
 
 # Register the page
 dash.register_page(__name__, path = "/")
 
 layout = html.Div([
+
+    html.Div([
+        html.H3([
+            html.I(className="bi bi-sd-card", style={"marginRight": "10px", "fontSize": "1.2em"}),
+            "Internal Storage"]),
+
+        html.Div(
+                id="subject-memory", 
+                children = [
+
+                    dbc.Tabs(id="subject-tabs-memory", active_tab='subject-tab-memory', children=[
+
+                        dbc.Tab(label='General', tab_id="subject-tab-memory", children=[
+
+                            html.Div(id="subject-container-memory", children = [html.Span("No subject in memory. Please choose one below.")])], style={"margin-top": "10px", "width": "40%"}),
+
+                        dbc.Tab(label='Raw Info', tab_id="raw-info-tab-memory", children=[
+
+                            html.Div(id="raw-info-container-memory", children = [html.Label("No subject in memory. Please choose one below.")])], style={"margin-top": "10px", "width": "40%"}),
+                        
+                        dbc.Tab(label='Event Statistics', tab_id="events-tab-memory", children=[
+
+                            html.Div(id="event-stats-container-memory", children = [html.Label("No subject in memory. Please choose one below.")])], style={"margin-top": "10px", "width": "40%"}),
+
+                        dbc.Tab(label='History', tab_id="history-tab-memory", children=[
+                            
+                            html.Div(id ="history-container-memory", children = [html.Label("No history in memory. Please do further analysis.")])], style={"margin-top": "10px", "width": "40%", "height": "500px",  "overflowY": "auto"}),
+
+                    ], style={**flexDirection["row-tabs"], "width": "40%"}),
+
+                ])
+    ], style=box_styles["classic"]),
 
     html.Div([
         html.H4([
@@ -145,8 +174,6 @@ layout = html.Div([
 
                                     dbc.Button("Compute & Display", id="compute-display-psd-button", color="success", n_clicks=0, style = {"marginTop": "15px"}),
 
-                                    # dcc.Graph(id="psd-graph", style={"display": "none"}),
-
                                     dcc.Loading(id="loading", type="default", children=[
                                         
                                         html.Div(id="psd-status", style={"margin-top": "10px"})
@@ -166,6 +193,102 @@ layout = html.Div([
     ])
 
 @callback(
+    Output("subject-container-memory", "children"),
+    Output("raw-info-container-memory", "children"),
+    Output("event-stats-container-memory", "children"),
+    Output("history-container-memory", "children"),
+    Input("url", "pathname"),
+    Input("subject-tabs-memory", "active_tab"),
+    State("folder-store", "data"),
+    State("chunk-limits-store", "data"),
+    State("frequency-store", "data"),
+    State("annotations-store", "data"),
+    State("history-store", "data"),
+    prevent_initial_call=False
+)
+def populate_memory_tab_contents(pathname, selected_tab, folder_path, chunk_limits, freq_data, annotations_data, history_data):
+    """Populate memory tab content based on selected tab and stored folder path."""
+    if not folder_path or not chunk_limits or not freq_data:
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update
+
+    subject_content = dash.no_update
+    raw_info_content = dash.no_update
+    event_stats_content = dash.no_update
+    history_content = dash.no_update
+
+    if selected_tab == "subject-tab-memory":
+            subject_content = dbc.Card(
+                dbc.CardBody([
+                    html.H5([html.I(className="bi bi-person-rolodex", style={"marginRight": "10px", "fontSize": "1.2em"}), "Subject"], className="card-title"),
+                    html.Hr(),
+                    dbc.ListGroup([
+                        dbc.ListGroupItem([
+                            html.Strong(folder_path)
+                        ]),
+                    ]),
+
+                    html.H5([html.I(className="bi bi-sliders", style={"marginRight": "10px", "fontSize": "1.2em"}), "Frequency Parameters"], className="card-title"),
+                    html.Hr(),
+                    dbc.ListGroup([
+                        dbc.ListGroupItem([
+                            html.Strong("Resample Frequency: "),
+                            html.Span(f"{freq_data.get('resample_freq', 'N/A')} Hz")
+                        ]),
+                        dbc.ListGroupItem([
+                            html.Strong("Low-pass Filter: "),
+                            html.Span(f"{freq_data.get('low_pass_freq', 'N/A')} Hz")
+                        ]),
+                        dbc.ListGroupItem([
+                            html.Strong("High-pass Filter: "),
+                            html.Span(f"{freq_data.get('high_pass_freq', 'N/A')} Hz")
+                        ]),
+                        dbc.ListGroupItem([
+                            html.Strong("Notch Filter: "),
+                            html.Span(f"{freq_data.get('notch_freq', 'N/A')} Hz")
+                        ]),
+                    ])
+                ])
+            )
+
+    if selected_tab == "raw-info-tab-memory":
+        raw_info_content = fpu.build_table_raw_info(folder_path)
+
+    if selected_tab == "events-tab-memory":
+        event_stats_content = au.build_table_events_statistics(annotations_data)
+
+    if selected_tab == "history-tab-memory":
+
+        icon_map = {
+            "annotations": "bi-activity",
+            "models": "bi-stars",
+            "ica": "bi-noise-reduction"
+        }
+
+        history_content = dbc.Card(
+                dbc.CardBody([
+                    html.Div([
+                        html.H5([
+                            html.I(className=f"bi {icon_map[category]}", style={"marginRight": "10px", "fontSize": "1.2em"}),
+                            category.capitalize()
+                        ], className="card-title"),
+                        html.Hr(),
+                        dbc.ListGroup([
+                            dbc.ListGroupItem(entry)
+                            for entry in hu.read_history_data_by_category(history_data, category)
+                        ]) if hu.read_history_data_by_category(history_data, category) else
+                        html.P("No entries yet.", className="text-muted")
+                    ], style={"marginBottom": "10px"})
+
+                    for category in ['annotations', 'models', 'ica']
+                    ]
+                )
+            )
+
+
+    return subject_content, raw_info_content, event_stats_content, history_content
+
+
+@callback(
     Output("folder-path-dropdown", "options"),
     Output("folder-path-dropdown", "value"),
     Input("open-folder-button", "n_clicks"),
@@ -183,7 +306,6 @@ def update_dropdown(n_clicks, folder_path_list):
     return dash.no_update, dash.no_update
 
 @callback(
-    Output("folder-store", "data"),
     Output("load-button", "disabled"),
     Input("folder-path-dropdown", "value"),
     prevent_initial_call=True
@@ -193,116 +315,56 @@ def handle_valid_folder_path(folder_path):
     if folder_path:
         if os.path.isdir(folder_path):            
             if folder_path.endswith(".ds"):
-                return folder_path, False
-    return dash.no_update, dash.no_update
+                return False
+    return dash.no_update
+
+@callback(
+    Output("frequency-container", "style"),
+    Output("folder-store", "data"),
+    Output("sensitivity-analysis-store", "clear_data"),
+    Output("chunk-limits-store", "clear_data"),
+    Output("frequency-store", "clear_data"),
+    Output("annotations-store", "clear_data"),
+    Output("anomaly-detection-store", "clear_data"),
+    Input("load-button", "n_clicks"),
+    State("folder-path-dropdown", "value"),
+    prevent_initial_call=True
+)
+def store_folder_path_and_clear_data(n_clicks, folder_path):
+    """Clear all stores and display frequency section on load."""
+    if not folder_path:
+        return (dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update)
+    return (
+        {**flexDirection["row-flex"], "display": "flex"},
+        folder_path, 
+        True, True, True, True, True
+    )
 
 @callback(
     Output("raw-info-container", "children"),
-    Input("load-button", "n_clicks"),
-    State("folder-store", "data"),
-    prevent_initial_call=True
-)
-def populate_raw_info(n_clicks, folder_path):
-    """Fill table with info contained by raw object."""
-    if not folder_path:
-        return dash.no_update
-
-    raw = mne.io.read_raw_ctf(folder_path, preload=False, verbose=False)
-    info = raw.info
-
-    data = [
-        {"Property": "File name", "Value": raw.filenames[0] if raw.filenames else "Unknown"},
-        {"Property": "Number of channels", "Value": info['nchan']},
-        {"Property": "Sampling frequency (Hz)", "Value": info['sfreq']},
-        {"Property": "Highpass filter", "Value": info['highpass']},
-        {"Property": "Lowpass filter", "Value": info['lowpass']},
-        {"Property": "Duration (s)", "Value": round(raw.times[-1], 2)},
-        {"Property": "Channel names (preview)", "Value": ', '.join(info['ch_names'][:5]) + "..." if len(info['ch_names']) > 5 else ', '.join(info['ch_names'])},
-        {"Property": "Bad channels", "Value": ', '.join(info['bads']) if info['bads'] else "None"},
-        {"Property": "Measurement date", "Value": str(info['meas_date'])},
-        {"Property": "Experimenter", "Value": info.get('experimenter', 'Unknown')},
-        {"Property": "Comps (SSP/ICA)", "Value": f"{len(info.get('comps', []))} components"},
-        {"Property": "Projections (SSP)", "Value": f"{len(info.get('projs', []))} projections"},
-        {"Property": "Digitized points", "Value": f"{len(info.get('dig', []))} points" if info.get('dig') else "None"},
-        {"Property": "CTF Head Transform", "Value": "Available" if info.get('ctf_head_t') else "None"},
-        {"Property": "Device to Head Transform", "Value": "Available" if info.get('dev_head_t') else "None"},
-    ]
-
-    info_table_header = html.Thead(html.Tr([html.Th("Property"), html.Th("Value")]))
-    info_table_body = html.Tbody([
-        html.Tr([html.Td(row["Property"]), html.Td(str(row["Value"]))]) for row in data
-    ])
-    info_table = dbc.Table(
-        [info_table_header, info_table_body],
-        bordered=True,
-        striped=True,
-        hover=True,
-        size="sm",
-    )
-
-    return html.Div([
-        info_table
-    ])
-
-@callback(
     Output("event-stats-container", "children"),
     Input("tabs", "active_tab"),
-    State("folder-store", "data"),
-    prevent_initial_call=True
+    Input("folder-store", "data"),
+    prevent_initial_call=False
 )
-def populate_events_statistics(selected_tab, folder_path):
-    """Fill table with statistics on annotations."""
-    if selected_tab != "events-tab" or not folder_path:
-        return dash.no_update
+def populate_tab_contents(selected_tab, folder_path):
+    """Populate tab content based on selected tab and stored folder path."""
+    if not folder_path:
+        return dash.no_update, dash.no_update
 
-    raw = mne.io.read_raw_ctf(folder_path, preload=False, verbose=False)
-    annotations = raw.annotations
+    raw_info_content = dash.no_update
+    event_stats_content = dash.no_update
 
-    if len(annotations) == 0:
-        return html.P("No annotations found in this recording.")
+    if selected_tab == "raw-info-tab":
+        raw_info_content = fpu.build_table_raw_info(folder_path)
 
-    # Count annotation descriptions
-    description_counts = Counter(annotations.description)
+    if selected_tab == "events-tab":
+        event_stats_content = fpu.build_table_events_statistics(folder_path)
 
-    # Build a stats table
-    table_header = [html.Thead(html.Tr([html.Th("Event Name"), html.Th("Count")]))]
-    table_body = [
-        html.Tr([html.Td(desc), html.Td(count)]) for desc, count in description_counts.items()
-    ]
-    annotation_table = dbc.Table(table_header + [html.Tbody(table_body)], bordered=True, striped=True, hover=True, size="sm")
-
-    # Show total number and a few more stats
-    stats_summary = html.Ul([
-        html.Li(f"Total annotations: {len(annotations)}"),
-        html.Li(f"Unique event types: {len(description_counts)}"),
-        html.Li(f"First event starts at {annotations.onset[0]:.2f} s"),
-        html.Li(f"Last event ends at {(annotations.onset[-1] + annotations.duration[-1]):.2f} s"),
-    ])
-
-    return html.Div([
-        annotation_table,
-        html.Hr(),
-        html.H5("Event Summary"),
-        stats_summary,
-    ])
-
-@callback(
-    [Output("frequency-container", "style"),
-    Output("sensitivity-analysis-store", "clear_data")],
-    Input("load-button", "n_clicks"),
-    prevent_initial_call=True
-)
-def handle_load_button(n_clicks):
-    """Display frequency parameters when button load is clicked"""
-    if n_clicks > 0:
-        # Clean cache or temporary files
-        #TODO
-        return {**flexDirection["row-flex"], "display": "flex"}, True
-    return dash.no_update, dash.no_update
+    return raw_info_content, event_stats_content
 
 @callback(
     Output("preprocess-status", "children"),
-    Output("frequency-store", "data"),
     Input("resample-freq", "value"),
     Input("high-pass-freq", "value"),
     Input("low-pass-freq", "value"),
@@ -313,25 +375,15 @@ def handle_frequency_parameters(resample_freq, high_pass_freq, low_pass_freq, no
     """Retrieve frequency parameters and store them."""
 
     if not low_pass_freq or not high_pass_freq or not notch_freq:
-        return f"⚠️ Please fill in all frequency parameters.", dash.no_update
+        return f"⚠️ Please fill in all frequency parameters."
     
     elif high_pass_freq >= low_pass_freq:
-        error = "High-pass frequency must be less than low-pass frequency."
-        return error, dash.no_update
-    else:
-        # Store the frequency values when the folder is valid
-        frequency_values = {
-            "resample_freq": resample_freq,
-            "low_pass_freq": low_pass_freq,
-            "high_pass_freq": high_pass_freq,
-            "notch_freq": notch_freq
-        }
-        return None, frequency_values
+        return f"⚠️ High-pass frequency must be less than low-pass frequency."
+
+    return dash.no_update
   
 @callback(
     Output("psd-status", "children"),
-    # Output("psd-graph", "figure"),
-    # Output("psd-graph", "style"),
     Input("compute-display-psd-button", "n_clicks"),
     State("folder-store", "data"),
     State("frequency-store", "data"),
@@ -346,65 +398,20 @@ def display_psd(n_clicks, folder_path, freq_data):
         return "Please fill in all frequency parameters."
     
     if n_clicks > 0:
-    
-        raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
-
-        resample_freq = freq_data.get("resample_freq")
-        low_pass_freq = freq_data.get("low_pass_freq")
-        high_pass_freq = freq_data.get("high_pass_freq")
-        notch_freq = freq_data.get("notch_freq")
-
-        if not low_pass_freq or not high_pass_freq or not notch_freq:
-            return dash.no_update
-        
-        raw.notch_filter(freqs=notch_freq)
-
-        # Compute Power Spectral Density (PSD)
-        psd_data = raw.compute_psd(method='welch', fmin=high_pass_freq, fmax=low_pass_freq, n_fft=2048, picks='meg', n_jobs=-1)
-        psd, freqs = psd_data.get_data(return_freqs=True)
-
-        # Convert PSD to dB (as MNE does by default)
-        psd_dB = 10 * np.log10(psd)
-
-        # Create a Plotly figure
-        psd_fig = go.Figure()
-
-        # Plot multiple channels with transparency for better readability
-        for ch_idx, ch_name in enumerate(config.ALL_CH_NAMES_PREFIX):
-            psd_fig.add_trace(go.Scatter(
-                x=freqs,
-                y=psd_dB[ch_idx],  
-                mode='lines',
-                line=dict(width=1),
-                name=ch_name
-            ))
-
-        # Update layout to match MNE’s default style
-        psd_fig.update_layout(
-            title="Power Spectral Density (PSD)",
-            xaxis=dict(
-                title="Frequency (Hz)",
-                type="linear",  # MNE uses linear frequency scale
-                showgrid=True
-            ),
-            yaxis=dict(
-                title="Power (dB)",  # Log scale power in dB
-                type="linear",
-                showgrid=True
-            ),
-            # template="plotly_white"
-        )
-
-        return dcc.Graph(figure = psd_fig, style={"padding": "10px", "borderRadius": "10px", "boxShadow": "0 4px 10px rgba(0,0,0,0.1)"})
+        return pu.compute_power_spectrum_decomposition(folder_path, freq_data)
 
 @callback(
     Output("preprocess-status", "children", allow_duplicate=True),
-    Output("url", "pathname"),
+    Output("frequency-store", "data"),
     Output("annotations-store", "data"),
     Output("chunk-limits-store", "data"),
+    Output("url", "pathname"),
     Input("preprocess-display-button", "n_clicks"),
     State("folder-store", "data"),
-    State("frequency-store", "data"),
+    State("resample-freq", "value"),
+    State("high-pass-freq", "value"),
+    State("low-pass-freq", "value"),
+    State("notch-freq", "value"),
     State("heartbeat-channel", "value"),
     running=[
         (Output("preprocess-display-button", "disabled"), True, False),
@@ -412,7 +419,7 @@ def display_psd(n_clicks, folder_path, freq_data):
         (Output("compute-display-psd-button", "disabled"), True, False)],
     prevent_initial_call=True
 )
-def preprocess_meg_data(n_clicks, folder_path, freq_data, heartbeat_ch_name):
+def preprocess_meg_data(n_clicks, folder_path, resample_freq, high_pass_freq, low_pass_freq, notch_freq, heartbeat_ch_name):
     """Preprocess MEG data and save it, store annotations and chunk limits in memory."""
 
     if n_clicks > 0:
@@ -423,10 +430,13 @@ def preprocess_meg_data(n_clicks, folder_path, freq_data, heartbeat_ch_name):
             annotations_dict, max_length = au.get_annotations_dataframe(raw, heartbeat_ch_name)
             chunk_limits = pu.update_chunk_limits(max_length)
 
-            resample_freq = freq_data.get("resample_freq")
-            low_pass_freq = freq_data.get("low_pass_freq")
-            high_pass_freq = freq_data.get("high_pass_freq")
-            notch_freq = freq_data.get("notch_freq")
+            # Store the frequency values when the folder is valid
+            freq_data = {
+                "resample_freq": resample_freq,
+                "low_pass_freq": low_pass_freq,
+                "high_pass_freq": high_pass_freq,
+                "notch_freq": notch_freq
+            }
 
             # Apply filtering and resampling
             raw.filter(l_freq=high_pass_freq, h_freq=low_pass_freq, n_jobs=8)
@@ -436,9 +446,9 @@ def preprocess_meg_data(n_clicks, folder_path, freq_data, heartbeat_ch_name):
             for chunk_idx in chunk_limits:
                 start_time, end_time = chunk_idx
                 raw_df = pu.get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw)
-            return "Preprocessed and saved data", "/viz/raw-signal", annotations_dict, chunk_limits
+            return "Preprocessed and saved data", freq_data, annotations_dict, chunk_limits, "/viz/raw-signal"
         
         except Exception as e:
-            return f"Error during preprocessing : {str(e)}", dash.no_update, None, None
+            return f"Error during preprocessing : {str(e)}", dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
-    return None, dash.no_update, None, None
+    return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update

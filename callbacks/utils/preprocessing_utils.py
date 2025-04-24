@@ -1,10 +1,15 @@
+# Dash & Plotly
+import dash
+from dash import dcc
+import plotly.graph_objects as go
+
 # Standard library
 import math
 import pickle
 from pathlib import Path
+import numpy as np
 
 # Third-party libraries
-import dash
 import mne
 from flask_caching import Cache
 
@@ -20,6 +25,26 @@ cache = Cache(app.server, config={
 })
 
 ################################# RAW DATA PREPROCESSING (FILTERING, SUBSAMPLING) #################################################################
+
+def filter_resample(folder_path, freq_data):
+      
+    raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
+    
+    resample_freq = freq_data.get("resample_freq")
+    low_pass_freq = freq_data.get("low_pass_freq")
+    high_pass_freq = freq_data.get("high_pass_freq")
+    notch_freq = freq_data.get("notch_freq")
+
+    # Apply filtering and resampling
+    raw.filter(l_freq=high_pass_freq, h_freq=low_pass_freq, n_jobs=8)
+    raw.notch_filter(freqs=notch_freq)
+    raw.resample(resample_freq)
+
+    return raw
+
+
+############################### MAIN CACHED FUNCTIONS (PREPROCESSING AND ICA) ##############################################
+      
 
 def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw=None):
     """
@@ -37,18 +62,10 @@ def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw
     def process_data_in_chunks(folder_path, freq_data, start_time, end_time, raw=None):
         try:
             if raw is None:
-                raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
-                resample_freq = freq_data.get("resample_freq")
-                low_pass_freq = freq_data.get("low_pass_freq")
-                high_pass_freq = freq_data.get("high_pass_freq")
-                notch_freq = freq_data.get("notch_freq")
-                # Apply filtering and resampling
-                raw.filter(l_freq=high_pass_freq, h_freq=low_pass_freq, n_jobs=8)
-                raw.notch_filter(freqs=notch_freq)
-                raw.resample(resample_freq)
+                prep_raw = filter_resample(folder_path, freq_data)
 
             # Crop the raw data to the chunk's time range
-            raw_chunk = raw.copy().crop(tmin=start_time, tmax=end_time)
+            raw_chunk = prep_raw.copy().crop(tmin=start_time, tmax=end_time)
 
             # Transform the raw data into a dataframe
             raw_df = raw_chunk.to_data_frame(picks="meg", index="time")  # Get numerical data (channels × time)
@@ -135,6 +152,60 @@ def update_chunk_limits(total_duration):
         chunk_limits.append([start_time, end_time])
 
     return chunk_limits
+
+
+################################## POWER SPECTRUM DECOMPOSITION ######################################################
+
+def compute_power_spectrum_decomposition(folder_path, freq_data):
+    raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
+
+    resample_freq = freq_data.get("resample_freq")
+    low_pass_freq = freq_data.get("low_pass_freq")
+    high_pass_freq = freq_data.get("high_pass_freq")
+    notch_freq = freq_data.get("notch_freq")
+
+    if not low_pass_freq or not high_pass_freq or not notch_freq:
+        return dash.no_update
+    
+    raw.notch_filter(freqs=notch_freq)
+
+    # Compute Power Spectral Density (PSD)
+    psd_data = raw.compute_psd(method='welch', fmin=high_pass_freq, fmax=low_pass_freq, n_fft=2048, picks='meg', n_jobs=-1)
+    psd, freqs = psd_data.get_data(return_freqs=True)
+
+    # Convert PSD to dB (as MNE does by default)
+    psd_dB = 10 * np.log10(psd)
+
+    # Create a Plotly figure
+    psd_fig = go.Figure()
+
+    # Plot multiple channels with transparency for better readability
+    for ch_idx, ch_name in enumerate(config.ALL_CH_NAMES_PREFIX):
+        psd_fig.add_trace(go.Scatter(
+            x=freqs,
+            y=psd_dB[ch_idx],  
+            mode='lines',
+            line=dict(width=1),
+            name=ch_name
+        ))
+
+    # Update layout to match MNE’s default style
+    psd_fig.update_layout(
+        title="Power Spectral Density (PSD)",
+        xaxis=dict(
+            title="Frequency (Hz)",
+            type="linear",  # MNE uses linear frequency scale
+            showgrid=True
+        ),
+        yaxis=dict(
+            title="Power (dB)",  # Log scale power in dB
+            type="linear",
+            showgrid=True
+        ),
+        # template="plotly_white"
+    )
+
+    return dcc.Graph(figure = psd_fig, style={"padding": "10px", "borderRadius": "10px", "boxShadow": "0 4px 10px rgba(0,0,0,0.1)"})
 
 # tentative function to interpolate missing channels using mne 
 def interpolate_missing_channels(raw):

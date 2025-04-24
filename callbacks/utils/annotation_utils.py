@@ -2,6 +2,8 @@ from collections import Counter
 import mne
 import pandas as pd
 import math
+from dash import html
+import dash_bootstrap_components as dbc
 
 def get_annotation_descriptions(annotations_store):
         """
@@ -97,3 +99,45 @@ def get_annotations(prediction_or_truth, annotations_df):
 
     # Return the onsets (index) as a list
     return filtered_annotations.index.tolist()
+
+def build_table_events_statistics(annotations):
+
+    if len(annotations) == 0:
+        return html.P("No annotations found in this recording.")
+
+    # Extract values from list of dicts
+    descriptions = [ann["description"] for ann in annotations]
+    onsets = [ann["onset"] for ann in annotations]
+    durations = [ann["duration"] for ann in annotations]
+
+    # Count descriptions
+    description_counts = Counter(descriptions)
+
+    # Build table
+    table_header = html.Thead(html.Tr([html.Th("Event Name"), html.Th("Count")]))
+    table_body = html.Tbody([
+        html.Tr([html.Td(desc), html.Td(count)]) for desc, count in description_counts.items()
+    ])
+
+    annotation_table = dbc.Table(
+        [table_header, table_body],
+        bordered=True,
+        striped=True,
+        hover=True,
+        size="sm"
+    )
+
+    # Summary stats
+    stats_summary = html.Ul([
+        html.Li(f"Total annotations: {len(annotations)}"),
+        html.Li(f"Unique event types: {len(description_counts)}"),
+        html.Li(f"First event starts at {min(onsets):.2f} s"),
+        html.Li(f"Last event ends at {(max([o + d for o, d in zip(onsets, durations)])):.2f} s"),
+    ])
+
+    return html.Div([
+        annotation_table,
+        html.Hr(),
+        html.H5("Event Summary"),
+        stats_summary
+    ])
