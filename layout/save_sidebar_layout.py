@@ -17,12 +17,7 @@ def create_save():
                     outline=True,
                     size="sm",
                     n_clicks=0,
-                    style={
-                        "fontSize": "12px",
-                        "padding": "6px 12px",
-                        "borderRadius": "5px",
-                        "width": "48%",  # Adjusted width
-                    }
+                    style=button_styles["tiny"]
                 ),
                 dbc.Button(
                     "Clear All",
@@ -31,12 +26,7 @@ def create_save():
                     outline=True,
                     size="sm",
                     n_clicks=0,
-                    style={
-                        "fontSize": "12px",
-                        "padding": "6px 12px",
-                        "borderRadius": "5px",
-                        "width": "48%",  # Adjusted width
-                    }
+                    style=button_styles["tiny"]
                 ),
             ], style={"display": "flex", "justifyContent": "space-between", "gap": "4%", "marginBottom": "6px"}),  # Align buttons side by side
 
@@ -52,55 +42,38 @@ def create_save():
         html.Div([
             # Dropdown for choosing folder
             html.Label("Select Saving Folder:", style={**label_styles["classic"]}),
-            html.Div([
-                dbc.Row([
-                    dbc.Col(
-                        dbc.Button("📂", id="open-folder-button", color="primary", className="me-2"),
-                        width=4
-                    ),
-                    dbc.Col(
-                        dcc.Dropdown(
-                            id="saving-folder-path-dropdown",
-                            options=fpu.get_folder_path_options(),
-                            placeholder="Select ...",
-                        ),
-                        width=8
-                    ),
-                ])
-            ])
-        ], style = box_styles["classic"]),
 
-        html.Div([
+            html.Div([
+                dbc.Button("📂", id="open-folder-button", color="primary", className="me-2"), 
+                dcc.Dropdown(
+                    id="saving-folder-path-dropdown",
+                    options=fpu.get_folder_path_options(),
+                    placeholder="Select ...",
+                )],style={"display": "block", "justifyContent": "space-between", "gap": "4%", "marginBottom": "10px"}
+            ),
+
+            
+
             # Dropdown for choosing folder
             html.Label("Enter Old MarkerFile.mrk Name:", style={**label_styles["classic"]}),
             dbc.Input(id="old-mrk-name", type="text", value="OldMarkerFile_test", style={**input_styles["small-number"]}),
 
-        ], style = box_styles["classic"]),
-
-        html.Div([
             # Dropdown for choosing folder
             html.Label("Enter New MarkerFile.mrk Name:", style={**label_styles["classic"]}),
             dbc.Input(id="new-mrk-name", type="text", value="MarkerFile", style={**input_styles["small-number"]}),
+                            
+            dbc.Button(
+                "Save",
+                id="save-annotation-button",
+                color="warning",
+                outline=True,
+                size="sm",
+                n_clicks=0,
+                disabled=False,
+                style=button_styles["big"]
+            ),
 
-        ], style = box_styles["classic"]),
-
-        html.Div([
-
-            html.Label("By default, the old marker file is renamed to OldMarkerFile.mrk, and the new one is saved as MarkerFile.mrk in the subject folder, ensuring backward compatibility.", style={**label_styles["info"]}),
-            
-            # Run Prediction Button
-            html.Div([
-                dbc.Button(
-                    "Save",
-                    id="save-annotation-button",
-                    color="warning",
-                    outline=True,
-                    size="sm",
-                    n_clicks=0,
-                    disabled=False,
-                    style=button_styles["big"]
-                ),
-            ]),
+            dbc.Tooltip("By default, the old marker file is renamed to OldMarkerFile.mrk, and the new one is saved as MarkerFile.mrk in the subject folder, ensuring backward compatibility.", target="save-annotation-button", placement="left"),
 
             # Loading spinner wraps only the elements that require loading
             dcc.Loading(
@@ -109,9 +82,8 @@ def create_save():
                 children=[
                     html.Div(id="saving-mrk-status", style={"margin-top": "10px"})
                 ]),
-
-        ], style = box_styles["classic"]),
-
+        ])
+            
     ])
 
     return layout

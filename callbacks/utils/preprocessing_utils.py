@@ -43,8 +43,14 @@ def filter_resample(folder_path, freq_data):
     return raw
 
 
-############################### MAIN CACHED FUNCTIONS (PREPROCESSING AND ICA) ##############################################
-      
+############################### MAIN CACHED FUNCTIONS (PREPROCESSING) ##############################################
+
+def update_chunk_limits(total_duration):
+    chunk_duration = config.CHUNK_RECORDING_DURATION
+    return [
+        [start, min(start + chunk_duration, total_duration)]
+        for start in range(0, math.ceil(total_duration / chunk_duration) * chunk_duration, chunk_duration)
+    ]
 
 def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw=None):
     """
@@ -64,14 +70,9 @@ def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw
             if raw is None:
                 prep_raw = filter_resample(folder_path, freq_data)
 
-            # Crop the raw data to the chunk's time range
             raw_chunk = prep_raw.copy().crop(tmin=start_time, tmax=end_time)
-
-            # Transform the raw data into a dataframe
             raw_df = raw_chunk.to_data_frame(picks="meg", index="time")  # Get numerical data (channels × time)
-
-            # Standardization per channel
-            raw_df_standardized = raw_df - raw_df.mean(axis = 0)
+            raw_df_standardized = raw_df - raw_df.mean(axis = 0) # Standardization per channel
 
             return raw_df_standardized
 
@@ -84,16 +85,14 @@ def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw
 ###################################################### ICA ########################################################################
 
 @cache.memoize()
-def compute_ica(folder_path, n_components, ica_method, max_iter, decim):
+def _compute_ica(folder_path, n_components, ica_method, max_iter, decim):
+    path = config.CACHE_DIR / f"{Path(folder_path).stem}_{n_components}_{ica_method}_{max_iter}_{decim}-ica.fif"
+    
+    if path.exists():
+        print("ICA already exists in cache.")
+        return str(path)
 
-    path = f"{Path(folder_path).stem}_{n_components}_{ica_method}_{max_iter}_{decim}-ica.fif"
-
-    if Path(path).exists():
-         print("it already exists)")
-         return str(path)
-
-    raw = mne.io.read_raw_ctf(folder_path, preload=True)
-    raw = raw.pick_types(meg=True)
+    raw = mne.io.read_raw_ctf(folder_path, preload=True).pick_types(meg=True)
     raw = raw.filter(l_freq=1.0, h_freq=None)
 
     ica = mne.preprocessing.ICA(
@@ -105,12 +104,12 @@ def compute_ica(folder_path, n_components, ica_method, max_iter, decim):
     ica.fit(raw, decim=decim)
     ica.save(path)
 
-    return path
+    return str(path)
 
 @cache.memoize()
 def get_ica_sources_for_chunk(folder_path, start_time, end_time, n_components, ica_method, max_iter, decim):
     # Get the cached ICA from step 1
-    ica_path = compute_ica(folder_path, n_components, ica_method, max_iter, decim)
+    ica_path = _compute_ica(folder_path, n_components, ica_method, max_iter, decim)
 
     # Load and crop raw data for the chunk
     raw = mne.io.read_raw_ctf(folder_path, preload=True)
@@ -138,28 +137,11 @@ def get_ica_sources_for_chunk(folder_path, start_time, end_time, n_components, i
 
     return ica_df_standardized
 
- 
-def update_chunk_limits(total_duration):
-    # Define chunk duration (in seconds) and total duration
-    chunk_duration = config.CHUNK_RECORDING_DURATION
-
-    # Calculate start and end times for the selected chunk
-    chunk_limits = []
-    chunk_number = math.ceil(total_duration/chunk_duration)
-    for chunk_idx in range(chunk_number):
-        start_time = chunk_idx * chunk_duration
-        end_time = min(start_time + chunk_duration, total_duration)
-        chunk_limits.append([start_time, end_time])
-
-    return chunk_limits
-
-
 ################################## POWER SPECTRUM DECOMPOSITION ######################################################
 
 def compute_power_spectrum_decomposition(folder_path, freq_data):
     raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
 
-    resample_freq = freq_data.get("resample_freq")
     low_pass_freq = freq_data.get("low_pass_freq")
     high_pass_freq = freq_data.get("high_pass_freq")
     notch_freq = freq_data.get("notch_freq")
@@ -176,10 +158,8 @@ def compute_power_spectrum_decomposition(folder_path, freq_data):
     # Convert PSD to dB (as MNE does by default)
     psd_dB = 10 * np.log10(psd)
 
-    # Create a Plotly figure
     psd_fig = go.Figure()
 
-    # Plot multiple channels with transparency for better readability
     for ch_idx, ch_name in enumerate(config.ALL_CH_NAMES_PREFIX):
         psd_fig.add_trace(go.Scatter(
             x=freqs,
@@ -189,7 +169,6 @@ def compute_power_spectrum_decomposition(folder_path, freq_data):
             name=ch_name
         ))
 
-    # Update layout to match MNE’s default style
     psd_fig.update_layout(
         title="Power Spectral Density (PSD)",
         xaxis=dict(
@@ -202,20 +181,20 @@ def compute_power_spectrum_decomposition(folder_path, freq_data):
             type="linear",
             showgrid=True
         ),
-        # template="plotly_white"
+        template="plotly_dark"
     )
 
-    return dcc.Graph(figure = psd_fig, style={"padding": "10px", "borderRadius": "10px", "boxShadow": "0 4px 10px rgba(0,0,0,0.1)"})
+    return dcc.Graph(figure = psd_fig)
 
 # tentative function to interpolate missing channels using mne 
 def interpolate_missing_channels(raw):
 	print("interpolate missing or bad channel")
 	
     # open a file containing the good 274 channels
-	with open(Path.cwd() / "model_pipeline/good_channels", 'rb') as fp:
+	with open("model_pipeline/good_channels", 'rb') as fp:
 		good_channels = pickle.load(fp)
 
-	with open(Path.cwd() / "model_pipeline/loc_meg_channels.pkl", 'rb') as fp: #path to the file.pkl containing for each channel name its location
+	with open("model_pipeline/loc_meg_channels.pkl", 'rb') as fp: #path to the file.pkl containing for each channel name its location
 		loc_meg_channels = pickle.load(fp)
 		
 	existing_channels = raw.info['ch_names'] # returns the list of chanel names that are present in the data

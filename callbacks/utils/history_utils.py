@@ -4,7 +4,7 @@ from dash import html
 def fill_history_data(history_data, category, action):
     # Ensure history_data is a dictionary with lists per category
     if not isinstance(history_data, dict):
-        history_data = {"annotations": [], "model testing": [], "ica": []}
+        history_data = {"annotations": [], "model testing": [], "ICA": []}
 
     if category not in history_data:
         history_data[category] = []

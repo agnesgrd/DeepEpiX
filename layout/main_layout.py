@@ -112,5 +112,10 @@ label_styles = {
         "fontSize": "14px",
         "marginBottom": "5px",
     }
-
 }
+
+icon = {
+        "annotations": "bi-activity",
+        "models": "bi-stars",
+        "ICA": "bi-noise-reduction"
+    }

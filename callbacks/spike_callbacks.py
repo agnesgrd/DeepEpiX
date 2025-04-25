@@ -24,7 +24,8 @@ def register_enable_add_spike_button():
     @callback(
         Output("add-spike-button", "disabled"),
         Input("spike-name", "value"),
-        Input("spike-timestep", "value")
+        Input("spike-timestep", "value"),
+        prevent_initial_call=False
     )
     def enable_add_spike_button(name, timestep):
         if name is not None and timestep is not None:

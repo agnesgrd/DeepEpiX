@@ -9,15 +9,13 @@ from collections import Counter
 
 # Function to get model options
 def get_folder_path_options():
-    data_dir = Path.cwd() / "data"  # Proper path handling
-    data = list(data_dir.glob("*.ds"))  # List all matching files
-    
+    data_dir = Path("data")
+    data = list(data_dir.glob("*.ds"))
     return (
         [{"label": d.name, "value": str(d.resolve())} for d in data]
         if data
         else [{"label": "No data available", "value": ""}]
     )
-
 
 def browse_folder():
     root = tk.Tk()
@@ -39,7 +37,7 @@ def get_ds_folder(path):
     for part in reversed(parts):  # Iterate from the end
         if part.endswith(".ds"):  # Check if it ends with ".ds"
             return part
-    return None  # Return None if no matching folder is found
+    return None  # If no matching folder is found
 
 def build_table_raw_info(folder_path):
 
@@ -136,8 +134,6 @@ def build_table_events_statistics(folder_path):
     ]
     annotation_table = dbc.Table(table_header + [html.Tbody(table_body)], bordered=True, striped=True, hover=True, size="sm")
 
-
-    # Summary stats
     stats_summary = dbc.Card(
         dbc.CardBody([
             html.H5([

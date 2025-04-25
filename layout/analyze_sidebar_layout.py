@@ -10,8 +10,9 @@ def create_analyze():
     # Plot topomap on a interval timepoint
         html.Div([
             html.Div([
+                html.H6([html.I(className=f"bi bi-crosshair"), " Topomap"], style={"fontWeight": "bold", "marginBottom": "10px"}),
                 dbc.Button(
-                    "Plot Topomap",
+                    "Activate",
                     id="plot-topomap-button",  # Unique ID for each button
                     color="info",
                     outline=True,
@@ -50,15 +51,11 @@ def create_analyze():
 
         # Add a spike
         html.Div([
-            # Label and input field for timepoint entry
-            # html.Label(
-            #     "Spike:",
-            #     style={"fontWeight": "bold", "fontSize": "14px", "marginBottom": "8px"}
-            # ),
+            html.H6([html.I(className=f"bi bi-pencil"), " Event modification"], style={"fontWeight": "bold", "marginBottom": "10px"}),
             dbc.Input(
                 id="spike-name",  # Unique ID for each input
                 type="text",
-                placeholder="Spike name ...",
+                placeholder="Enter a name ...",
                 size="sm",
                 persistence=True,
                 persistence_type="local",
@@ -76,7 +73,7 @@ def create_analyze():
                 persistence_type="local",
                 style={**input_styles["small-number"]}
             ),
-            dbc.Tooltip("Click on the graph to mark the desired time point.", target="spike-timestep", placement="left"),
+            dbc.Tooltip("Click on the graph to mark the desired time point or enter it manually.", target="spike-timestep", placement="left"),
             dbc.Button(
                 "Add new spike",
                 id="add-spike-button",  # Unique ID for each button
