@@ -61,15 +61,3 @@ def create_topomap(raw, timepoint):
     plt.close('all')
     
     return img_str
-
-def create_small_graph_time_channel(min_time, max_time, folder_path, freq_data, time_points, page_selection, chunk_limits):
-
-    selected_channels=c.ALL_CH_NAMES[::5]
-
-    if max_time - min_time < 4:
-        min_time = (min_time + max_time)/2 - 2
-        max_time = (min_time + max_time)/2 + 3
-
-    fig = gu.generate_small_graph_time_channel(selected_channels, [min_time, max_time], folder_path, freq_data, time_points, page_selection, chunk_limits)
-
-    return fig

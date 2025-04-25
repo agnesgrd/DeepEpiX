@@ -5,13 +5,13 @@ from callbacks.utils import history_utils as hu
 
 
 
-def register_enable_delete_spike_button():
+def register_enable_delete_event_button():
     @callback(
-        Output("delete-spike-button", "disabled"),
+        Output("delete-event-button", "disabled"),
         Input("meg-signal-graph", "selectedData"),
         prevent_initial_call=True
     )
-    def enable_delete_spike_button(selected_data):
+    def enable_delete_event_button(selected_data):
         if selected_data is None:
             return dash.no_update
         if 'range' not in selected_data.keys():
@@ -20,22 +20,24 @@ def register_enable_delete_spike_button():
             return False  # Enable the button if both inputs are provided
         return True  # Disable the button if either input is missing
     
-def register_enable_add_spike_button():
+def register_enable_add_event_button():
     @callback(
-        Output("add-spike-button", "disabled"),
-        Input("spike-name", "value"),
-        Input("spike-timestep", "value"),
+        Output("add-event-button", "disabled"),
+        Input("event-name", "value"),
+        Input("event-onset", "value"),
+        Input("event-duration", "value"),
         prevent_initial_call=False
     )
-    def enable_add_spike_button(name, timestep):
-        if name is not None and timestep is not None:
-            return False  # Enable the button if both inputs are provided
-        return True  # Disable the button if either input is missing
+    def enable_add_event_button(name, onset, duration):
+        if None in (name, onset, duration):
+            return True
+        else:
+            return False
 
-def register_add_spike_timestep_on_click():   
+def register_add_event_timestep_on_click():   
     @callback(
         #Output("topomap-timepoint", "value"),
-        Output("spike-timestep", "value"),
+        Output("event-onset", "value"),
         Input('meg-signal-graph', 'clickData'),  # Capture selection data from the graph
         prevent_initial_call = True
     )
@@ -50,20 +52,20 @@ def register_add_spike_timestep_on_click():
         else:
             return dash.no_update  # Default range if no selection has been made
             
-def register_add_spike_to_annotation():
+def register_add_event_to_annotation():
     @callback(
         Output("annotations-store", "data", allow_duplicate=True),
         Output("history-store", "data", allow_duplicate=True),
         Output("annotation-checkboxes", "value", allow_duplicate=True),
-        Input("add-spike-button", "n_clicks"),
-        State("spike-name", "value"),
-        State("spike-timestep", "value"),
+        Input("add-event-button", "n_clicks"),
+        State("event-name", "value"),
+        State("event-onset", "value"),
         State("annotations-store", "data"),
         State("history-store", "data"),
         State("annotation-checkboxes", "value"),
         prevent_initial_call=True
     )
-    def add_spike_to_annotation(n_clicks, spike_name, spike_timestep, annotations_data, history_data, checkbox_values):
+    def add_event_to_annotation(n_clicks, spike_name, spike_timestep, annotations_data, history_data, checkbox_values):
         # Validate input
         if n_clicks is None or n_clicks == 0:
             return dash.no_update, dash.no_update, dash.no_update
@@ -95,7 +97,7 @@ def register_delete_selected_spike():
     @callback(
         Output("annotations-store", "data", allow_duplicate=True),
         Output("history-store", "data", allow_duplicate=True),
-        Input("delete-spike-button", "n_clicks"),
+        Input("delete-event-button", "n_clicks"),
         State("meg-signal-graph", "selectedData"),
         State("annotations-store", "data"),
         State("annotation-checkboxes", "value"),

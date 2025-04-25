@@ -5,79 +5,51 @@ import callbacks.utils.graph_utils as gu
 import plotly.graph_objects as go
 import pandas as pd
 import itertools
+from layout import color_palette
 
-def register_update_annotations(
+def register_update_annotations_on_graph(
     graph_id,
-    annotation_checkboxes_id,
+    checkboxes_id,
     page_selector_id,
     chunk_limits_store_id
 ):
     @callback(
         Output(graph_id, "figure", allow_duplicate=True),
         Input(graph_id, "figure"),  # Current figure to update
-        State(annotation_checkboxes_id, "value"),  # Annotations to show based on the checklist
-        State(annotation_checkboxes_id, "options"),
+        State(checkboxes_id, "value"),  # Annotations to show
         State(page_selector_id, "value"),
         State("annotations-store", "data"),
         State(chunk_limits_store_id, "data"),
         prevent_initial_call=True,
         suppress_callback_exceptions=True
     )
-    def update_annotations(fig_dict, annotations_to_show, annotation_options, page_selection, annotations, chunk_limits):
+    def _update_annotations_on_graph(fig_dict, annotations_to_show, page_selection, annotations, chunk_limits):
         """Update annotations visibility based on the checklist selection."""
-        # Default time range in case the figure doesn't contain valid x-axis range data
+        if not annotations_to_show or len(annotations_to_show) == 0 or fig_dict is None or 'layout' not in fig_dict or 'yaxis' not in fig_dict['layout']:
+            fig_patch = Patch()
+            fig_patch["layout"]["shapes"] = []
+            fig_patch["layout"]["annotations"] = []
+            return fig_patch
 
-        if not annotations_to_show or len(annotations_to_show) == 0:
-            return dash.no_update  # No annotations available, return the same graph
-
-        time_range = chunk_limits[int(page_selection)]
-
-        # Create a Patch for the figure
         fig_patch = Patch()
-
-        # Check if fig_dict is None (i.e., if it is the initial empty figure)
-        if fig_dict is None or 'layout' not in fig_dict or 'yaxis' not in fig_dict['layout']:
-            # Set default y_min and y_max if the figure layout is not available
-            y_min, y_max = 0, 1  # Set default range for the y-axis
-        else:
-            # Get the current y-axis range from the figure
-            y_min, y_max = fig_dict['layout']['yaxis'].get('range', [0, 1])
-
-        # Convert annotations to DataFrame
-        annotations_df = pd.DataFrame(annotations).set_index('onset')
+        y_min, y_max = fig_dict['layout']['yaxis'].get('range', [0, 1])
 
         # Filter annotations based on the current time range
+        time_range = chunk_limits[int(page_selection)]
+        annotations_df = pd.DataFrame(annotations).set_index('onset')
         filtered_annotations_df = gu.get_annotations_df_filtered_on_time(time_range, annotations_df)
+        unique_descriptions = sorted(filtered_annotations_df["description"].unique())
 
         # Prepare the shapes and annotations for the selected annotations
         new_shapes = []
         new_annotations = []
-
-        # Define a color palette (extend as needed)
-        color_palette = itertools.cycle([
-                "#e6194b",  # strong red
-                "#3cb44b",  # vivid green
-                "#0082c8",  # vivid blue
-                "#f58231",  # bright orange
-                "#911eb4",  # strong purple
-                "#46f0f0",  # cyan
-                "#f032e6",  # magenta (stronger than light pink)
-                "#d62728",  # deep red
-                "#2ca02c",  # dark green
-                "#1f77b4",  # standard matplotlib blue
-            ])
-
-        # Dictionary to store description-to-color mapping
         description_colors = {}
+        for desc in unique_descriptions:
+            description_colors[desc] = next(itertools.cycle(color_palette))
 
         for _, row in filtered_annotations_df.iterrows():
             description = row["description"]
             duration = row['duration']
-
-            # Assign a consistent color for each description
-            if description not in description_colors:
-                description_colors[description] = next(color_palette)
-
             color = description_colors[description]  # Get assigned color
 
             if str(description) in annotations_to_show:
@@ -93,7 +65,7 @@ def register_update_annotations(
                             y1=y_max,
                             xref="x",
                             yref="y",
-                            line=dict(color=color, width=3, dash="dot"),
+                            line=dict(color=color, width=2, dash="dot"),
                             opacity=1
                         )
                     )
@@ -116,15 +88,19 @@ def register_update_annotations(
                 # Add the label in the margin
                 new_annotations.append(
                     dict(
-                        x=row.name - 0.05,
-                        y=0,  # Slightly above the graph in the margin
+                        x=row.name,
+                        y=0,  # Middle of the plot area; adjust as needed
                         xref="x",
-                        yref="paper",  # Use paper coordinates for the y-axis (margins)
-                        text=description,  # Annotation text
-                        showarrow=False,  # No arrow needed
-                        font=dict(size=10, color=color),  # Customize font
+                        yref="paper",  # Use relative y position in the plotting area
+                        text=description,
+                        showarrow=False,
+                        font=dict(size=10, color=color),
                         align="center",
-                        textangle=-90
+                        xanchor="center",  # Center horizontally on x
+                        textangle=-90,  # Horizontal text
+                        bgcolor="rgba(255, 255, 255, 0.7)",  # Semi-transparent white background
+                        borderwidth=1,
+                        opacity=1
                     )
                 )
 
@@ -137,7 +113,7 @@ def register_update_annotations(
 def register_update_annotation_graph(
     update_button_id,
     page_selector_id,
-    annotation_checkboxes_id,
+    checkboxes_id,
     annotation_graph_id,
     chunk_limits_store_id
 ):
@@ -145,8 +121,8 @@ def register_update_annotation_graph(
         Output(annotation_graph_id, "figure"),
         Input(update_button_id, "n_clicks"),
         Input(page_selector_id, "value"),
-        State(annotation_checkboxes_id, "options"),
-        State(annotation_checkboxes_id, "value"),
+        State(checkboxes_id, "options"),
+        State(checkboxes_id, "value"),
         State("annotations-store", "data"),
         State(annotation_graph_id, "figure"),
         State(chunk_limits_store_id, "data"),
@@ -159,11 +135,7 @@ def register_update_annotation_graph(
         
         time_range = chunk_limits[int(page_selection)]
 
-        # Convert annotations to DataFrame
-        try:
-            annotations_df = pd.DataFrame(annotations_data).set_index("onset")
-        except Exception as e:
-            return dash.no_update
+        annotations_df = pd.DataFrame(annotations_data).set_index("onset")
 
         # Create the annotation graph
         tick_vals = []
@@ -208,8 +180,6 @@ def register_update_annotation_graph(
                 showgrid=False
             ),
             shapes=shapes,
-            paper_bgcolor="white",  # Light background for clarity
-            plot_bgcolor="rgba(0,0,0,0)",  # Keep the plot transparent
             margin=dict(l=10, r=0, t=10, b=100)  # Adjust margins for better spacing
         )
 
@@ -219,8 +189,8 @@ def register_move_to_next_annotation(
     prev_spike_id,
     next_spike_id,
     graph_id,
-    annotation_dropdown_id,
-    annotation_checkboxes_id,
+    dropdown_id,
+    checkboxes_id,
     page_selector_id,
     chunk_limits_store_id
 ):
@@ -229,8 +199,8 @@ def register_move_to_next_annotation(
         Input(prev_spike_id, "n_clicks"),
         Input(next_spike_id, "n_clicks"),
         State(graph_id, "figure"),
-        State(annotation_dropdown_id, "value"),
-        State(annotation_checkboxes_id, "value"),
+        State(dropdown_id, "value"),
+        State(checkboxes_id, "value"),
         State("annotations-store", "data"),
         State(page_selector_id, "value"),
         State(chunk_limits_store_id, "data"),
@@ -240,12 +210,10 @@ def register_move_to_next_annotation(
 
         if not annotations_data or not annotations_to_show:
             return dash.no_update  # No annotations available, return the same graph
-        
-        if len(annotations_to_show) == 0 or len(annotations_data) == 0:
-            return dash.no_update
-        
         if annotations_to_show == "__ALL__":
             annotations_to_show = selected_annotations
+        if not annotations_to_show or len(annotations_data) == 0:
+            return dash.no_update
 
         # Extract x-coordinates (onset times) of spikes from annotations
         spike_x_positions = [

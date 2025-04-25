@@ -119,3 +119,17 @@ icon = {
         "models": "bi-stars",
         "ICA": "bi-noise-reduction"
     }
+
+# Color palette for events
+color_palette = [
+        "#e6194b",  # strong red
+        "#3cb44b",  # vivid green
+        "#0082c8",  # vivid blue
+        "#f58231",  # bright orange
+        "#911eb4",  # strong purple
+        "#46f0f0",  # cyan
+        "#f032e6",  # magenta (stronger than light pink)
+        "#d62728",  # deep red
+        "#2ca02c",  # dark green
+        "#1f77b4",  # standard matplotlib blue
+    ]

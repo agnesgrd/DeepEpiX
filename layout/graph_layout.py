@@ -22,7 +22,7 @@ def create_graph_container(
                 style={
                     "position": "absolute",
                     "top": "15px",
-                    "left": "15px",
+                    "left": "30px",
                     "background-color": "rgba(0,0,0,0)",
                     "border-radius": "5px",
                     "box-shadow": "2px 2px 5px rgba(0,0,0,0.2)",
@@ -35,8 +35,14 @@ def create_graph_container(
                         id=update_button_id,
                         n_clicks=0,
                         outline=True,
-                        color="primary"
-                        # className="btn btn-primary"
+                        color="warning",
+                        style={
+                            "minWidth": "20px",
+                            "height": "30px",
+                            "lineHeight": "1",
+                            "fontSize": "1.5rem",
+                            "border": "none"
+                        }
                     ),
                     dbc.Tooltip("Refresh the graph after modifying the display parameters", target=update_button_id, placement="top"),
                 ]
@@ -47,8 +53,8 @@ def create_graph_container(
                 id=page_buttons_container_id,
                 style={
                     "position": "absolute",
-                    "top": "15px",
-                    "left": "300px",
+                    "top": "20px",
+                    "left": "100px",
                     "background-color": "rgba(0,0,0,0)",
                     "border-radius": "5px",
                     "box-shadow": "2px 2px 5px rgba(0,0,0,0.2)",
@@ -56,10 +62,16 @@ def create_graph_container(
                     "opacity": 0.8
                 },
                 children=[
-                    dcc.RadioItems(
+                    dbc.RadioItems(
                         id=page_selector_id,
                         options=[],
-                        value=0
+                        value=0,
+                        style={
+                            # "minWidth": "24px",
+                            # "height": "24px",
+                            "lineHeight": "1",
+                            "fontSize": "1.8rem"
+                        }
                     )
                 ]
             ),
@@ -70,11 +82,11 @@ def create_graph_container(
                 id=next_spike_buttons_container_id,
                 style={
                     "position": "absolute",
-                    "top": "15px",
-                    "left": "600px",
-                    "background-color": "rgba(0,0,0,0)",
-                    "border-radius": "5px",
-                    "box-shadow": "2px 2px 5px rgba(0,0,0,0.2)",
+                    "top": "10px",
+                    "left": "300px",
+                    # "background-color": "rgba(0,0,0,0)",
+                    # "border-radius": "5px",
+                    # "box-shadow": "2px 2px 5px rgba(0,0,0,0.2)",
                     "z-index": "1000",
                     "opacity": 0.8, 
                     "display":"flex"
@@ -85,6 +97,7 @@ def create_graph_container(
                         id=prev_spike_id,
                         color="link",  # optional, you can also keep 'primary'
                         n_clicks=0,
+                        outline=True,
                         style={
                             "backgroundColor": "transparent",
                             "border": "none",
@@ -102,7 +115,7 @@ def create_graph_container(
                         persistence_type="local",
                         clearable=False,
                         style={
-                            "width": "110px",
+                            "width": "100px",
                             "fontSize": "10px"
                         }
                     ),
@@ -125,7 +138,23 @@ def create_graph_container(
                 ]
             ),
 
-            # Signal Graph with loading
+            # Prev / Next Spike Buttons
+            html.Div(
+                id="cursor",
+                style={
+                    "position": "absolute",
+                    "top": "10px",
+                    "left": "50%",
+                    "z-index": "1000",
+                    "opacity": 0.8, 
+                    "display":"flex"
+                },
+                children=
+                html.Span(
+                    html.I(className="bi bi-caret-down-fill"),
+                ),
+            ),
+
             dcc.Loading(
                 id=loading_id,
                 type="circle",
@@ -135,53 +164,63 @@ def create_graph_container(
                         figure={
                             'data': [],
                             'layout': {
+                                'template': 'plotly_dark',
                                 'xaxis': {
-                                    'range': [0, 10],
-                                    'title': 'Time (s)',
-                                    'rangeslider': {'visible': True, 'thickness': 0.02},
+                                    'range': [0, 10], 
+                                    'rangeslider': {
+                                        'visible': True,
+                                        'thickness': 0.02,
+                                        'bgcolor': 'rgba(128, 128, 128, 0.5)',  # Medium grey with some transparency
+                                        'bordercolor': 'rgba(64, 64, 64, 1)',   # Darker grey for border
+                                    },
                                     'showspikes': True
                                 },
-                                'yaxis': {'title': 'Channels', 'fixedrange': True},
-                                'title': 'MEG Signal Visualization',
-                                'margin': {'l': 0, 'r': 0, 't': 0, 'b': 0},
-                                'hovermode': 'closest'
+                                'yaxis': {
+                                    'title': None,
+                                    'showticklabels': False,
+                                    'autorange': True
+                                },
+                                'font': {'color': 'white'},
+                                'paper_bgcolor': 'rgba(0,0,0,1)',
+                                'plot_bgcolor': 'rgba(0,0,0,1)',
+                                'margin': {'l': 0, 'r': 0, 't': 30, 'b': 0},
+                                'hovermode': 'closest',
                             },
                         },
                         config={
                             "responsive": True,
                             'doubleClick': 'reset'
                         },
-                            style={
+                        style={
                             "width": "100%",
                             "height": "80vh",
                             "borderRadius": "10px",
                             "overflow": "hidden",
-                            "boxShadow": "0 4px 10px rgba(0,0,0,0.1)"
+                            "backgroundColor": "#000",
+                            "boxShadow": "none"
                         }
                     ),
                 ],
                 overlay_style={
-                    "backgroundColor": "rgba(255, 255, 255, 0.5)",
-                    "pointerEvents": "none",  # So the graph stays interactive
-                    "visibility": "visible"  # This is the key: don't hide the child
+                    "pointerEvents": "none",
+                    "visibility": "visible"
                 }
-
             ),
 
-            # Annotation Graph
             dcc.Graph(
                 id=annotation_graph_id,
                 figure={
                     'data': [],
                     'layout': {
+                        'template': 'plotly_dark',
                         'xaxis': {
                             'title': '',
                             'showgrid': False,
-                            'zeroline': False
+                            'zeroline': False,
+                            'color': 'white'
                         },
                         'yaxis': {
-                            'title': 'Events',
-                            'titlefont': {'color': 'rgba(0,0,0,0)'},
+                            'title': '',
                             'showgrid': False,
                             'tickvals': [0],
                             'ticktext': ['MRF67-2805'],
@@ -189,10 +228,12 @@ def create_graph_container(
                             'side': 'right',
                             'tickfont': {'color': 'rgba(0, 0, 0, 0)'},
                             'range': [0, 1],
+                            'color': 'white'
                         },
+                        'paper_bgcolor': 'rgba(0,0,0,1)',
+                        'plot_bgcolor': 'rgba(0,0,0,1)',
+                        'font': {'color': 'white'},
                         'margin': {'l': 10, 'r': 0, 't': 0, 'b': 20},
-                        'paper_bgcolor': 'rgba(0,0,0,0)',
-                        'plot_bgcolor': 'rgba(0,0,0,0)',
                     },
                 },
                 config={"staticPlot": True},
@@ -202,7 +243,8 @@ def create_graph_container(
                     "pointerEvents": "none",
                     "borderRadius": "10px",
                     "overflow": "hidden",
-                    "boxShadow": "0 4px 10px rgba(0,0,0,0.1)"
+                    "backgroundColor": "#000",
+                    "boxShadow": "none"
                 }
             )
         ],

@@ -1,4 +1,3 @@
-# view.py
 import dash
 from dash import html, dcc
 from dash_extensions import Keyboard
@@ -8,60 +7,65 @@ import layout.graph_layout as gl
 from layout.sidebar_layout import create_sidebar
 
 # Callback imports
+
+# --- Selection ---
 from callbacks.selection_callbacks import (
-    register_page_buttons_display,
-    register_update_page_button_styles,
-    register_manage_channels_checklist,
-    register_manage_annotations_checklist,
-    register_offset_display,
-    register_popup_annotation_suppression,
     register_cancel_or_confirm_annotation_suppression,
+    register_annotation_checkboxes_options,
+    register_annotation_dropdown_options,
     register_callbacks_montage_names,
-    register_callbacks_annotation_names,
-    register_callbacks_annotation_names_dropdown,
+    register_callbacks_sensivity_analysis,
     register_hide_channel_selection_when_montage,
-    register_callbacks_sensivity_analysis
+    register_clear_check_all_annotation_checkboxes,
+    register_manage_channels_checklist,
+    register_offset_display,
+    register_page_buttons_display,
+    register_popup_annotation_suppression
 )
 
-from callbacks.graph_callbacks import (
-    register_update_graph_time_channel
-)
+# --- Graph ---
+from callbacks.graph_callbacks import register_update_graph_time_channel
 
+# --- Annotation ---
 from callbacks.annotation_callbacks import (
-    register_update_annotations,
+    register_move_to_next_annotation,
     register_update_annotation_graph,
-    register_move_to_next_annotation
+    register_update_annotations_on_graph,
 )
 
+# --- Topomap ---
 from callbacks.topomap_callbacks import (
+    register_activate_deactivate_topomap_button,
     register_display_topomap_on_click,
-    register_activate_deactivate_topomap_button
 )
+
+# --- Spikes ---
 from callbacks.spike_callbacks import (
-    register_add_spike_timestep_on_click,
-    register_add_spike_to_annotation,
+    register_add_event_to_annotation,
+    register_add_event_timestep_on_click,
     register_delete_selected_spike,
-    register_enable_add_spike_button,
-    register_enable_delete_spike_button
+    register_enable_add_event_button,
+    register_enable_delete_event_button,
 )
+
+# --- History ---
 from callbacks.history_callbacks import (
+    register_clean_history,
     register_update_history,
-    register_clean_history
 )
 
-from callbacks.utils import history_utils
-
+# --- Save ---
 from callbacks.save_callbacks import (
+    register_display_annotations_to_save_checkboxes,
     register_enter_default_saving_folder_path,
-    register_callbacks_annotations_to_save_names,
     register_save_new_markerfile,
-    register_manage_annotations_to_save_checklist
 )
 
+# --- Predict ---
 from callbacks.predict_callbacks import (
     register_execute_predict_script,
     register_store_display_prediction,
-    register_update_selected_model
+    register_update_selected_model,
 )
 
 dash.register_page(__name__, name="Data Viz & Analyze", path='/viz/raw-signal')
@@ -104,104 +108,99 @@ layout = html.Div([
 
 ])
 
-
+# --- Page Navigation ---
 register_page_buttons_display(
     chunk_limits_store_id="chunk-limits-store",
     page_buttons_container_id="page-buttons-container",
     page_selector_id="page-selector"
 )
 
-register_update_page_button_styles(
-    page_selector_id="page-selector",
-    chunk_limits_store_id="chunk-limits-store"
+# --- Annotation Management ---
+register_annotation_checkboxes_options(
+    checkboxes_id="annotation-checkboxes",
 )
 
-register_callbacks_annotation_names(
-    annotation_checkboxes_id="annotation-checkboxes",
+register_annotation_dropdown_options(
+    dropdown_id="annotation-dropdown",
+    checkboxes_id="annotation-checkboxes"
 )
 
-register_callbacks_annotation_names_dropdown(
-    annotation_dropdown_id="annotation-dropdown",
-    annotation_checkboxes_id="annotation-checkboxes"
+register_clear_check_all_annotation_checkboxes(
+    check_all_btn_id="check-all-annotations-btn",
+    clear_all_btn_id="clear-all-annotations-btn",
+    checkboxes_id="annotation-checkboxes"
 )
 
-register_callbacks_montage_names(
-    montage_radio_id="montage-radio"
-)
-
-register_update_graph_time_channel()
-
-register_update_annotations(
+register_update_annotations_on_graph(
     graph_id="meg-signal-graph",
-    annotation_checkboxes_id="annotation-checkboxes",
+    checkboxes_id="annotation-checkboxes",
     page_selector_id="page-selector",
     chunk_limits_store_id="chunk-limits-store"
 )
-
-register_manage_channels_checklist()
 
 register_update_annotation_graph(
     update_button_id="update-button",
     page_selector_id="page-selector",
-    annotation_checkboxes_id="annotation-checkboxes",
+    checkboxes_id="annotation-checkboxes",
     annotation_graph_id="annotation-graph",
     chunk_limits_store_id="chunk-limits-store"
 )
 
+register_display_annotations_to_save_checkboxes()
+
+register_clear_check_all_annotation_checkboxes(
+    check_all_btn_id="check-all-annotations-to-save-btn",
+    clear_all_btn_id="clear-all-annotations-to-save-btn",
+    checkboxes_id="annotations-to-save-checkboxes"
+)
+
+register_popup_annotation_suppression()
+register_cancel_or_confirm_annotation_suppression()
+
+# --- Graph & Channel Handling ---
+register_update_graph_time_channel()
+register_manage_channels_checklist()
 register_hide_channel_selection_when_montage()
-
-register_add_spike_timestep_on_click()
-
-register_add_spike_to_annotation()
-
-register_delete_selected_spike()
-
-register_update_history()
-
-register_clean_history()
-
-register_enable_add_spike_button()
-
-register_enable_delete_spike_button()
-
 register_offset_display()
 
+# --- Topomap Interactions ---
 register_display_topomap_on_click()
-
 register_activate_deactivate_topomap_button()
+
+# --- Spike Handling ---
+register_add_event_timestep_on_click()
+register_add_event_to_annotation()
+register_delete_selected_spike()
+register_enable_add_event_button()
+register_enable_delete_event_button()
 
 register_move_to_next_annotation(
     prev_spike_id="prev-spike",
     next_spike_id="next-spike",
     graph_id="meg-signal-graph",
-    annotation_dropdown_id="annotation-dropdown",
-    annotation_checkboxes_id="annotation-checkboxes",
+    dropdown_id="annotation-dropdown",
+    checkboxes_id="annotation-checkboxes",
     page_selector_id="page-selector",
     chunk_limits_store_id="chunk-limits-store"
 )
 
-register_callbacks_sensivity_analysis()
+# --- History ---
+register_update_history()
+register_clean_history()
 
-register_manage_annotations_checklist(
-    check_all_annotations_btn_id="check-all-annotations-btn",
-    clear_all_annotations_btn_id="clear-all-annotations-btn",
-    annotation_checkboxes_id="annotation-checkboxes"
-)
+# --- Predict ---
+register_execute_predict_script()
+register_store_display_prediction()
+register_update_selected_model()
 
-register_popup_annotation_suppression()
-
-register_cancel_or_confirm_annotation_suppression()
-
+# --- Save ---
 register_enter_default_saving_folder_path()
-
 register_save_new_markerfile()
 
-register_manage_annotations_to_save_checklist()
+# --- Analysis ---
+register_callbacks_sensivity_analysis()
 
-register_callbacks_annotations_to_save_names()
-
-register_execute_predict_script()
-
-register_store_display_prediction()
-
-register_update_selected_model()
+# --- Montage ---
+register_callbacks_montage_names(
+    radio_id="montage-radio"
+)

@@ -53,7 +53,7 @@ def create_analyze():
         html.Div([
             html.H6([html.I(className=f"bi bi-pencil"), " Event modification"], style={"fontWeight": "bold", "marginBottom": "10px"}),
             dbc.Input(
-                id="spike-name",  # Unique ID for each input
+                id="event-name",  # Unique ID for each input
                 type="text",
                 placeholder="Enter a name ...",
                 size="sm",
@@ -62,9 +62,9 @@ def create_analyze():
                 style={**input_styles["small-number"]}
             ),
             dbc.Input(
-                id="spike-timestep",  # Unique ID for each input
+                id="event-onset",  # Unique ID for each input
                 type="number",
-                placeholder="Timestep (s) ...",
+                placeholder="Onset (s) ...",
                 step=0.01,
                 min=0,
                 max=180,
@@ -73,10 +73,22 @@ def create_analyze():
                 persistence_type="local",
                 style={**input_styles["small-number"]}
             ),
-            dbc.Tooltip("Click on the graph to mark the desired time point or enter it manually.", target="spike-timestep", placement="left"),
+            dbc.Tooltip("Click on the graph to mark the desired time point or enter it manually.", target="event-onset", placement="left"),
+            dbc.Input(
+                id="event-duration",  # Unique ID for each input
+                type="number",
+                placeholder="Duration (s) ...",
+                step=0.01,
+                min=0,
+                max=180,
+                size="sm",
+                persistence=True,
+                persistence_type="local",
+                style={**input_styles["small-number"]}
+            ),
             dbc.Button(
-                "Add new spike",
-                id="add-spike-button",  # Unique ID for each button
+                "Add new event",
+                id="add-event-button",  # Unique ID for each button
                 color="success",
                 outline=True,
                 size="sm",
@@ -85,8 +97,8 @@ def create_analyze():
                 disabled=True
             ),
             dbc.Button(
-                "Delete selected spike",
-                id="delete-spike-button",  # Unique ID for each button
+                "Delete selected event(s)",
+                id="delete-event-button",  # Unique ID for each button
                 color="danger",
                 outline=True,
                 size="sm",

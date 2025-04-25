@@ -46,5 +46,5 @@ def create_sidebar():
         "boxSizing": "border-box",
         "fontSize": "12px",
         "borderRadius": "10px",  # Rounded corners for the sidebar itself
-        "overflowY": "auto",  # Enable scrolling if content exceeds height
+        "overflowX": "auto"
     })
