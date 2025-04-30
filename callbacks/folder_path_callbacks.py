@@ -72,11 +72,11 @@ def register_store_folder_path_and_clear_data():
     @callback(
         Output("frequency-container", "style", allow_duplicate=True),
         Output("folder-store", "data"),
-        Output("sensitivity-analysis-store", "clear_data"),
         Output("chunk-limits-store", "clear_data"),
         Output("frequency-store", "clear_data"),
         Output("annotations-store", "clear_data"),
-        Output("anomaly-detection-store", "clear_data"),
+        Output('model-probabilities-store', 'clear_data'),
+        Output('sensitivity-analysis-store', 'clear_data'),
         Input("load-button", "n_clicks"),
         State("folder-path-dropdown", "value"),
         prevent_initial_call=True

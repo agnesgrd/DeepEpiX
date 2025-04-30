@@ -14,9 +14,9 @@ def register_update_graph_time_channel():
     @callback(
         Output("meg-signal-graph", "figure"),
         Output("python-error", "children"),
-        # Output("loading-graph", "children"),
-        Input("update-button", "n_clicks"),  # Trigger the callback with the button
+        Input("update-button", "n_clicks"),
         Input("page-selector", "value"),
+        State("meg-signal-graph", "figure"),
         State("montage-radio", "value"),
         State("channel-region-checkboxes", "value"),
         State("folder-store", "data"),
@@ -25,19 +25,14 @@ def register_update_graph_time_channel():
         State("chunk-limits-store", "data"),
         State("frequency-store", "data"),
         State("montage-store", "data"),
-        State("meg-signal-graph", "figure"),
+
         State("sensitivity-analysis-store", "data"),
-        State("anomaly-detection-store", "data"),
         running=[(Output("update-button", "disabled"), True, False)],
         prevent_initial_call=False
     )
-    def update_graph_time_channel(n_clicks, page_selection, montage_selection, channel_selection, folder_path, offset_selection, color_selection, chunk_limits,freq_data, montage_store, graph, sensitivity_analysis_store, anom_detect_store):
+    def update_graph_time_channel(n_clicks, page_selection, graph, montage_selection, channel_selection, folder_path, offset_selection, color_selection, chunk_limits,freq_data, montage_store, sensitivity_analysis_store):
         """Update MEG signal visualization based on time and channel selection."""
-        # if graph and 'data' in graph and graph['data']:  # if there's already data in the figure
-        #     return graph, None
-        print(chunk_limits)
-        print(page_selection)
-        
+      
         if n_clicks == 0:
             return dash.no_update, dash.no_update
         
@@ -50,8 +45,8 @@ def register_update_graph_time_channel():
         if (montage_selection == "channel selection" and not channel_selection):  # Check if data is missing
                 return dash.no_update, "Missing channel selection for graph rendering."
         
+        # Get the selected channels based on region
         if montage_selection == "channel selection":
-            # Get the selected channels based on region
             selected_channels = [
                 channel
                 for region_code in channel_selection
@@ -73,28 +68,17 @@ def register_update_graph_time_channel():
 
         # Get the current x-axis center
         xaxis_range = graph["layout"]["xaxis"].get("range", [])
-        print(xaxis_range)
-        print(time_range)
         if xaxis_range[1] <= time_range[0] or xaxis_range[0] >= time_range[1]:
             xaxis_range = [time_range[0], time_range[0]+10]
 
-        print(xaxis_range)
+        filter={}
 
-        # Reading back
         if "smoothGrad" in color_selection:
             with open(sensitivity_analysis_store['smoothGrad'], 'rb') as f:
                 filter = pickle.load(f)
 
-        elif "anomDetect" in color_selection:
-            with open(anom_detect_store['anomDetect'], 'rb') as f:
-                filter = pickle.load(f)
-        
-        else:
-            filter = {}
-
         try:                  
             fig = gu.generate_graph_time_channel(selected_channels, float(offset_selection), time_range, folder_path, freq_data, color_selection, xaxis_range, filter)
-
             return fig, None
             
         except FileNotFoundError:

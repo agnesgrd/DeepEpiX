@@ -2,8 +2,10 @@ from collections import Counter
 import mne
 import pandas as pd
 import math
-from dash import html
+from dash import dcc,html
 import dash_bootstrap_components as dbc
+import plotly.graph_objects as go
+
 
 def get_annotation_descriptions(annotations_store):
         """
@@ -146,3 +148,90 @@ def build_table_events_statistics(annotations):
     )
 
     return stats_summary
+
+def build_table_prediction_statistics(df, threshold):
+     
+    # Separate spike vs non-spike
+    df['probas'] = df['probas'].round(2)
+    df_spike = df[df["probas"] > threshold]
+    df_non_spike = df[df["probas"] <= threshold]
+
+    if len(df_spike) == 0:
+        return html.P("No events found in this recording.")
+
+    # General counts
+    total_windows = len(df)
+    spike_count = len(df_spike)
+    spike_ratio = (spike_count / total_windows) * 100 if total_windows else 0
+
+    if spike_count > 0:
+        min_prob = df_spike['probas'].min()
+        max_prob = df_spike['probas'].max()
+        mean_prob = df_spike['probas'].mean()
+        median_prob = df_spike['probas'].median()
+    else:
+        min_prob = max_prob = mean_prob = median_prob = 0
+
+    stats_summary = dbc.ListGroup([
+        dbc.ListGroupItem(f"Total Windows: {total_windows}"),
+        dbc.ListGroupItem(f"Spike Events Detected): {spike_count}"),
+        dbc.ListGroupItem(f"Spike Ratio: {spike_ratio:.2f}%"),
+        dbc.ListGroupItem(f"Min Spike Probability: {min_prob:.2f}"),
+        dbc.ListGroupItem(f"Max Spike Probability: {max_prob:.2f}"),
+        dbc.ListGroupItem(f"Mean Spike Probability: {mean_prob:.2f}"),
+        dbc.ListGroupItem(f"Median Spike Probability: {median_prob:.2f}")
+    ])
+
+    return stats_summary
+
+def build_prediction_distribution_statistics(df, threshold):
+    # Filter the DataFrame based on the threshold
+    df_below_threshold = df[df['probas'] <= threshold]
+    df_above_threshold = df[df['probas'] > threshold]
+
+    # Create the histogram for probabilities below the threshold
+    hist_below = go.Histogram(
+        x=df_below_threshold['probas'],
+        nbinsx=10,
+        name=f"Below {threshold}",
+        marker=dict(color='yellow'),  # Color for below threshold
+        opacity=0.7,
+        showlegend=False
+    )
+
+    # Create the histogram for probabilities above the threshold
+    hist_above = go.Histogram(
+        x=df_above_threshold['probas'],
+        nbinsx=10,
+        name=f"Above {threshold}",
+        marker=dict(color='red'),  # Color for above threshold
+        opacity=0.7,
+        showlegend=False
+    )
+
+    # Combine the two histograms into one figure
+    hist_fig = go.Figure(data=[hist_below, hist_above])
+    
+    # Customize the layout with smaller font sizes
+    hist_fig.update_layout(
+        barmode='overlay',
+        bargap=0.2,
+        xaxis_title='Probability',
+        yaxis_title='Count',
+        plot_bgcolor='black',
+        paper_bgcolor='black',
+        font=dict(color='white', size=10),  # Smaller overall font
+        xaxis=dict(title_font=dict(size=10), tickfont=dict(size=9)),
+        yaxis=dict(title_font=dict(size=10), tickfont=dict(size=9)),
+        margin=dict(t=0, b=0, l=0, r=0)
+    )
+
+    return dcc.Graph(
+        figure=hist_fig,
+        config={
+            'staticPlot': False,           # ← This makes the plot static
+            'displayModeBar': True,      # Hides the mode bar
+            'scrollZoom': False
+        },
+        style={'height': '300px'}  # Optional: set size explicitly
+    )

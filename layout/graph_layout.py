@@ -1,5 +1,7 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
+from layout import DEFAULT_FIG_LAYOUT
+import config
 
 def create_graph_container(
     update_button_id="update-button",
@@ -21,7 +23,7 @@ def create_graph_container(
                 id=update_container_id,
                 style={
                     "position": "absolute",
-                    "top": "15px",
+                    "top": "0px",
                     "left": "30px",
                     "background-color": "rgba(0,0,0,0)",
                     "border-radius": "5px",
@@ -53,7 +55,7 @@ def create_graph_container(
                 id=page_buttons_container_id,
                 style={
                     "position": "absolute",
-                    "top": "20px",
+                    "top": "10px",
                     "left": "100px",
                     "background-color": "rgba(0,0,0,0)",
                     "border-radius": "5px",
@@ -67,8 +69,6 @@ def create_graph_container(
                         options=[],
                         value=0,
                         style={
-                            # "minWidth": "24px",
-                            # "height": "24px",
                             "lineHeight": "1",
                             "fontSize": "1.8rem"
                         }
@@ -82,11 +82,8 @@ def create_graph_container(
                 id=next_spike_buttons_container_id,
                 style={
                     "position": "absolute",
-                    "top": "10px",
-                    "left": "300px",
-                    # "background-color": "rgba(0,0,0,0)",
-                    # "border-radius": "5px",
-                    # "box-shadow": "2px 2px 5px rgba(0,0,0,0.2)",
+                    "top": "0px",
+                    "left": "500px",
                     "z-index": "1000",
                     "opacity": 0.8, 
                     "display":"flex"
@@ -95,7 +92,7 @@ def create_graph_container(
                     dbc.Button(
                         html.I(className="bi bi-arrow-left-circle"),
                         id=prev_spike_id,
-                        color="link",  # optional, you can also keep 'primary'
+                        color="link",
                         n_clicks=0,
                         outline=True,
                         style={
@@ -111,6 +108,7 @@ def create_graph_container(
                     dbc.Tooltip("Move graph to previous spike", target=prev_spike_id, placement="top"),
                     dcc.Dropdown(
                         id=annotation_dropdown_id,
+                        value="__ALL__",
                         persistence=True,
                         persistence_type="local",
                         clearable=False,
@@ -138,7 +136,6 @@ def create_graph_container(
                 ]
             ),
 
-            # Prev / Next Spike Buttons
             html.Div(
                 id="cursor",
                 style={
@@ -164,27 +161,19 @@ def create_graph_container(
                         figure={
                             'data': [],
                             'layout': {
-                                'template': 'plotly_dark',
+                                **DEFAULT_FIG_LAYOUT,  # Apply the default layout first
                                 'xaxis': {
-                                    'range': [0, 10], 
-                                    'rangeslider': {
-                                        'visible': True,
-                                        'thickness': 0.02,
-                                        'bgcolor': 'rgba(128, 128, 128, 0.5)',  # Medium grey with some transparency
-                                        'bordercolor': 'rgba(64, 64, 64, 1)',   # Darker grey for border
-                                    },
-                                    'showspikes': True
+                                    **DEFAULT_FIG_LAYOUT['xaxis'],  # Merge xaxis from default layout
+                                    'range': [0, 10],
+                                    'minallowed': 0,
+                                    'maxallowed': config.CHUNK_RECORDING_DURATION,  # You can dynamically set the range later
                                 },
                                 'yaxis': {
-                                    'title': None,
-                                    'showticklabels': False,
-                                    'autorange': True
+                                    **DEFAULT_FIG_LAYOUT['yaxis'],  # Merge yaxis from default layout
                                 },
-                                'font': {'color': 'white'},
-                                'paper_bgcolor': 'rgba(0,0,0,1)',
-                                'plot_bgcolor': 'rgba(0,0,0,1)',
-                                'margin': {'l': 0, 'r': 0, 't': 30, 'b': 0},
-                                'hovermode': 'closest',
+                                'title': {
+                                    **DEFAULT_FIG_LAYOUT['title'],  # Merge title from default layout
+                                }
                             },
                         },
                         config={
@@ -223,9 +212,6 @@ def create_graph_container(
                             'title': '',
                             'showgrid': False,
                             'tickvals': [0],
-                            'ticktext': ['MRF67-2805'],
-                            'ticklabelposition': 'outside right',
-                            'side': 'right',
                             'tickfont': {'color': 'rgba(0, 0, 0, 0)'},
                             'range': [0, 1],
                             'color': 'white'

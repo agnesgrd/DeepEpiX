@@ -1,13 +1,11 @@
 import numpy as np
 import config
-from sklearn.preprocessing import StandardScaler
 from callbacks.utils import preprocessing_utils as pu
+from callbacks.utils import dataframe_utils as du
+from callbacks.utils import smoothgrad_utils as su
 import plotly.express as px
-# from plotly_resampler import FigureResampler
-# from plotly_resampler.aggregation import MinMaxLTTB
-# from plotly.subplots import make_subplots
-
-
+import plotly.graph_objects as go
+from layout import DEFAULT_FIG_LAYOUT
 
 def calculate_channel_offset(num_channels, plot_height=900, min_gap=30):
     """
@@ -39,77 +37,56 @@ def get_y_axis_ticks(selected_channels, channel_offset = config.DEFAULT_Y_AXIS_O
     y_axis_ticks = np.arange(len(selected_channels)) * channel_offset
     return y_axis_ticks
 
-def normalize_dataframe_columns(df):
-    scaler = StandardScaler()
-
-    df_standardized = df.apply(lambda x: scaler.fit_transform(x.values.reshape(-1, 1)).flatten(), axis=0)
-
-    return df_standardized
-
-def get_raw_df_filtered_on_time(time_range, raw_df):
-
-    times = (raw_df.index - raw_df.index[0]).total_seconds()
-    time_mask = (times >= time_range[0]) & (times <= time_range[1])
-    filtered_times = times[time_mask]
-    filtered_raw_df = raw_df[time_mask]
-    
-    return filtered_times, filtered_raw_df
-
-def get_annotations_df_filtered_on_time(time_range, annotations_df):
-
-    times = annotations_df.index
-    time_mask = (times >= time_range[0]) & (times <= time_range[1])
-    filtered_annotations_df = annotations_df[time_mask]
-    
-    return filtered_annotations_df
-
-def get_shifted_time_axis(time_range, raw_df):
+def apply_default_layout(fig, xaxis_range, time_range, folder_path):
     """
-    Adjusts the time axis of a DataFrame to include an offset based on the given time range.
-    
+    Apply default layout to a Plotly figure with dynamic values for axis range, title, etc.
+
     Parameters:
-        time_range (tuple): The (start_time, end_time) range to apply as an offset.
-        raw_df (pd.DataFrame): A DataFrame with a time-based index.
+    - fig: The Plotly figure to update.
+    - xaxis_range: Range for the x-axis (list or tuple).
+    - time_range: Time range for the x-axis (tuple or list with two values [start, end]).
+    - folder_path: Title for the plot.
 
     Returns:
-        pd.Series: A series of adjusted times in seconds, with the offset applied.
+    - Updated Plotly figure with applied layout.
     """
-    # Calculate elapsed time in seconds from the first timestamp in the DataFrame
-    times = (raw_df.index - raw_df.index[0])
+    layout = DEFAULT_FIG_LAYOUT.copy()
     
-    # Add the starting time of the given range as an offset
-    adjusted_times = times + time_range[0]
+    # Apply dynamic values to layout
+    layout['xaxis']['range'] = xaxis_range
+    layout['xaxis']['minallowed'] = time_range[0]
+    layout['xaxis']['maxallowed'] = time_range[1]
+    # layout['title']['text'] = folder_path if folder_path else 'Select a folder path'
     
-    return adjusted_times
+    # Update the layout of the figure
+    fig.update_layout(layout)
+    
+    return fig
 
 def generate_graph_time_channel(selected_channels, offset_selection, time_range, folder_path, freq_data, color_selection, xaxis_range, filter = {}):
     """Handles the preprocessing and figure generation for the MEG signal visualization."""
     import time  # For logging execution times
 
     start_time = time.time()
-    
-    # Preprocess data
-    raw_df = pu.get_preprocessed_dataframe(folder_path, freq_data, time_range[0], time_range[1])
-
+    raw_ddf = pu.get_preprocessed_dataframe_dask(folder_path, freq_data, time_range[0], time_range[1])
     print(f"Step 1: Preprocessing completed in {time.time() - start_time:.2f} seconds.")
 
     # Filter time range
     filter_start_time = time.time()
-    shifted_times = get_shifted_time_axis(time_range, raw_df)
+    shifted_times = du.get_shifted_time_axis_dask(time_range, raw_ddf)
     print(f"Step 2: Time shifting completed in {time.time() - filter_start_time:.2f} seconds.")
 
     # Filter the dataframe based on the selected channels
     filter_df_start_time = time.time()
-    filtered_raw_df = raw_df[selected_channels]
-    print(f"Step 4: Dataframe filtering completed in {time.time() - filter_df_start_time:.2f} seconds.")
+    filtered_raw_df = raw_ddf[selected_channels].compute()
+    print(f"Step 3: Dataframe filtering completed in {time.time() - filter_df_start_time:.2f} seconds.")
 
     # Offset channel traces along the y-axis
     offset_start_time = time.time()
-    channel_offset = calculate_channel_offset(len(selected_channels))*(11-offset_selection)*9 #/10 #/ 12
-    print('reel channel offset', channel_offset)
+    channel_offset = calculate_channel_offset(len(selected_channels))*(11-offset_selection)*9
     y_axis_ticks = get_y_axis_ticks(selected_channels, channel_offset)
     shifted_filtered_raw_df = filtered_raw_df + np.tile(y_axis_ticks, (len(filtered_raw_df), 1))
-    print(f"Step 5: Channel offset calculation completed in {time.time() - offset_start_time:.2f} seconds.")
+    print(f"Step 4: Channel offset calculation completed in {time.time() - offset_start_time:.2f} seconds.")
 
     # Create a dictionary mapping channels to their colors
     if color_selection == "rainbow":
@@ -130,178 +107,53 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
         color_map = {channel: CHANNEL_TO_COLOR[channel] for channel in selected_channels}
     elif color_selection == "white":
         color_map = {channel: "white" for channel in selected_channels}
-    elif "smoothGrad" in color_selection or "anomDetect" in color_selection:
+    elif "smoothGrad" in color_selection:
         color_map = {channel: "#00008B" for channel in selected_channels}
 
     # Use Plotly Express for efficient figure generation
     fig_start_time = time.time()
     shifted_filtered_raw_df["Time"] = shifted_times  # Add time as a column for Plotly Express
 
-    fig = px.line(
-        shifted_filtered_raw_df,
-        x="Time",
-        y=shifted_filtered_raw_df.columns[:-1],  # Exclude the Time column from y
-        labels={"value": "Value", "variable": "Channel", "Time": "Time (s)"},
-        color_discrete_map=color_map
-    )
+    fig = go.Figure()
 
-    # Create a resampler-aware figure
-    # Create the resampled figure
-    # fig = FigureResampler(
-    #     go.Figure(),
-    #     default_downsampler=MinMaxLTTB(parallel=True),
-    #     resampled_trace_prefix_suffix=("<b style='color:#2bb1d6'>[R]</b> ", ''),
-    #     # show_mean_aggregation_size=False,
-    #     # default_n_shown_samples=17000,
-    #     create_overview=True,
-    #     # Specify the subplot rows that will be used for the overview axis of each column
-    #     overview_row_idxs=[1],
-    #     # Additonal kwargs for the overview axis
-    #     overview_kwargs={"height": 200},
-    #     )
+    for col in shifted_filtered_raw_df.columns[:-1]:  # Exclude Time
+        fig.add_trace(go.Scattergl(
+            x=shifted_filtered_raw_df["Time"],
+            y=shifted_filtered_raw_df[col],
+            mode="lines",
+            name=col,
+            line=dict(color=color_map.get(col, None), width=1)
+        ))
 
-    # # Ensure contiguous NumPy arrays for performance
-    # time_values = np.ascontiguousarray(shifted_filtered_raw_df["Time"].to_numpy())
+    # fig.update_layout(
+    #     xaxis_title="Time (s)",
+    #     yaxis_title="Value",
+    #     showlegend=True
+    # )
+    # fig = px.line(
+    #     shifted_filtered_raw_df,
+    #     x="Time",
+    #     y=shifted_filtered_raw_df.columns[:-1],  # Exclude the Time column from y
+    #     labels={"value": "Value", "variable": "Channel", "Time": "Time (s)"},
+    #     color_discrete_map=color_map
+    # )
 
-    # for channel in selected_channels:
-    #     y_values = np.ascontiguousarray(shifted_filtered_raw_df[channel].to_numpy())  # Fix here
-
-    #     fig.add_trace(
-    #         go.Scattergl(
-    #             # x=time_values,
-    #             # y=y_values,
-    #             mode="lines",
-    #             name=channel,
-    #             line=dict(color=color_map[channel], width=1)
-    #         ),
-    #         hf_x=time_values,
-    #         hf_y=y_values,  # Pass contiguous array
-
-    #     )
-
-    if 'smoothGrad' in color_selection:
-        # Add scatter plot using px.scatter
-        # Convert time range to integer indices
-        time_range_indices = np.arange(round(time_range[0] * 150), round(time_range[1] * 150)+1).astype(int)
-        channel_indices = np.where(np.isin(config.ALL_CH_NAMES, selected_channels))[0]
-        filtered_sa_array = filter[time_range_indices[:, None], channel_indices]
-        scatter_df = shifted_filtered_raw_df.melt(id_vars=["Time"], var_name="Channel", value_name="Value")
-        scatter_df["Color"] = filtered_sa_array.flatten('F')  # Flatten color array
-        scatter_df_filtered = scatter_df[scatter_df["Color"] > 0]
-
-        scatter_fig = px.scatter(
-            scatter_df_filtered,
-            x="Time",
-            y="Value",
-            color="Color",
-            color_continuous_scale="Reds",
-            labels={"value": "Value", "variable": "Channel", "Time": "Time (s)"},
-            opacity=1
+    if 'smoothGrad' in color_selection: 
+        fig = su.add_smoothgrad_scatter(
+            fig, 
+            shifted_filtered_raw_df, 
+            time_range, 
+            selected_channels, 
+            filter=filter
         )
 
-        # Add scatter traces to the line plot
-        fig.add_traces(scatter_fig.data)
-
-    elif 'anomDetect' in color_selection:
-
-        time_range_indices = np.arange(round(time_range[0] * 150), round(time_range[1] * 150)+1).astype(int)
-        channel_indices = np.where(np.isin(config.ALL_CH_NAMES, selected_channels))[0]
-        filtered_sa_array = filter[time_range_indices[:, None], channel_indices]
-        scatter_df = shifted_filtered_raw_df.melt(id_vars=["Time"], var_name="Channel", value_name="Value")
-        scatter_df["Color"] = filtered_sa_array.flatten('F')  # Flatten color array
-        scatter_df_filtered = scatter_df[scatter_df["Color"] > 0]
-
-        scatter_fig = px.scatter(
-            scatter_df_filtered,
-            x="Time",
-            y="Value",
-            color="Color",
-            color_continuous_scale="Reds",
-            labels={"value": "Value", "variable": "Channel", "Time": "Time (s)"},
-            opacity=1
-        )
-
-        # Add scatter traces to the line plot
-        fig.add_traces(scatter_fig.data)
-
-    print(f"Step 6: Figure creation completed in {time.time() - fig_start_time:.2f} seconds.")
+    print(f"Step 5: Figure creation completed in {time.time() - fig_start_time:.2f} seconds.")
 
     # Update layout with x-axis range and other customizations
     layout_start_time = time.time()
-    fig.update_layout(
-        autosize=True,
-        xaxis=dict(
-            title=None,
-            range=xaxis_range,
-            minallowed=time_range[0],
-            maxallowed=time_range[1],
-            fixedrange=False,
-            rangeslider=dict(visible=True, thickness=0.02, bgcolor='rgba(128, 128, 128, 0.5)', bordercolor ='rgba(64, 64, 64, 1)'),
-            showspikes=True,
-            spikemode="across+marker",
-            spikethickness = 1,
-        ),
-        yaxis=dict(
-            title=None,
-            showticklabels=False,
-            autorange=True,
-            showgrid=True,
-            spikethickness = 0
-        ),
-        title={
-            'text': folder_path if folder_path else 'Select a folder path in Home Page',
-            'x': 0.5,
-            'font': {'size': 12},
-            'automargin': True,
-            'yref': 'paper',
-        },
-        showlegend=False,
-        margin=dict(l=0, r=0, t=0, b=0),
-        dragmode =  'select',
-        selectdirection = 'h',
-        hovermode = 'closest',
-        template="plotly_dark"
-    )
-    # Update the line width after creation
+    fig = apply_default_layout(fig, xaxis_range, time_range, None)
 
-
-    fig.update_traces(line=dict(width=1))
-
-    if "smoothGrad" in color_selection:
-        fig.update_layout(           
-            coloraxis_colorbar=dict(
-            title=dict(text="SmoothGrad"),
-            thicknessmode="pixels", thickness=10,
-            lenmode="fraction", len=0.15,
-            y=0,
-            x=0.9,
-            orientation="h",
-            ticks="outside",
-            dtick=1),
-            coloraxis=dict(cmin=0, cmax=0.95)  # Set color range from 0 to 1
-        )
-
-
-        fig.update_traces(line=dict(width=1), marker=dict(size=3))
-
-    elif "anomDetect" in color_selection:
-        fig.update_layout(           
-            coloraxis_colorbar=dict(
-            title=dict(text="Reconstruction Squared Error"),
-            thicknessmode="pixels", thickness=10,
-            lenmode="fraction", len=0.15,
-            y=0,
-            x=0.9,
-            orientation="h",
-            ticks="outside",
-            dtick=1),
-            coloraxis=dict(cmin=0, cmax=1)  # Set color range from 0 to 1
-        )
-
-
-        fig.update_traces(line=dict(width=1), marker=dict(size=3))
-
-    print(f"Step 7: Layout update completed in {time.time() - layout_start_time:.2f} seconds.")
+    print(f"Step 6: Layout update completed in {time.time() - layout_start_time:.2f} seconds.")
 
     # Total execution time
     print(f"Total execution time: {time.time() - start_time:.2f} seconds.")

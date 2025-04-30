@@ -133,3 +133,45 @@ color_palette = [
         "#2ca02c",  # dark green
         "#1f77b4",  # standard matplotlib blue
     ]
+
+DEFAULT_FIG_LAYOUT = dict(
+    autosize=True,
+    xaxis=dict(
+        title=None,
+        minallowed=None,  # Will be overridden dynamically
+        maxallowed=None,  # Will be overridden dynamically
+        fixedrange=False,
+        rangeslider=dict(
+            visible=True,
+            thickness=0.02,
+            bgcolor='rgba(128, 128, 128, 0.5)',
+            bordercolor='rgba(64, 64, 64, 1)'
+        ),
+        showspikes=True,
+        spikemode="across+marker",
+        spikethickness=1,
+    ),
+    yaxis=dict(
+        title=None,
+        showticklabels=False,
+        autorange=True,
+        showgrid=True,
+        spikethickness=0,
+    ),
+    title=dict(
+        text='',
+        x=0.5,
+        font=dict(size=12),
+        automargin=True,
+        yref='paper',
+    ),
+    showlegend=False,
+    margin=dict(l=0, r=0, t=0, b=0),
+    dragmode='select',
+    selectdirection='h',
+    hovermode='closest',
+    template="plotly_dark",
+    font=dict(color='white'),
+    paper_bgcolor='rgba(0,0,0,1)',
+    plot_bgcolor='rgba(0,0,0,1)',
+)

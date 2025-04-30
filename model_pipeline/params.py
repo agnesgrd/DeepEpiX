@@ -13,8 +13,3 @@ noise_val = 0.1
 centre_unique = 12
 overlap = 9
 total_lenght = (centre_unique + overlap)
-
-# Anomaly detection
-sfreq_ae = 150
-window_size_ms_ae = 0.4
-dim_ae = (int(sfreq_ae*window_size_ms_ae), 274, 1)

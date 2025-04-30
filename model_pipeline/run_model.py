@@ -17,10 +17,6 @@ def run_model_pipeline(
 			from model_pipeline.tensorflow_models import test_model_dash
 			window_size = params.window_size_ms
 	elif 'PyTorch' in model_type:
-		if 'AE1D' in model_path:
-			from model_pipeline.anomaly_detect import test_model_dash
-			window_size = params.window_size_ms_ae
-		else:
 			from model_pipeline.pytorch_models import test_model_dash
 			window_size = params.window_size_ms
 			

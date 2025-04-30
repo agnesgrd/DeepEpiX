@@ -51,7 +51,7 @@ def create_analyze():
 
         # Add a spike
         html.Div([
-            html.H6([html.I(className=f"bi bi-pencil"), " Event modification"], style={"fontWeight": "bold", "marginBottom": "10px"}),
+            html.H6([html.I(className=f"bi bi-pencil"), " Annotation"], style={"fontWeight": "bold", "marginBottom": "10px"}),
             dbc.Input(
                 id="event-name",  # Unique ID for each input
                 type="text",
@@ -73,7 +73,7 @@ def create_analyze():
                 persistence_type="local",
                 style={**input_styles["small-number"]}
             ),
-            dbc.Tooltip("Click on the graph to mark the desired time point or enter it manually.", target="event-onset", placement="left"),
+            dbc.Tooltip("Click or select it on the graph, or enter it manually.", target="event-onset", placement="left"),
             dbc.Input(
                 id="event-duration",  # Unique ID for each input
                 type="number",
@@ -86,6 +86,7 @@ def create_analyze():
                 persistence_type="local",
                 style={**input_styles["small-number"]}
             ),
+            dbc.Tooltip("Equals 0 for a ponctual event.", target="event-duration", placement="left"),
             dbc.Button(
                 "Add new event",
                 id="add-event-button",  # Unique ID for each button

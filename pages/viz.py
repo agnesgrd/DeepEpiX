@@ -42,7 +42,7 @@ from callbacks.topomap_callbacks import (
 # --- Spikes ---
 from callbacks.spike_callbacks import (
     register_add_event_to_annotation,
-    register_add_event_timestep_on_click,
+    register_add_event_onset_duration_on_click,
     register_delete_selected_spike,
     register_enable_add_event_button,
     register_enable_delete_event_button,
@@ -168,7 +168,7 @@ register_display_topomap_on_click()
 register_activate_deactivate_topomap_button()
 
 # --- Spike Handling ---
-register_add_event_timestep_on_click()
+register_add_event_onset_duration_on_click()
 register_add_event_to_annotation()
 register_delete_selected_spike()
 register_enable_add_event_button()

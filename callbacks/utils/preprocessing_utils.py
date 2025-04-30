@@ -3,18 +3,23 @@ import dash
 from dash import dcc
 import plotly.graph_objects as go
 
-# Standard library
+# Standard Library
+import os
 import math
 import pickle
+import hashlib
 from pathlib import Path
-import numpy as np
 
-# Third-party libraries
+# Third-party Libraries
+import numpy as np
 import mne
+import dask.dataframe as dd
+from dask import delayed
 from flask_caching import Cache
 
-# Local modules
+# Local Modules
 import config
+from callbacks.utils import cache_utils as cu
 
 app = dash.get_app()
 
@@ -52,6 +57,47 @@ def update_chunk_limits(total_duration):
         for start in range(0, math.ceil(total_duration / chunk_duration) * chunk_duration, chunk_duration)
     ]
 
+def get_cache_filename(folder_path, freq_data, start_time, end_time, cache_dir=f"./{config.CACHE_DIR}"):
+    # Create a unique hash key
+    hash_input = f"{folder_path}_{freq_data}_{start_time}_{end_time}"
+    hash_key = hashlib.md5(hash_input.encode()).hexdigest()
+    return os.path.join(cache_dir, f"{hash_key}.parquet")
+
+def get_preprocessed_dataframe_dask(folder_path, freq_data, start_time, end_time, prep_raw=None, cache_dir=f"./{config.CACHE_DIR}"):
+    os.makedirs(cache_dir, exist_ok=True)
+    cu.clear_old_cache_files(cache_dir)
+    cache_file = get_cache_filename(folder_path, freq_data, start_time, end_time, cache_dir)
+
+    # If cache exists, load and return
+    if os.path.exists(cache_file):
+        return dd.read_parquet(cache_file)
+
+    # Otherwise, compute and save
+    @delayed
+    def load_and_filter():
+        return filter_resample(folder_path, freq_data)
+
+    @delayed
+    def crop_and_to_df(prep_raw):
+        raw_chunk = prep_raw.copy().crop(tmin=start_time, tmax=end_time)
+        return raw_chunk.to_data_frame(picks="meg", index="time")
+
+    @delayed
+    def standardize(raw_df):
+        return raw_df - raw_df.mean(axis=0)
+
+    # Chain and compute
+    if prep_raw is None:
+        prep_raw = load_and_filter()
+    raw_df = crop_and_to_df(prep_raw)
+    raw_df_std = standardize(raw_df)
+
+    df = raw_df_std.compute()
+    ddf = dd.from_pandas(df, npartitions=10)
+    ddf.to_parquet(cache_file)
+
+    return ddf
+
 def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw=None):
     """
     Preprocess the MEG data in chunks and cache them.
@@ -65,9 +111,9 @@ def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw
     # Function to load and process the data in chunks, caching each piece
 
     @cache.memoize(make_name=f"{folder_path}:{freq_data}:{start_time}:{end_time}")
-    def process_data_in_chunks(folder_path, freq_data, start_time, end_time, raw=None):
+    def process_data_in_chunks(folder_path, freq_data, start_time, end_time, prep_raw=None):
         try:
-            if raw is None:
+            if prep_raw is None:
                 prep_raw = filter_resample(folder_path, freq_data)
 
             raw_chunk = prep_raw.copy().crop(tmin=start_time, tmax=end_time)

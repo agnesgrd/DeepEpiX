@@ -1,1 +1,1 @@
-from .main_layout import input_styles, box_styles, button_styles, label_styles, flexDirection, icon, color_palette
+from .main_layout import input_styles, box_styles, button_styles, label_styles, flexDirection, icon, color_palette, DEFAULT_FIG_LAYOUT

@@ -28,29 +28,38 @@ def register_enable_add_event_button():
         Input("event-duration", "value"),
         prevent_initial_call=False
     )
-    def enable_add_event_button(name, onset, duration):
+    def _enable_add_event_button(name, onset, duration):
         if None in (name, onset, duration):
             return True
         else:
             return False
 
-def register_add_event_timestep_on_click():   
+def register_add_event_onset_duration_on_click():   
     @callback(
-        #Output("topomap-timepoint", "value"),
         Output("event-onset", "value"),
-        Input('meg-signal-graph', 'clickData'),  # Capture selection data from the graph
-        prevent_initial_call = True
+        Output("event-duration", "value"),
+        Input('meg-signal-graph', 'clickData'),
+        Input('meg-signal-graph', 'selectedData'),
+        prevent_initial_call=True
     )
-    def update_spike_timestep_on_click(click_info):
-        if click_info:
-        # Get the selected range (from selectedData)
-            try:
-                t = click_info["points"][0]['x']
-                return round(t , 3) 
-            except (KeyError, TypeError, IndexError):
-                return dash.no_update
+    def _update_event_onset_duration_on_click(click_info, selected_data):
+        try:
+            if selected_data:
+                start_time = selected_data['range']['x'][0]
+                end_time = selected_data['range']['x'][1]
+                duration = end_time - start_time
+                return round(start_time, 3), round(duration, 3)
+            
+            elif click_info:
+                    t = click_info["points"][0]['x']
+                    return round(t, 3), 0
+            
+        except (KeyError, TypeError, IndexError):
+            return dash.no_update, dash.no_update
+
         else:
-            return dash.no_update  # Default range if no selection has been made
+            # If neither clickData nor selectedData is available, return default
+            return dash.no_update, dash.no_update
             
 def register_add_event_to_annotation():
     @callback(
@@ -60,28 +69,32 @@ def register_add_event_to_annotation():
         Input("add-event-button", "n_clicks"),
         State("event-name", "value"),
         State("event-onset", "value"),
+        State("event-duration", "value"),  # New input for duration
         State("annotations-store", "data"),
         State("history-store", "data"),
         State("annotation-checkboxes", "value"),
         prevent_initial_call=True
     )
-    def add_event_to_annotation(n_clicks, spike_name, spike_timestep, annotations_data, history_data, checkbox_values):
+    def _add_event_to_annotation(n_clicks, spike_name, spike_timestep, spike_duration, annotations_data, history_data, checkbox_values):
         # Validate input
         if n_clicks is None or n_clicks == 0:
             return dash.no_update, dash.no_update, dash.no_update
         if not spike_name or spike_timestep is None:
             return dash.no_update, dash.no_update, dash.no_update
 
+        # Ensure that spike_duration is not None or NaN (default it to 0 if no duration is provided)
+        if spike_duration is None or spike_duration < 0:
+            spike_duration = 0
+
         # Convert annotations data to DataFrame if not empty
         if not annotations_data:
-
-            # Initialize empty DataFrame if no data exists
             annotations_data = []
 
-        # Create a new row for the spike annotation
-        annotations_data.append({"onset": spike_timestep, "duration": 0, "description": spike_name})
+        # Create a new row for the spike annotation with duration
+        annotations_data.append({"onset": spike_timestep, "duration": spike_duration, "description": spike_name})
 
-        action = f"Added an event <{spike_name}> at {spike_timestep} (s).\n"
+        # Action to log the history (adding an event with the name and time)
+        action = f"Added an event <{spike_name}> at {spike_timestep} (s) with duration {spike_duration} (s).\n"
         history_data = hu.fill_history_data(history_data, "annotations", action)
 
         # Ensure checkbox_values is a list before appending
@@ -90,7 +103,7 @@ def register_add_event_to_annotation():
         if spike_name not in checkbox_values:
             checkbox_values.append(spike_name)
 
-        # Convert the updated DataFrame back to a records-based format
+        # Return updated data for annotations, history, and checkboxes
         return annotations_data, history_data, checkbox_values
     
 def register_delete_selected_spike():

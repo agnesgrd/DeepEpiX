@@ -1,5 +1,5 @@
 import dash
-from dash import Output, Input, State, dash_table, callback
+from dash import Output, Input, State, html, callback
 import subprocess
 import pandas as pd
 import config
@@ -7,6 +7,8 @@ from pathlib import Path
 import config
 import os
 import time
+import dash_bootstrap_components as dbc
+from callbacks.utils import annotation_utils as au
 
 def register_update_selected_model():
     @callback(
@@ -32,21 +34,22 @@ def register_update_selected_model():
 def register_execute_predict_script():
     @callback(
         Output("prediction-status", "children"),
-        Output('prediction-output', 'children'),
         Output('run-prediction-button', 'n_clicks'),
         Output('store-display-div', 'style'),
-        Output('sensitivity-analysis-store', 'data'),
+        Output('model-probabilities-store', 'data', allow_duplicate=True),
+        Output('sensitivity-analysis-store', 'data', allow_duplicate=True),
         Input('run-prediction-button', 'n_clicks'),
         State('folder-store', 'data'),
         State('model-dropdown', 'value'),
-        State('model-spike-name', 'value'),
         State('venv', 'value'),
-        State('threshold', 'value'),
+        State('initial-threshold', 'value'),
         State('sensitivity-analysis', 'value'),
         State('adjust-onset', 'value'),
+        State('model-probabilities-store', 'data'),
+        State('sensitivity-analysis-store', 'data'),
         prevent_initial_call = True
     )
-    def execute_predict_script(n_clicks, subject_folder_path, model_path, spike_name, venv, threshold, sensitivity_analysis, adjust_onset):
+    def _execute_predict_script(n_clicks, subject_folder_path, model_path, venv, threshold, sensitivity_analysis, adjust_onset, model_probabilities_store, sensitivity_analysis_store):
         if not n_clicks or n_clicks == 0:
             return None, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
@@ -56,8 +59,6 @@ def register_execute_predict_script():
             missing_fields.append("Subject Folder")
         if not model_path:
             missing_fields.append("Model")
-        if not spike_name:
-            missing_fields.append("Spike Name")
         if not venv:
             missing_fields.append("Environment")
         if threshold is None:
@@ -66,9 +67,21 @@ def register_execute_predict_script():
             error_message = f"⚠️ Please fill in all required fields: {', '.join(missing_fields)}"
             return error_message, dash.no_update, dash.no_update, dash.no_update, dash.no_update
         
+        cache_dir = Path.cwd() / f"{config.CACHE_DIR}"
+        predictions_csv_path = cache_dir/f"{os.path.basename(model_path)}_predictions.csv"
+        smoothgrad_path = cache_dir/f"{config.CACHE_DIR}/{os.path.basename(model_path)}_smoothGrad.pkl"
+
+        # ✅ If already exists, skip execution
+        if predictions_csv_path.exists() and str(predictions_csv_path) in model_probabilities_store:
+            if sensitivity_analysis and smoothgrad_path.exists() and str(smoothgrad_path) in model_probabilities_store:
+                return "✅ Reusing existing model predictions", 0, {"display": "block"}, dash.no_update, dash.no_update
+            elif not sensitivity_analysis:
+                return "✅ Reusing existing model predictions", 0, {"display": "block"}, dash.no_update, dash.no_update
+
+        # Otherwise, execute model
         if "TensorFlow" in venv:
-            #ACTIVATE_ENV = f"{config.TENSORFLOW_ENV}/bin/python"        
-            ACTIVATE_ENV = f"../{config.TENSORFLOW_ENV}/bin/python"
+            ACTIVATE_ENV = f"{config.TENSORFLOW_ENV}/bin/python"        
+            #ACTIVATE_ENV = f"../{config.TENSORFLOW_ENV}/bin/python"
         elif "PyTorch" in venv:
             ACTIVATE_ENV = f"../{config.TORCH_ENV}/bin/python"
         
@@ -79,7 +92,7 @@ def register_execute_predict_script():
             str(venv),
             str(subject_folder_path),
             str(Path.cwd() / "model_pipeline/good_channels"),
-            str(Path.cwd() / "results"),
+            str(cache_dir),
             str(threshold),  # Ensure threshold is passed as a string 
             str(adjust_onset)
         ]
@@ -88,83 +101,88 @@ def register_execute_predict_script():
         env = os.environ.copy()
         env["PYTHONPATH"] = str(working_dir)
 
-        # # Activate TensorFlow venv and run script
-        # if "CONDA_PREFIX" in os.environ:
-        #     activate_env = f"conda run -n {config.TENSORFLOW_ENV} python"
-        # else:
-        #     if os.name == "nt":
-        #         activate_env = f"{Path.cwd()}/{config.TENSORFLOW_ENV}/Scripts/python.exe"
-        #     else:
-        #         activate_env = f"{Path.cwd()}/{config.TENSORFLOW_ENV}/bin/python"
-            
-        # # else:
-        # #     raise RuntimeError("No virtual environment detected. Please activate one before running the script.")
-
         try: 
-                # Start timing
             start_time = time.time()
-
             subprocess.run(command, env=env, text=True) #stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-            # End timing
-            end_time = time.time()
-            elapsed_time = end_time - start_time
-            print(f"Model testing executed in {elapsed_time:.2f} seconds")
+            print(f"Model testing executed in {time.time()-start_time:.2f} seconds")
 
         except Exception as e:
             return f"Error running model: {e}", dash.no_update, dash.no_update, dash.no_update, dash.no_update
         
-        # Load the DataFrame from CSV
-        predictions_csv_path = Path.cwd() / f"results/{os.path.basename(model_path)}_predictions.csv"
-        result = pd.read_csv(predictions_csv_path)
-
-        # Assuming df is your DataFrame
-        result_filtered = result[result["probas"] > threshold]
-        
-        prediction_table = dash_table.DataTable(
-            columns=[{"name": col, "id": col} for col in result_filtered.columns],
-            data=result_filtered.to_dict("records"),
-            style_table={"overflowX": "auto"},
-            style_cell={"textAlign": "center", "padding": "8px"},
-            style_header={"fontWeight": "bold", "backgroundColor": "#f0f0f0"},
-            page_size=5,  # Pagination
-        )
-
-        if sensitivity_analysis == "Yes":
-
+        if sensitivity_analysis:
             command = [
                 ACTIVATE_ENV,
                 f"model_pipeline/run_smoothgrad.py",
                 str(model_path),
                 str(venv),
-                str(Path.cwd() / "results"),
-                str(Path.cwd() / f"results/{os.path.basename(model_path)}_predictions.csv"),
+                str(cache_dir),
+                str(predictions_csv_path),
                 str(threshold)  # Ensure threshold is passed as a string 
             ]
 
             try: 
                 # Start timing for the second subprocess
                 start_time = time.time()
-
                 subprocess.run(command, env=env, text = True) # stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-                # End timing for the second subprocess
-                end_time = time.time()
-                elapsed_time = end_time - start_time
-                print(f"Smoothgrad executed in {elapsed_time:.2f} seconds")
+                print(f"Smoothgrad executed in {time.time()-start_time:.2f} seconds")
 
             except Exception as e:
-                return f"Error running smoothgrad: {e}", prediction_table, 0, {"display": "block"}, dash.no_update
+                return f"Error running smoothgrad: {e}", 0, {"display": "none"}, dash.no_update, dash.no_update
 
-            smoothgrad_path = Path.cwd() / f"results/{os.path.basename(model_path)}_smoothGrad.pkl"
-            if os.path.exists(smoothgrad_path):
-                return True, prediction_table, 0, {"display": "block"}, {'smoothGrad': str(smoothgrad_path)}
-            
-            else:
-                return True, prediction_table, 0, {"display": "block"}, dash.no_update
-        else:
-            return True, prediction_table, 0, {"display": "block"}, dash.no_update
+            model_probabilities_store = [str(predictions_csv_path)]
+            sensitivity_analysis_store = [str(smoothgrad_path)]
+            return True, 0, {"display": "block"}, model_probabilities_store, sensitivity_analysis_store
 
+        return True, 0, {"display": "block"}, [str(predictions_csv_path)], dash.no_update
+
+
+@callback(
+    Output('prediction-output-summary-div', 'children'),
+    Output('prediction-output-distribution-div', 'children'),
+    Output('prediction-output-table-div', 'children'),
+    Input('store-display-div', 'style'),
+    Input('adjusted-threshold', 'value'),
+    State('model-probabilities-store', 'data'),
+    prevent_initial_call=True
+)
+def update_prediction_table(style, threshold, prediction_csv_path):
+    if style['display'] == 'none':
+        return None, None, None
+    if not prediction_csv_path or threshold is None:
+        return dash.no_update, dash.no_update, dash.no_update
+    try:
+        df = pd.read_csv(prediction_csv_path[0])
+        df_filtered = df[df["probas"] > threshold].copy()
+        if len(df_filtered) == 0:
+            msg = html.P("No events found in this recording.")
+            return msg, msg, msg
+        
+        df_filtered.loc[:,'probas'] = df_filtered['probas'].round(2)
+        table = dbc.Table.from_dataframe(
+            df_filtered,  # The DataFrame
+            striped=True,  # Alternate row shading
+            bordered=True,  # Border the table
+            hover=True,  # Highlight row on hover
+            responsive=True,  # Make the table responsive
+            dark=False,  # Light mode (set to True for dark mode)
+        )
+        return au.build_table_prediction_statistics(df, threshold), au.build_prediction_distribution_statistics(df, threshold), table
+    except Exception as e:
+        error_msg = html.P(f"Error loading predictions: {e}")
+        return error_msg, error_msg, error_msg
+    
+@callback(
+    Output('model-spike-name', 'value'),
+    Input('model-dropdown', 'value'),
+    Input('adjusted-threshold', 'value'),
+    prevent_initial_call=True
+)
+def update_spike_name(model_path, threshold_value):
+    if model_path is None or threshold_value is None:
+        return dash.no_update
+    model_name = os.path.splitext(os.path.basename(model_path))[0]
+    return f"{model_name}_{threshold_value}"
+    
 def register_store_display_prediction():
     @callback(
         Output('annotations-store', 'data', allow_duplicate=True),
@@ -172,25 +190,21 @@ def register_store_display_prediction():
         Output('store-display-div', 'style', allow_duplicate=True),
         Input('store-display-button', 'n_clicks'),
         State('annotations-store', 'data'),
-        State('prediction-output', 'children'),
+        State('model-probabilities-store', 'data'),
+        State('adjusted-threshold', 'value'),
         State('model-spike-name', 'value'),
         prevent_initial_call = True
     )
-    def store_display_prediction(n_clicks, annotation_data, prediction_table, spike_name):
-        if not n_clicks or n_clicks == 0 or prediction_table is None:
+    def store_display_prediction(n_clicks, annotation_data, prediction_csv_path, threshold, spike_name):
+        if not n_clicks or n_clicks == 0 or prediction_csv_path is None:
             return dash.no_update, dash.no_update, dash.no_update
         
         # Ensure annotation_data is initialized
         if not annotation_data:
             annotation_data = []
 
-        prediction = prediction_table['props']['data']
-
-        # Extract predictions (assuming prediction_table is a DataTable component)
-        if isinstance(prediction, list):  # Data is already a list of dicts
-            prediction_df = pd.DataFrame(prediction)
-        else:
-            return dash.no_update, dash.no_update, dash.no_update  # Invalid format
+        df = pd.read_csv(prediction_csv_path[0])
+        prediction_df = df[df["probas"] > threshold]
 
         # Convert predictions to annotation format
         new_annotations = prediction_df[['onset', 'duration']].copy()

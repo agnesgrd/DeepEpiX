@@ -1,7 +1,7 @@
 import plotly.graph_objects as go
 import dash
 from dash import Patch, Input, Output, State, callback
-import callbacks.utils.graph_utils as gu
+import callbacks.utils.dataframe_utils as du
 import plotly.graph_objects as go
 import pandas as pd
 import itertools
@@ -37,15 +37,17 @@ def register_update_annotations_on_graph(
         # Filter annotations based on the current time range
         time_range = chunk_limits[int(page_selection)]
         annotations_df = pd.DataFrame(annotations).set_index('onset')
-        filtered_annotations_df = gu.get_annotations_df_filtered_on_time(time_range, annotations_df)
+        filtered_annotations_df = du.get_annotations_df_filtered_on_time(time_range, annotations_df)
         unique_descriptions = sorted(filtered_annotations_df["description"].unique())
 
         # Prepare the shapes and annotations for the selected annotations
         new_shapes = []
         new_annotations = []
+
         description_colors = {}
+        color_cycle = itertools.cycle(color_palette)
         for desc in unique_descriptions:
-            description_colors[desc] = next(itertools.cycle(color_palette))
+            description_colors[desc] = next(color_cycle)
 
         for _, row in filtered_annotations_df.iterrows():
             description = row["description"]
@@ -65,8 +67,8 @@ def register_update_annotations_on_graph(
                             y1=y_max,
                             xref="x",
                             yref="y",
-                            line=dict(color=color, width=2, dash="dot"),
-                            opacity=1
+                            line=dict(color=color, width=2, dash="line"),
+                            opacity=0.9
                         )
                     )
                 else:
@@ -82,7 +84,7 @@ def register_update_annotations_on_graph(
                             yref="y",
                             line=dict(color=color, width=2),
                             fillcolor=color,  # Set the color of the rectangle
-                            opacity=1
+                            opacity=0.3
                         )
                     )
                 # Add the label in the margin
@@ -98,7 +100,7 @@ def register_update_annotations_on_graph(
                         align="center",
                         xanchor="center",  # Center horizontally on x
                         textangle=-90,  # Horizontal text
-                        bgcolor="rgba(255, 255, 255, 0.7)",  # Semi-transparent white background
+                        bgcolor="white",  # Semi-transparent white background
                         borderwidth=1,
                         opacity=1
                     )
@@ -196,6 +198,7 @@ def register_move_to_next_annotation(
 ):
     @callback(
         Output(graph_id, "figure", allow_duplicate=True),
+        Output(page_selector_id, "value"),
         Input(prev_spike_id, "n_clicks"),
         Input(next_spike_id, "n_clicks"),
         State(graph_id, "figure"),
@@ -206,14 +209,14 @@ def register_move_to_next_annotation(
         State(chunk_limits_store_id, "data"),
         prevent_initial_call=True
     )
-    def move_to_next_annotation(prev_spike, next_spike, graph, annotations_to_show, selected_annotations, annotations_data, page_selection, chunk_limits):
+    def _move_to_next_annotation(prev_spike, next_spike, graph, annotations_to_show, selected_annotations, annotations_data, page_selection, chunk_limits):
 
         if not annotations_data or not annotations_to_show:
-            return dash.no_update  # No annotations available, return the same graph
+            return dash.no_update, dash.no_update  # No annotations available, return the same graph
         if annotations_to_show == "__ALL__":
             annotations_to_show = selected_annotations
         if not annotations_to_show or len(annotations_data) == 0:
-            return dash.no_update
+            return dash.no_update, dash.no_update
 
         # Extract x-coordinates (onset times) of spikes from annotations
         spike_x_positions = [
@@ -222,7 +225,7 @@ def register_move_to_next_annotation(
         spike_x_positions = sorted(spike_x_positions)  # Ensure sorted order
 
         if not spike_x_positions:
-            return graph  # No spikes to navigate
+            return dash.no_update, dash.no_update  # No spikes to navigate
 
         # Get the current x-axis center
         xaxis_range = graph["layout"]["xaxis"].get("range", [])
@@ -237,9 +240,13 @@ def register_move_to_next_annotation(
         elif dash.ctx.triggered_id == prev_spike_id:
             next_spike_x = next((x for x in reversed(spike_x_positions) if x < current_x_center), spike_x_positions[0])
         else:
-            return graph  # No valid button click
+            return dash.no_update, dash.no_update  # No valid button click
         
-        time_range_limits = chunk_limits[int(page_selection)]
+        # Find which page contains the target x
+        for i, (start, end) in enumerate(chunk_limits):
+            if start <= next_spike_x <= end:
+                time_range_limits = chunk_limits[int(i)]
+                page_selection = i
                 
         # Extract time range limits
         time_range_min, time_range_max = time_range_limits
@@ -248,16 +255,8 @@ def register_move_to_next_annotation(
         x_range_offset = (xaxis_range[1] - xaxis_range[0]) / 2 if xaxis_range else 10
 
         # Default centered range
-        proposed_x_min = next_spike_x - x_range_offset
-        proposed_x_max = next_spike_x + x_range_offset
-
-        # Adjust if near the edges
-        if proposed_x_min < time_range_min:
-            x_min, x_max = time_range_min, time_range_min + 2 * x_range_offset
-        elif proposed_x_max > time_range_max:
-            x_min, x_max = time_range_max - 2 * x_range_offset, time_range_max
-        else:
-            x_min, x_max = proposed_x_min, proposed_x_max
+        x_min = next_spike_x - x_range_offset
+        x_max = next_spike_x + x_range_offset
 
         # Ensure the adjusted range is within valid limits
         x_min = max(x_min, time_range_min)
@@ -266,4 +265,4 @@ def register_move_to_next_annotation(
         # Update the graph layout
         graph["layout"]["xaxis"]["range"] = [x_min, x_max]
 
-        return graph
+        return graph, page_selection

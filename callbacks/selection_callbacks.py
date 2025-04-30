@@ -27,18 +27,11 @@ def register_page_buttons_display(chunk_limits_store_id, page_buttons_container_
                 id=page_selector_id,
                 options=[
                     {
-                        "label": html.Span(
-                            str(i + 1),
-                            style={"textDecoration": "underline" if i == 0 else "none"}
-                        ),
+                        "label": None,
                         "value": i
                     } for i in range(len(chunk_limits))
                 ],
                 value=0,
-                # className="btn-group",
-                # inputClassName="btn-check",
-                # labelClassName="btn btn-outline-primary",
-                # inputStyle={"display": "none"},
                 inline=True,
                 style={
                     "minWidth": "24px",
@@ -48,31 +41,6 @@ def register_page_buttons_display(chunk_limits_store_id, page_buttons_container_
                 }
             )
         )
-
-
-# def register_update_page_button_styles(page_selector_id, chunk_limits_store_id):
-#     @callback(
-#         Output(page_selector_id, "options"),
-#         Input(page_selector_id, "value"),
-#         State(chunk_limits_store_id, "data"),
-#         prevent_initial_call=True
-#     )
-#     def _update_button_styles(selected_value, chunk_limits):
-#         """Underline page button when selected."""
-#         if not chunk_limits:
-#             return dash.no_update
-
-#         return [
-#             {
-#                 "label": html.Span(
-#                     str(i + 1),
-#                     style={
-#                     "textDecoration": "underline" if i == selected_value else "none"}
-#                 ),
-#                 "value": i
-#             } for i in range(len(chunk_limits))
-#         ]
-
 
 # ─────────────────────────────
 # 📦 Channel & Annotation Management
@@ -274,18 +242,16 @@ def register_callbacks_sensivity_analysis():
     @callback(
         Output("colors-radio", "options"),
         Input("sensitivity-analysis-store", "data"),
-        Input("anomaly-detection-store", "data"),
         Input("colors-radio", "value"),
         State("colors-radio", "options"),
         prevent_initial_call=False
     )
-    def update_sensitivity_options(sa_store, ad_store, selected, current_options):
-        if not sa_store and not ad_store:
+    def update_sensitivity_options(sa_store, selected, current_options):
+        if not sa_store:
             return dash.no_update
 
         sa_options = [{'label': k, 'value': k} for k in sa_store or {}]
-        ad_options = [{'label': k, 'value': k} for k in ad_store or {}]
 
-        new_options = [opt for opt in sa_options + ad_options if opt not in current_options]
+        new_options = [opt for opt in sa_options if opt not in current_options]
 
         return current_options + new_options
