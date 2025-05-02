@@ -1,7 +1,7 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 import config
-from layout import input_styles, box_styles, button_styles
+from layout import INPUT_STYLES, BOX_STYLES, BUTTON_STYLES
 from layout.selection_sidebar_layout import create_selection
 
 def create_compute():
@@ -20,7 +20,7 @@ def create_compute():
                 size="sm",
                 persistence=True,
                 persistence_type="local",
-                style={**input_styles["small-number"]}
+                style={**INPUT_STYLES["small-number"]}
             ),
             dbc.Tooltip(
                 """
@@ -83,7 +83,7 @@ def create_compute():
                 size="sm",
                 persistence=True,
                 persistence_type="local",
-                style={**input_styles["small-number"]}
+                style={**INPUT_STYLES["small-number"]}
             ),
             dbc.Tooltip(
                 """
@@ -111,7 +111,7 @@ def create_compute():
                 size="sm",
                 persistence=True,
                 persistence_type="local",
-                style={**input_styles["small-number"]}
+                style={**INPUT_STYLES["small-number"]}
             ),
 
             dbc.Tooltip(
@@ -139,11 +139,11 @@ def create_compute():
                     size="sm",
                     n_clicks=0,
                     disabled=False,
-                    style=button_styles["big"]
+                    style=BUTTON_STYLES["big"]
                 ),
             ]),
 
-        ], style=box_styles["classic"]),
+        ], style=BOX_STYLES["classic"]),
 
         html.Div([
             # Label and input field for timepoint entry
@@ -169,7 +169,7 @@ def create_compute():
                 )
             ),
 
-        ], style=box_styles["classic"]),
+        ], style=BOX_STYLES["classic"]),
     ])
 
 # Helper function to create the sidebar with checkboxes

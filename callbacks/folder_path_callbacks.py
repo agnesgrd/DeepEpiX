@@ -7,7 +7,7 @@ import mne
 import os
 
 # Local Imports
-from layout import flexDirection
+from layout import FLEXDIRECTION
 from callbacks.utils import folder_path_utils as fpu
 
 def register_update_dropdown():
@@ -74,7 +74,8 @@ def register_store_folder_path_and_clear_data():
         Output("folder-store", "data"),
         Output("chunk-limits-store", "clear_data"),
         Output("frequency-store", "clear_data"),
-        Output("annotations-store", "clear_data"),
+        Output("annotation-store", "clear_data"),
+        Output('channel-store', 'clear_data'),
         Output('model-probabilities-store', 'clear_data'),
         Output('sensitivity-analysis-store', 'clear_data'),
         Input("load-button", "n_clicks"),
@@ -84,11 +85,11 @@ def register_store_folder_path_and_clear_data():
     def store_folder_path_and_clear_data(n_clicks, folder_path):
         """Clear all stores and display frequency section on load."""
         if not folder_path:
-            return (dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update)
+            return (dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update)
         return (
-            {**flexDirection["row-flex"], "display": "flex"},
+            {**FLEXDIRECTION["row-flex"], "display": "flex"},
             folder_path, 
-            True, True, True, True, True
+            True, True, True, True, True, True
         )
 
 def register_populate_tab_contents():

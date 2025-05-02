@@ -1,14 +1,16 @@
-import dash
-from dash import Output, Input, State, html, callback
-import subprocess
-import pandas as pd
-import config
-from pathlib import Path
-import config
 import os
 import time
+import subprocess
+from pathlib import Path
+
+import pandas as pd
+import dash
+from dash import Input, Output, State, html, callback
 import dash_bootstrap_components as dbc
+
+import config
 from callbacks.utils import annotation_utils as au
+from callbacks.utils import history_utils as hu
 
 def register_update_selected_model():
     @callback(
@@ -185,19 +187,21 @@ def update_spike_name(model_path, threshold_value):
     
 def register_store_display_prediction():
     @callback(
-        Output('annotations-store', 'data', allow_duplicate=True),
+        Output('annotation-store', 'data', allow_duplicate=True),
         Output('sidebar-tabs', 'active_tab'),
         Output('store-display-div', 'style', allow_duplicate=True),
+        Output('history-store', 'data'),
         Input('store-display-button', 'n_clicks'),
-        State('annotations-store', 'data'),
+        State('annotation-store', 'data'),
         State('model-probabilities-store', 'data'),
         State('adjusted-threshold', 'value'),
         State('model-spike-name', 'value'),
+        State('history-store', 'data'),
         prevent_initial_call = True
     )
-    def store_display_prediction(n_clicks, annotation_data, prediction_csv_path, threshold, spike_name):
+    def store_display_prediction(n_clicks, annotation_data, prediction_csv_path, threshold, spike_name, history_data):
         if not n_clicks or n_clicks == 0 or prediction_csv_path is None:
-            return dash.no_update, dash.no_update, dash.no_update
+            return dash.no_update, dash.no_update, dash.no_update, dash.no_update
         
         # Ensure annotation_data is initialized
         if not annotation_data:
@@ -205,16 +209,14 @@ def register_store_display_prediction():
 
         df = pd.read_csv(prediction_csv_path[0])
         prediction_df = df[df["probas"] > threshold]
-
-        # Convert predictions to annotation format
         new_annotations = prediction_df[['onset', 'duration']].copy()
         new_annotations['description'] = spike_name  # Set spike name as description
-
-        # Convert to dictionary format for storage
         new_annotations_dict = new_annotations.to_dict(orient="records")
-
-        # Append new annotations
         annotation_data.extend(new_annotations_dict)
 
+        # Action to log the history (adding an event with the name and time)
+        action = f"Tested model with <{spike_name}> as the predicted event name.\n"
+        history_data = hu.fill_history_data(history_data, "models", action)
+
         # Return updated annotations and switch tab
-        return annotation_data, "selection-tab", {"display": "none"}
+        return annotation_data, "selection-tab", {"display": "none"}, history_data

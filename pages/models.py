@@ -3,7 +3,7 @@ import dash
 from dash import html, dcc,  dash_table, callback
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
-from layout import input_styles, box_styles
+from layout import INPUT_STYLES, BOX_STYLES
 import pandas as pd
 import os
 import subprocess
@@ -69,7 +69,7 @@ layout = html.Div([
 					}
 				)
 			],
-			style=box_styles["classic"]
+			style=BOX_STYLES["classic"]
 		),
 	]),
 
@@ -145,13 +145,13 @@ layout = html.Div([
 									"Tolerance (ms):",
 									style={"fontWeight": "bold", "fontSize": "14px"}
 								),
-								dbc.Input(id="performance-tolerance", type="number", value=200, step=10, min=0, max=1000, style=input_styles["number"]),
+								dbc.Input(id="performance-tolerance", type="number", value=200, step=10, min=0, max=1000, style=INPUT_STYLES["number"]),
 
 								html.Label(
 									"Threshold:",
 									style={"fontWeight": "bold", "fontSize": "14px"}
 								),
-								dbc.Input(id="performance-threshold", type="number", value=0.5, step=0.01, min=0, max=1, style=input_styles["number"]),
+								dbc.Input(id="performance-threshold", type="number", value=0.5, step=0.01, min=0, max=1, style=INPUT_STYLES["number"]),
 							], style = {"padding": "10px"}),
 						]
 					),
@@ -249,7 +249,7 @@ layout = html.Div([
 	# 					id="new-model-name",
 	# 					type="text",
 	# 					placeholder="Model name...",
-	# 					style=input_styles["path"]
+	# 					style=INPUT_STYLES["path"]
 	# 				),
 	# 				width=4
 	# 			),
@@ -264,7 +264,7 @@ layout = html.Div([
 	# 			)
 	# 		])
 	# 	], style={"padding": "10px"}),
-	# ], style=box_styles["classic"])
+	# ], style=BOX_STYLES["classic"])
 
 ])
 
@@ -330,7 +330,7 @@ def display_model_info(n_clicks, selected_model):
 	Output("model-prediction-radio", "value"),
 	Output("ground-truth-checkboxes", "options"),
 	Output("ground-truth-checkboxes", "value"),
-	Input("annotations-store", "data"),
+	Input("annotation-store", "data"),
 	prevent_initial_call = False
 )
 def display_model_names_checklist(annotations_store):
@@ -397,7 +397,7 @@ def compute_matches(model_onsets, gt_onsets, delta):
 	State("ground-truth-checkboxes", "value"),  # Selected ground truth(s)
 	State("performance-tolerance", "value"),  # User-defined delta threshold
 	State("performance-threshold", "value"),  # User-defined delta threshold
-	State("annotations-store", "data"),
+	State("annotation-store", "data"),
 	prevent_initial_call=True  # Don't trigger on page load
 )
 def compute_performance(n_clicks, model_prediction, ground_truth, tolerance, threshold, annotations):

@@ -12,7 +12,7 @@ from callbacks.utils import graph_utils as gu
 import plotly.express as px
 import traceback
 import pandas as pd
-# from callbacks.selection_callbacks import register_manage_annotations_checklist, register_callbacks_annotation_names, register_page_buttons_display, register_update_page_button_styles, register_callbacks_montage_names
+# from callbacks.selection_callbacks import register_manage_annotations_checklist, register_callbacks_annotation_names, register_page_buttons_display, register_update_page_BUTTON_STYLES, register_callbacks_montage_names
 # from callbacks.annotation_callbacks import register_update_annotations, register_update_annotation_graph, register_move_to_next_annotation
 
 # Layout imports
@@ -86,7 +86,7 @@ layout = html.Div([
 #     page_selector_id="page-selector-ica"
 # )
 
-# register_update_page_button_styles(
+# register_update_page_BUTTON_STYLES(
 #     page_selector_id="page-selector-ica",
 #     chunk_limits_store_id="chunk-limits-store"
 # )

@@ -7,7 +7,7 @@ import dash_bootstrap_components as dbc
 from callbacks.utils import folder_path_utils as fpu
 
 # --- Layout Config ---
-from layout import input_styles, box_styles, flexDirection
+from layout import INPUT_STYLES, BOX_STYLES, FLEXDIRECTION
 
 # --- Callbacks ---
 from callbacks.storage_callbacks import register_populate_memory_tab_contents
@@ -27,37 +27,68 @@ dash.register_page(__name__, path = "/")
 
 layout = html.Div([
 
-    html.Div([
-        html.H3([
-            html.I(className="bi bi-sd-card", style={"marginRight": "10px", "fontSize": "1.2em"}),
-            "Internal Storage"]),
-
-        html.Div(
-                id="subject-memory", 
-                children = [
-
-                    dbc.Tabs(id="subject-tabs-memory", active_tab='subject-tab-memory', children=[
-
-                        dbc.Tab(label='General', tab_id="subject-tab-memory", children=[
-
-                            html.Div(id="subject-container-memory", children = [html.Span("No subject in memory. Please choose one below.")])], style={"margin-top": "10px", "width": "40%", "maxHeight": "450px",  "overflowY": "auto"}),
-
-                        dbc.Tab(label='Raw Info', tab_id="raw-info-tab-memory", children=[
-
-                            html.Div(id="raw-info-container-memory", children = [html.Label("No subject in memory. Please choose one below.")])], style={"margin-top": "10px", "width": "40%", "maxHeight": "450px",  "overflowY": "auto"}),
-                        
-                        dbc.Tab(label='Event Statistics', tab_id="events-tab-memory", children=[
-
-                            html.Div(id="event-stats-container-memory", children = [html.Label("No subject in memory. Please choose one below.")])], style={"margin-top": "10px", "width": "40%", "maxHeight": "450px",  "overflowY": "auto"}),
-
-                        dbc.Tab(label='History', tab_id="history-tab-memory", children=[
-                            
-                            html.Div(id ="history-container-memory", children = [html.Label("No history in memory. Please do further analysis.")])], style={"margin-top": "10px", "width": "40%", "maxHeight": "450px",  "overflowY": "auto"}),
-
-                    ], style={**flexDirection["row-tabs"], "width": "40%"}),
-
-                ])
-    ], style=box_styles["classic"]),
+    dbc.Card(
+        dbc.CardBody([
+            html.Div(
+                id="subject-memory",
+                children=[
+                    dbc.Tabs(
+                        id="subject-tabs-memory",
+                        active_tab='subject-tab-memory',
+                        children=[
+                            dbc.Tab(
+                                label='General',
+                                tab_id="subject-tab-memory",
+                                children=[
+                                    html.Div(
+                                        id="subject-container-memory",
+                                        children=[html.Span("No subject in memory. Please choose one below.")],
+                                        style={"margin-top": "10px", "maxHeight": "450px", "overflowY": "auto"}
+                                    )
+                                ]
+                            ),
+                            dbc.Tab(
+                                label='Raw Info',
+                                tab_id="raw-info-tab-memory",
+                                children=[
+                                    html.Div(
+                                        id="raw-info-container-memory",
+                                        children=[html.Label("No subject in memory. Please choose one below.")],
+                                        style={"margin-top": "10px", "maxHeight": "450px", "overflowY": "auto"}
+                                    )
+                                ]
+                            ),
+                            dbc.Tab(
+                                label='Event Statistics',
+                                tab_id="events-tab-memory",
+                                children=[
+                                    html.Div(
+                                        id="event-stats-container-memory",
+                                        children=[html.Label("No subject in memory. Please choose one below.")],
+                                        style={"margin-top": "10px", "maxHeight": "450px", "overflowY": "auto"}
+                                    )
+                                ]
+                            ),
+                            dbc.Tab(
+                                label='History',
+                                tab_id="history-tab-memory",
+                                children=[
+                                    html.Div(
+                                        id="history-container-memory",
+                                        children=[html.Label("No history in memory. Please do further analysis.")],
+                                        style={"margin-top": "10px", "maxHeight": "450px", "overflowY": "auto"}
+                                    )
+                                ]
+                            ),
+                        ],
+                        style={**FLEXDIRECTION["row-tabs"], "width": "100%"}
+                    )
+                ]
+            )
+        ]),
+        className="mb-3",  # Adds margin below the card
+        style={"width": "100%"}
+    ),
 
     html.Div([
         html.H4([
@@ -92,7 +123,7 @@ layout = html.Div([
 
         html.Div(id="folder-path-warning", className="text-danger", style={"marginTop": "10px"})
 
-    ], style=box_styles["classic"]),
+    ], style=BOX_STYLES["classic"]),
 
     html.Div(
         id="frequency-container",
@@ -107,22 +138,22 @@ layout = html.Div([
 
                     html.Div([
                         html.Label("Resampling Frequency (Hz): "),
-                        dbc.Input(id="resample-freq", type="number", value=150, step=1, min=50, style=input_styles["number-in-box"]),
+                        dbc.Input(id="resample-freq", type="number", value=150, step=1, min=50, style=INPUT_STYLES["number-in-box"]),
                     ]),
 
                     html.Div([
                         html.Label("High-pass Frequency (Hz): "),
-                        dbc.Input(id="high-pass-freq", type="number", value=0.5, step=0.1, min=0.1, style=input_styles["number-in-box"]),
+                        dbc.Input(id="high-pass-freq", type="number", value=0.5, step=0.1, min=0.1, style=INPUT_STYLES["number-in-box"]),
                     ]),
 
                     html.Div([
                         html.Label("Low-pass Frequency (Hz): "),
-                        dbc.Input(id="low-pass-freq", type="number", value=50, step=1, min=1, style=input_styles["number-in-box"]),
+                        dbc.Input(id="low-pass-freq", type="number", value=50, step=1, min=1, style=INPUT_STYLES["number-in-box"]),
                     ]),
 
                     html.Div([
                         html.Label("Notch filter Frequency (Hz): "),
-                        dbc.Input(id="notch-freq", type="number", value=50, step=1, min=0, style=input_styles["number-in-box"]),
+                        dbc.Input(id="notch-freq", type="number", value=50, step=1, min=0, style=INPUT_STYLES["number-in-box"]),
                     ]),
 
                     html.H4([
@@ -131,7 +162,7 @@ layout = html.Div([
 
                     html.Div([
                         html.Label("Channel Name:"),
-                        dbc.Input(id="heartbeat-channel", type="text", placeholder="None", style=input_styles["number-in-box"]),
+                        dbc.Input(id="heartbeat-channel", type="text", placeholder="None", style=INPUT_STYLES["number-in-box"]),
                         dbc.Tooltip(
                                 """
                                 ch_name : None | str\n
@@ -157,7 +188,7 @@ layout = html.Div([
                         dcc.Location(id="url", refresh=True),
                     ], style={"margin-top": "20px"})
 
-                ], style={**box_styles["classic"], "width": "40%"}),
+                ], style={**BOX_STYLES["classic"], "width": "40%"}),
 
             html.Div(
                 id="analysis", 
@@ -172,7 +203,7 @@ layout = html.Div([
 
                             dbc.Tab(label='Event Statistics', tab_id="events-tab", children=[
 
-                                html.Div(id="event-stats-container", style = {"width":"70%"}),
+                                html.Div(id="event-stats-container"),
                             ]),
 
                             dbc.Tab(label='Power Spectral Density', tab_id="psd-tab", children=[
@@ -188,9 +219,9 @@ layout = html.Div([
                                 ]),
                             ]),
 
-                    ], style=flexDirection["row-tabs"]),
+                    ], style=FLEXDIRECTION["row-tabs"]),
 
-                ], style={**box_styles["classic"], "width": "60%"}),
+                ], style={"width": "60%"}),
 
         ], style={"display": "none"})
     ])

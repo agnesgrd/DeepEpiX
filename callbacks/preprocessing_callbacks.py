@@ -8,6 +8,7 @@ import mne
 # Local Imports
 from callbacks.utils import preprocessing_utils as pu
 from callbacks.utils import annotation_utils as au
+from callbacks.utils import channel_utils as chu
 
 def register_handle_frequency_parameters():
     @callback(
@@ -32,7 +33,8 @@ def register_preprocess_meg_data():
     @callback(
         Output("preprocess-status", "children", allow_duplicate=True),
         Output("frequency-store", "data"),
-        Output("annotations-store", "data"),
+        Output("annotation-store", "data"),
+        Output("channel-store", "data"),
         Output("chunk-limits-store", "data"),
         Output("url", "pathname"),
         Input("preprocess-display-button", "n_clicks"),
@@ -55,6 +57,8 @@ def register_preprocess_meg_data():
                 raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
 
                 annotations_dict, max_length = au.get_annotations_dataframe(raw, heartbeat_ch_name)
+                channels_dict = chu.get_grouped_channels_by_prefix(raw)
+                print(channels_dict)
                 chunk_limits = pu.update_chunk_limits(max_length)
 
                 # Store the frequency values when the folder is valid
@@ -71,9 +75,9 @@ def register_preprocess_meg_data():
                     start_time, end_time = chunk_idx
                     raw_df = pu.get_preprocessed_dataframe_dask(folder_path, freq_data, start_time, end_time, prep_raw)
 
-                return "Preprocessed and saved data", freq_data, annotations_dict, chunk_limits, "/viz/raw-signal"
+                return "Preprocessed and saved data", freq_data, annotations_dict, channels_dict, chunk_limits, "/viz/raw-signal"
             
             except Exception as e:
-                return f"Error during preprocessing : {str(e)}", dash.no_update, dash.no_update, dash.no_update, dash.no_update
+                return f"Error during preprocessing : {str(e)}", dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
-        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update

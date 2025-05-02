@@ -20,17 +20,17 @@ def register_update_graph_time_channel():
         State("montage-radio", "value"),
         State("channel-region-checkboxes", "value"),
         State("folder-store", "data"),
-        State("offset-display", "children"),
+        State("offset-display", "value"),
         State("colors-radio", "value"),
         State("chunk-limits-store", "data"),
         State("frequency-store", "data"),
         State("montage-store", "data"),
-
+        State("channel-store", "data"),
         State("sensitivity-analysis-store", "data"),
         running=[(Output("update-button", "disabled"), True, False)],
         prevent_initial_call=False
     )
-    def update_graph_time_channel(n_clicks, page_selection, graph, montage_selection, channel_selection, folder_path, offset_selection, color_selection, chunk_limits,freq_data, montage_store, sensitivity_analysis_store):
+    def update_graph_time_channel(n_clicks, page_selection, graph, montage_selection, channel_selection, folder_path, offset_selection, color_selection, chunk_limits, freq_data, montage_store, channel_store, sensitivity_analysis_store):
         """Update MEG signal visualization based on time and channel selection."""
       
         if n_clicks == 0:
@@ -39,7 +39,7 @@ def register_update_graph_time_channel():
         if not folder_path:
             return dash.no_update, "Please choose a subject to display on Home page."
         
-        if None in (page_selection, offset_selection, color_selection, freq_data) or not chunk_limits:
+        if None in (page_selection, offset_selection, color_selection, freq_data, channel_store) or not chunk_limits:
             return dash.no_update, "You have a subject in memory but its recording has not been preprocessed yet. Please go back on Home page to reprocess the signal."
         
         if (montage_selection == "channel selection" and not channel_selection):  # Check if data is missing
@@ -50,9 +50,10 @@ def register_update_graph_time_channel():
             selected_channels = [
                 channel
                 for region_code in channel_selection
-                if region_code in config.GROUP_CHANNELS_BY_REGION
-                for channel in config.GROUP_CHANNELS_BY_REGION[region_code]
+                if region_code in channel_store
+                for channel in channel_store[region_code]
             ]
+            print(selected_channels)
 
             if not selected_channels:
                 return dash.no_update, "No channels selected from the given regions"
@@ -78,7 +79,7 @@ def register_update_graph_time_channel():
                 filter = pickle.load(f)
 
         try:                  
-            fig = gu.generate_graph_time_channel(selected_channels, float(offset_selection), time_range, folder_path, freq_data, color_selection, xaxis_range, filter)
+            fig = gu.generate_graph_time_channel(selected_channels, float(offset_selection), time_range, folder_path, freq_data, color_selection, xaxis_range, channel_store, filter)
             return fig, None
             
         except FileNotFoundError:

@@ -1,6 +1,6 @@
 # Common styles
 
-input_styles = {
+INPUT_STYLES = {
     "path":{
         "width": "100%",
         "padding": "10px",
@@ -46,7 +46,7 @@ input_styles = {
     }
 }
 
-button_styles = {
+BUTTON_STYLES = {
     "big": {
         "fontSize": "12px",
         "padding": "8px",
@@ -62,7 +62,7 @@ button_styles = {
     }
 }
 
-box_styles = {
+BOX_STYLES = {
     "panel-tabs": {
         "padding": "15px",  # More spacious padding
         "text-decoration": "none", 
@@ -85,7 +85,7 @@ box_styles = {
     }
 }
 
-flexDirection = {
+FLEXDIRECTION = {
     "row-flex": {
         "flexDirection": "row",  # Side-by-side layout
         "alignItems": "flex-start",  # Align to top
@@ -101,7 +101,7 @@ flexDirection = {
     }
 }
 
-label_styles = {
+LABEL_STYLES = {
     "classic": {
         "fontWeight": "bold",
         "fontSize": "14px",
@@ -114,14 +114,14 @@ label_styles = {
     }
 }
 
-icon = {
+ICON = {
         "annotations": "bi-activity",
         "models": "bi-stars",
         "ICA": "bi-noise-reduction"
     }
 
 # Color palette for events
-color_palette = [
+COLOR_PALETTE = [
         "#e6194b",  # strong red
         "#3cb44b",  # vivid green
         "#0082c8",  # vivid blue
@@ -175,3 +175,21 @@ DEFAULT_FIG_LAYOUT = dict(
     paper_bgcolor='rgba(0,0,0,1)',
     plot_bgcolor='rgba(0,0,0,1)',
 )
+
+# Define the region-to-color mapping
+REGION_COLOR_PALETTE = [
+    "#1f77b4",  # Muted Blue
+    "#ff7f0e",  # Safety Orange
+    "#2ca02c",  # Cooked Asparagus Green
+    "#d62728",  # Brick Red
+    "#9467bd",  # Muted Purple
+    "#8c564b",  # Chestnut Brown
+    "#e377c2",  # Raspberry Yogurt Pink
+    "#7f7f7f",  # Middle Gray
+    "#bcbd22",  # Curry Yellow-Green
+    "#17becf",  # Blue-Teal
+    "#8B0000",  # DarkRed
+    "#00008B",  # DarkBlue
+    "#006400",  # DarkGreen
+    "#FF8C00",  # DarkOrange
+]

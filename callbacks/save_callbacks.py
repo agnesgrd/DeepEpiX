@@ -2,6 +2,7 @@ import dash
 from dash import Input, Output, State, callback
 from callbacks.utils import markerfile_utils as mu
 from callbacks.utils import annotation_utils as au
+from datetime import datetime
 
 def register_enter_default_saving_folder_path():
     @callback(
@@ -19,7 +20,7 @@ def register_display_annotations_to_save_checkboxes():
     @callback(
         Output("annotations-to-save-checkboxes", "options"),
         Output("annotations-to-save-checkboxes", "value"),
-        Input("annotations-store", "data"),
+        Input("annotation-store", "data"),
         prevent_initial_call = False
     )
     def _display_annotations_to_save_checkboxes(annotations_store):
@@ -30,7 +31,19 @@ def register_display_annotations_to_save_checkboxes():
         options = [{'label': f"{name} ({count})", 'value': f"{name}"} for name, count in description_counts.items()]
         value = [f"{name}" for name in description_counts.keys()]
         return options, value  # Set all annotations as default selected
-            
+
+def register_set_old_markerfile_name():          
+    @callback(
+        Output("old-mrk-name", "value"),
+        Input("sidebar-tabs", "active_tab"),  # Dummy trigger to run on load, or use another valid Input
+        prevent_initial_call=False
+    )
+    def set_old_marker_name(active_tab):
+        if active_tab=="saving-tab":
+            date_str = datetime.now().strftime('%d.%m.%H.%M')
+            return f"OldMarkerFile_{date_str}"
+        return dash.no_update
+
 def register_save_new_markerfile():
     @callback(
         Output("saving-mrk-status", "children"),  # Display a message in the saving status area
@@ -39,7 +52,7 @@ def register_save_new_markerfile():
         State("old-mrk-name", "value"),
         State("new-mrk-name", "value"),
         State("annotations-to-save-checkboxes", "value"),
-        State("annotations-store", "data")  # Assuming annotations are stored somewhere
+        State("annotation-store", "data")  # Assuming annotations are stored somewhere
     )
     def _save_new_markerfile_file(n_clicks, folder_path, old_mrk_name, new_mrk_name, annotations_to_save, annotations):
         """Modify name of old markerfile and create new markerfile."""

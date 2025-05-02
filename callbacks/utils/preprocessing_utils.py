@@ -45,6 +45,8 @@ def filter_resample(folder_path, freq_data):
     raw.notch_filter(freqs=notch_freq)
     raw.resample(resample_freq)
 
+    # raw.rename_channels({ch['ch_name']: ch['ch_name'].split('-')[0] for ch in raw.info['chs']})
+
     return raw
 
 
@@ -85,7 +87,7 @@ def get_preprocessed_dataframe_dask(folder_path, freq_data, start_time, end_time
     @delayed
     def standardize(raw_df):
         return raw_df - raw_df.mean(axis=0)
-
+    
     # Chain and compute
     if prep_raw is None:
         prep_raw = load_and_filter()
@@ -187,6 +189,7 @@ def get_ica_sources_for_chunk(folder_path, start_time, end_time, n_components, i
 
 def compute_power_spectrum_decomposition(folder_path, freq_data):
     raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
+    print(raw.ch_names)
 
     low_pass_freq = freq_data.get("low_pass_freq")
     high_pass_freq = freq_data.get("high_pass_freq")

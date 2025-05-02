@@ -1,7 +1,7 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 import config
-from layout import input_styles, box_styles, button_styles
+from layout import INPUT_STYLES, BOX_STYLES, BUTTON_STYLES
 
 
 def create_analyze():
@@ -19,7 +19,7 @@ def create_analyze():
                     size="sm",
                     n_clicks=0,
                     disabled=False,
-                    style=button_styles["big"]
+                    style=BUTTON_STYLES["big"]
                 ),
                 dbc.Tooltip("Turn on the topomap with this button, then click the graph at the moment you're interested in.", target="plot-topomap-button", placement="left"),
                 # Loading component to show the loading spinner while the long callback is processing
@@ -47,7 +47,7 @@ def create_analyze():
                     "maxWidth": "90vw"
                 }
             ),
-        ], style=box_styles["classic"]),
+        ], style=BOX_STYLES["classic"]),
 
         # Add a spike
         html.Div([
@@ -59,7 +59,7 @@ def create_analyze():
                 size="sm",
                 persistence=True,
                 persistence_type="local",
-                style={**input_styles["small-number"]}
+                style={**INPUT_STYLES["small-number"]}
             ),
             dbc.Input(
                 id="event-onset",  # Unique ID for each input
@@ -71,7 +71,7 @@ def create_analyze():
                 size="sm",
                 persistence=True,
                 persistence_type="local",
-                style={**input_styles["small-number"]}
+                style={**INPUT_STYLES["small-number"]}
             ),
             dbc.Tooltip("Click or select it on the graph, or enter it manually.", target="event-onset", placement="left"),
             dbc.Input(
@@ -84,7 +84,7 @@ def create_analyze():
                 size="sm",
                 persistence=True,
                 persistence_type="local",
-                style={**input_styles["small-number"]}
+                style={**INPUT_STYLES["small-number"]}
             ),
             dbc.Tooltip("Equals 0 for a ponctual event.", target="event-duration", placement="left"),
             dbc.Button(
@@ -94,7 +94,7 @@ def create_analyze():
                 outline=True,
                 size="sm",
                 n_clicks=0,
-                style=button_styles["big"],
+                style=BUTTON_STYLES["big"],
                 disabled=True
             ),
             dbc.Button(
@@ -104,10 +104,10 @@ def create_analyze():
                 outline=True,
                 size="sm",
                 n_clicks=0,
-                style=button_styles["big"],
+                style=BUTTON_STYLES["big"],
                 disabled=True
             )
-        ], style=box_styles["classic"]),
+        ], style=BOX_STYLES["classic"]),
 
         # History Section
         html.Div([
@@ -126,7 +126,7 @@ def create_analyze():
                 outline=True,
                 size="sm",
                 n_clicks=0,
-                style=button_styles["big"]
+                style=BUTTON_STYLES["big"]
             ),
-        ], style=box_styles["classic"]),
+        ], style=BOX_STYLES["classic"]),
     ])     

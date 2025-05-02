@@ -7,7 +7,7 @@ import dash_bootstrap_components as dbc
 from callbacks.utils import folder_path_utils as fpu
 from callbacks.utils import annotation_utils as au
 from callbacks.utils import history_utils as hu
-from layout import icon
+from layout import ICON
 
 def register_populate_memory_tab_contents():
     @callback(
@@ -20,7 +20,7 @@ def register_populate_memory_tab_contents():
         State("folder-store", "data"),
         State("chunk-limits-store", "data"),
         State("frequency-store", "data"),
-        State("annotations-store", "data"),
+        State("annotation-store", "data"),
         State("history-store", "data"),
         prevent_initial_call=False
     )
@@ -80,7 +80,7 @@ def register_populate_memory_tab_contents():
                     dbc.CardBody([
                         html.Div([
                             html.H5([
-                                html.I(className=f"bi {icon[category]}", style={"marginRight": "10px", "fontSize": "1.2em"}),
+                                html.I(className=f"bi {ICON[category]}", style={"marginRight": "10px", "fontSize": "1.2em"}),
                                 category.capitalize()
                             ], className="card-title"),
                             html.Hr(),

@@ -1,5 +1,5 @@
 from dash import html, dcc
-from layout import input_styles, box_styles, button_styles, label_styles, flexDirection
+from layout import INPUT_STYLES, BUTTON_STYLES, LABEL_STYLES, FLEXDIRECTION
 import dash_bootstrap_components as dbc
 from callbacks.utils import predict_utils as pu
 
@@ -8,7 +8,7 @@ def create_predict():
 
     # Model selection
     html.Div([
-        html.Label("Available Models:", style={**label_styles["classic"]}),
+        html.Label("Available Models:", style={**LABEL_STYLES["classic"]}),
         dcc.Dropdown(
             id="model-dropdown",
             options=pu.get_model_options('CNN'),
@@ -18,20 +18,20 @@ def create_predict():
 
     # Environment input
     html.Div([
-        html.Label("Environment:", style={**label_styles["classic"]}),
-        dbc.Input(id="venv", type="text", value="", disabled=True, style={**input_styles["small-number"]}),
+        html.Label("Environment:", style={**LABEL_STYLES["classic"]}),
+        dbc.Input(id="venv", type="text", value="", disabled=True, style={**INPUT_STYLES["small-number"]}),
     ], style={"marginBottom": "20px"}),
 
     # Threshold
     html.Div([
-        html.Label("Threshold:", style={**label_styles["classic"]}),
-        dbc.Input(id="initial-threshold", type="number", value=0.5, step=0.01, min=0, max=1, style=input_styles["small-number"]),
+        html.Label("Threshold:", style={**LABEL_STYLES["classic"]}),
+        dbc.Input(id="initial-threshold", type="number", value=0.5, step=0.01, min=0, max=1, style=INPUT_STYLES["small-number"]),
         dbc.Tooltip("Controls how confident the model must be to detect a spike.", target="threshold", placement="left"),
     ], style={"marginBottom": "20px"}),
 
     # Compute sensitvity analysis at the end
     html.Div([
-        html.Label("Sensitivity Analysis (smoothGrad):", style={**label_styles["classic"]}),
+        html.Label("Sensitivity Analysis (smoothGrad):", style={**LABEL_STYLES["classic"]}),
         dbc.RadioItems(
             id="sensitivity-analysis",
             options=[
@@ -47,7 +47,7 @@ def create_predict():
 
     # Compute sensitvity analysis at the end
     html.Div([
-        html.Label("Adjust onset (Global Field Power):", style={**label_styles["classic"]}),
+        html.Label("Adjust onset (Global Field Power):", style={**LABEL_STYLES["classic"]}),
         dbc.RadioItems(
             id="adjust-onset",
             options=[
@@ -71,7 +71,7 @@ def create_predict():
             size="sm",
             n_clicks=0,
             disabled=False,
-            style=button_styles["big"]
+            style=BUTTON_STYLES["big"]
         ),
     ]),
 
@@ -89,8 +89,8 @@ def create_predict():
 
         # Threshold
         html.Div([
-            html.Label("Threshold Refinement:", style={**label_styles["classic"]}),
-            dbc.Input(id="adjusted-threshold", type="number", value=0.5, step=0.01, min=0, max=1, style=input_styles["small-number"]),
+            html.Label("Threshold Refinement:", style={**LABEL_STYLES["classic"]}),
+            dbc.Input(id="adjusted-threshold", type="number", value=0.5, step=0.01, min=0, max=1, style=INPUT_STYLES["small-number"]),
             dbc.Tooltip("Controls how confident the model must be to detect a spike.", target="threshold", placement="left"),
         ], style={"marginBottom": "20px"}),
 
@@ -112,14 +112,14 @@ def create_predict():
 
                             html.Div(id="prediction-output-table-div")], style={"margin-top": "10px", "width": "95%", "maxHeight": "300px",  "overflowY": "auto", "overflowX": "hidden", "maxWidth": "100%"}),
                         
-                    ], style={**flexDirection["row-tabs"], "width": "100%"}),
+                    ], style={**FLEXDIRECTION["row-tabs"], "width": "100%"}),
         ], style={"marginBottom": "20px"}),
         # html.Div(id="prediction-output", style={"marginTop": "20px", "textAlign": "center"}),
 
         # Detected spike name input
         html.Div([
-            html.Label("Detected Spike Name:", style={**label_styles["classic"]}),
-            dbc.Input(id="model-spike-name", type="text", value="detected_spikes_name", style={**input_styles["small-number"]}),
+            html.Label("Detected Spike Name:", style={**LABEL_STYLES["classic"]}),
+            dbc.Input(id="model-spike-name", type="text", value="detected_spikes_name", style={**INPUT_STYLES["small-number"]}),
         ], style={"marginBottom": "20px"}),
 
         dbc.Button(
@@ -129,7 +129,7 @@ def create_predict():
             outline=True,
             disabled=False,
             n_clicks=0,
-            style = button_styles["big"]
+            style = BUTTON_STYLES["big"]
         )], style = {"display": "none"}),
      
     ]),    

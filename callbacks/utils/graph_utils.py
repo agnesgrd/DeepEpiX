@@ -1,41 +1,44 @@
 import numpy as np
+import plotly.graph_objects as go
+
 import config
+from layout import DEFAULT_FIG_LAYOUT, REGION_COLOR_PALETTE
 from callbacks.utils import preprocessing_utils as pu
 from callbacks.utils import dataframe_utils as du
 from callbacks.utils import smoothgrad_utils as su
-import plotly.express as px
-import plotly.graph_objects as go
-from layout import DEFAULT_FIG_LAYOUT
 
-def calculate_channel_offset(num_channels, plot_height=900, min_gap=30):
+def calculate_channel_offset_std(signal_df, scale_factor=1, max_scale_factor=11, min_offset=10):
+    stds = signal_df.std(skipna=True)
+    mean_std = stds.mean()*2
+    return max(min_offset, mean_std * (max_scale_factor-scale_factor))
+
+def get_y_axis_ticks_with_gap(channel_names, base_offset, group_gap=2):
     """
-    Calculate the optimal channel offset to avoid overlap of traces in the plot.
-    
+    Compute y-axis ticks with additional spacing when the side (L/R/Z) changes.
+
     Parameters:
-    - num_channels: The number of channels selected for the plot.
-    - plot_height: The height of the plot (figure).
-    - min_gap: The minimum gap (in pixels) between channels.
-    
+    - channel_names: list of channel names (e.g., ['MRC61-2805', 'MLC23-2805'])
+    - base_offset: float, base vertical spacing between channels
+    - group_gap: multiplier to insert larger gap when group changes
+
     Returns:
-    - optimal_channel_offset: The calculated offset between channels.
+    - np.array of y-axis positions with extra group separation
     """
-    # Ensure there's enough space between each trace to avoid overlap.
-    # We leave space for the desired minimum gap between traces.
-    total_gap_needed = (num_channels - 1) * min_gap
+    y_ticks = []
+    current_y = 0
+    previous_side = None
 
-    # Calculate the optimal offset based on the plot height and the required gap.
-    optimal_channel_offset = (plot_height - total_gap_needed) / (num_channels - 1) if num_channels > 1 else min_gap
-    
-    # Ensure the offset is a positive value
-    optimal_channel_offset = max(optimal_channel_offset, min_gap)
+    for name in channel_names:
+        side = name[1] if len(name) > 1 else ""
 
-    return optimal_channel_offset
+        if previous_side is not None and side != previous_side:
+            current_y += base_offset * group_gap  # Add extra space
 
-def get_y_axis_ticks(selected_channels, channel_offset = config.DEFAULT_Y_AXIS_OFFSET):
-    
-    channel_offset = (channel_offset if channel_offset != None else config.DEFAULT_Y_AXIS_OFFSET)
-    y_axis_ticks = np.arange(len(selected_channels)) * channel_offset
-    return y_axis_ticks
+        y_ticks.append(current_y)
+        current_y += base_offset
+        previous_side = side
+
+    return np.array(y_ticks)
 
 def apply_default_layout(fig, xaxis_range, time_range, folder_path):
     """
@@ -51,19 +54,13 @@ def apply_default_layout(fig, xaxis_range, time_range, folder_path):
     - Updated Plotly figure with applied layout.
     """
     layout = DEFAULT_FIG_LAYOUT.copy()
-    
-    # Apply dynamic values to layout
     layout['xaxis']['range'] = xaxis_range
     layout['xaxis']['minallowed'] = time_range[0]
     layout['xaxis']['maxallowed'] = time_range[1]
-    # layout['title']['text'] = folder_path if folder_path else 'Select a folder path'
-    
-    # Update the layout of the figure
     fig.update_layout(layout)
-    
     return fig
 
-def generate_graph_time_channel(selected_channels, offset_selection, time_range, folder_path, freq_data, color_selection, xaxis_range, filter = {}):
+def generate_graph_time_channel(selected_channels, offset_selection, time_range, folder_path, freq_data, color_selection, xaxis_range, channels_region, filter = {}):
     """Handles the preprocessing and figure generation for the MEG signal visualization."""
     import time  # For logging execution times
 
@@ -78,33 +75,37 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
 
     # Filter the dataframe based on the selected channels
     filter_df_start_time = time.time()
+    print(raw_ddf.compute())
     filtered_raw_df = raw_ddf[selected_channels].compute()
     print(f"Step 3: Dataframe filtering completed in {time.time() - filter_df_start_time:.2f} seconds.")
 
     # Offset channel traces along the y-axis
     offset_start_time = time.time()
-    channel_offset = calculate_channel_offset(len(selected_channels))*(11-offset_selection)*9
-    y_axis_ticks = get_y_axis_ticks(selected_channels, channel_offset)
+    channel_offset = calculate_channel_offset_std(filtered_raw_df, offset_selection)
+    y_axis_ticks = get_y_axis_ticks_with_gap(selected_channels, channel_offset)
     shifted_filtered_raw_df = filtered_raw_df + np.tile(y_axis_ticks, (len(filtered_raw_df), 1))
     print(f"Step 4: Channel offset calculation completed in {time.time() - offset_start_time:.2f} seconds.")
 
     # Create a dictionary mapping channels to their colors
     if color_selection == "rainbow":
-        # Create a reverse mapping to quickly find the region of a channel
-        def map_channel_to_color():
-            channel_to_region = {}
-            for region, channels in config.GROUP_CHANNELS_BY_REGION.items():
-                for channel in channels:
-                    channel_to_region[channel] = region
+        region_to_color = {
+            region: REGION_COLOR_PALETTE[i % len(REGION_COLOR_PALETTE)]
+            for i, region in enumerate(channels_region.keys())
+        }
 
-            channel_to_color = {}
-            for channels, region in channel_to_region.items():
-                channel_to_color[channels] = config.REGION_COLORS[region]
-            return channel_to_color
+        # Build channel-to-color mapping
+        channel_to_color = {
+            channel: region_to_color[region]
+            for region, channels in channels_region.items()
+            for channel in channels
+        }
 
-        CHANNEL_TO_COLOR = map_channel_to_color()
-
-        color_map = {channel: CHANNEL_TO_COLOR[channel] for channel in selected_channels}
+        # Final color map only for selected channels
+        color_map = {
+            channel: channel_to_color[channel]
+            for channel in selected_channels
+            if channel in channel_to_color
+        }
     elif color_selection == "white":
         color_map = {channel: "white" for channel in selected_channels}
     elif "smoothGrad" in color_selection:
@@ -125,19 +126,6 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
             line=dict(color=color_map.get(col, None), width=1)
         ))
 
-    # fig.update_layout(
-    #     xaxis_title="Time (s)",
-    #     yaxis_title="Value",
-    #     showlegend=True
-    # )
-    # fig = px.line(
-    #     shifted_filtered_raw_df,
-    #     x="Time",
-    #     y=shifted_filtered_raw_df.columns[:-1],  # Exclude the Time column from y
-    #     labels={"value": "Value", "variable": "Channel", "Time": "Time (s)"},
-    #     color_discrete_map=color_map
-    # )
-
     if 'smoothGrad' in color_selection: 
         fig = su.add_smoothgrad_scatter(
             fig, 
@@ -149,13 +137,9 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
 
     print(f"Step 5: Figure creation completed in {time.time() - fig_start_time:.2f} seconds.")
 
-    # Update layout with x-axis range and other customizations
     layout_start_time = time.time()
     fig = apply_default_layout(fig, xaxis_range, time_range, None)
-
     print(f"Step 6: Layout update completed in {time.time() - layout_start_time:.2f} seconds.")
 
-    # Total execution time
     print(f"Total execution time: {time.time() - start_time:.2f} seconds.")
-
     return fig

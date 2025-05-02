@@ -46,14 +46,38 @@ def register_page_buttons_display(chunk_limits_store_id, page_buttons_container_
 # 📦 Channel & Annotation Management
 # ─────────────────────────────
 
-def register_manage_channels_checklist():
+def register_update_channels_checklist_options(checkboxes_id):
     @callback(
-        Output("channel-region-checkboxes", "value"),
+        Output(checkboxes_id, "options"),
+        Output(checkboxes_id, "value"),
+        Input("channel-store", "data"),
+        prevent_initial_call=False
+    )
+    def update_checklist_options(channel_data):
+        if not channel_data:
+            return [], []
+
+        options = [
+            {
+                "label": f"{region} ({len(channels)})",
+                "value": region
+            }
+            for region, channels in channel_data.items()
+        ]
+
+        # Example default: first two regions if available
+        default_values = list(channel_data.keys())[:2]
+        return options, default_values
+
+def register_manage_channels_checklist(checkboxes_id):
+    @callback(
+        Output(checkboxes_id, "value", allow_duplicate=True),
         [Input("check-all-channels-btn", "n_clicks"),
          Input("clear-all-channels-btn", "n_clicks")],
+        State("channel-store", "data"),
         prevent_initial_call=True
     )
-    def manage_checklist(check_all_clicks, clear_all_clicks):
+    def manage_checklist(check_all_clicks, clear_all_clicks, channel_store):
         ctx = dash.callback_context
 
         if not ctx.triggered:
@@ -62,7 +86,7 @@ def register_manage_channels_checklist():
         triggered_id = ctx.triggered[0]["prop_id"].split(".")[0]
 
         if triggered_id == "check-all-channels-btn":
-            return list(config.GROUP_CHANNELS_BY_REGION.keys())
+            return list(channel_store.keys())
         elif triggered_id == "clear-all-channels-btn":
             return []
 
@@ -98,20 +122,28 @@ def register_clear_check_all_annotation_checkboxes(check_all_btn_id, clear_all_b
 
 def register_offset_display():
     @callback(
-        Output("offset-display", "children", allow_duplicate=True),
+        Output("offset-display", "value", allow_duplicate=True),
         Input("offset-decrement", "n_clicks"),
         Input("offset-increment", "n_clicks"),
-        State("offset-display", "children"),
+        State("offset-display", "value"),
         prevent_initial_call=True
     )
     def update_offset(decrement_clicks, increment_clicks, current_offset):
         step = 1
         min_value, max_value = 1, 10
-        offset = 5
 
-        offset += (increment_clicks - decrement_clicks) * step
+        try:
+            offset = int(current_offset)
+        except (TypeError, ValueError):
+            offset = 5  # fallback default if current_offset is not valid
+
+        triggered = dash.ctx.triggered_id
+        if triggered == "offset-increment":
+            offset += step
+        elif triggered == "offset-decrement":
+            offset -= step
+
         offset = max(min_value, min(max_value, offset))
-
         return str(offset)
 
 
@@ -138,11 +170,11 @@ def register_popup_annotation_suppression():
 def register_cancel_or_confirm_annotation_suppression():
     @callback(
         Output("delete-confirmation-modal", "is_open", allow_duplicate=True),
-        Output("annotations-store", "data", allow_duplicate=True),
+        Output("annotation-store", "data", allow_duplicate=True),
         Input("confirm-delete-btn", "n_clicks"),
         Input("cancel-delete-btn", "n_clicks"),
         State("annotation-checkboxes", "value"),
-        State("annotations-store", "data"),
+        State("annotation-store", "data"),
         State("delete-confirmation-modal", "is_open"),
         prevent_initial_call=True
     )
@@ -168,7 +200,7 @@ def register_cancel_or_confirm_annotation_suppression():
 def register_annotation_checkboxes_options(checkboxes_id):
     @callback(
         Output(checkboxes_id, "options"),
-        Input("annotations-store", "data"),
+        Input("annotation-store", "data"),
         prevent_initial_call=False
     )
     def _list_annotation_checkboxes_options(annotations_store):
@@ -182,16 +214,19 @@ def register_annotation_checkboxes_options(checkboxes_id):
 def register_annotation_dropdown_options(dropdown_id, checkboxes_id):
     @callback(
         Output(dropdown_id, "options"),
+        Input(checkboxes_id, "options"),
         Input(checkboxes_id, "value"),
         prevent_initial_call=False
     )
-    def _update_annotation_dropdown(annotations_value):
+    def _update_annotation_dropdown(annotation_options, annotation_value):
         """Depending of which annotations is checked, update the dropdown that move to previous/next event."""
-        if not annotations_value:
+        if not annotation_value or not annotation_options:
             return dash.no_update
-
+        
+        valid_option_values = {opt["value"] for opt in annotation_options}
+        filtered_values = [val for val in annotation_value if val in valid_option_values]
         return [{"label": "All Selected", "value": "__ALL__"}] + \
-               [{"label": name, "value": name} for name in annotations_value]
+               [{"label": name, "value": name} for name in filtered_values]
 
 
 # ─────────────────────────────
@@ -201,31 +236,26 @@ def register_annotation_dropdown_options(dropdown_id, checkboxes_id):
 def register_callbacks_montage_names(radio_id):
     @callback(
         Output(radio_id, "options"),
-        Output(radio_id, "value"),
         Input("montage-store", "data"),
-        State(radio_id, "value"),
         prevent_initial_call=False
     )
-    def display_montage_names(montage_store, current_value):
+    def display_montage_names(montage_store):
         if montage_store is None:
             raise PreventUpdate
-
+        
         options = [{'label': k, 'value': k} for k in montage_store.keys()] + \
                   [{'label': 'channel selection', 'value': 'channel selection'}]
 
-        if current_value not in [o['value'] for o in options]:
-            return options, options[0]['value']
-
-        return options, current_value
+        return options
 
 
 def register_hide_channel_selection_when_montage():
     @callback(
-        Output("channel-region-checkboxes", "options"),
+        Output("channel-region-checkboxes", "options", allow_duplicate=True),
         Input("montage-radio", "options"),
         Input("montage-radio", "value"),
         State("channel-region-checkboxes", "options"),
-        prevent_initial_call=False
+        prevent_initial_call=True
     )
     def toggle_channel_selection(montage_options, montage_value, channel_options):
         disabled = montage_value != 'channel selection'

@@ -5,7 +5,7 @@ import callbacks.utils.dataframe_utils as du
 import plotly.graph_objects as go
 import pandas as pd
 import itertools
-from layout import color_palette
+from layout import COLOR_PALETTE
 
 def register_update_annotations_on_graph(
     graph_id,
@@ -18,7 +18,7 @@ def register_update_annotations_on_graph(
         Input(graph_id, "figure"),  # Current figure to update
         State(checkboxes_id, "value"),  # Annotations to show
         State(page_selector_id, "value"),
-        State("annotations-store", "data"),
+        State("annotation-store", "data"),
         State(chunk_limits_store_id, "data"),
         prevent_initial_call=True,
         suppress_callback_exceptions=True
@@ -45,7 +45,7 @@ def register_update_annotations_on_graph(
         new_annotations = []
 
         description_colors = {}
-        color_cycle = itertools.cycle(color_palette)
+        color_cycle = itertools.cycle(COLOR_PALETTE)
         for desc in unique_descriptions:
             description_colors[desc] = next(color_cycle)
 
@@ -125,7 +125,7 @@ def register_update_annotation_graph(
         Input(page_selector_id, "value"),
         State(checkboxes_id, "options"),
         State(checkboxes_id, "value"),
-        State("annotations-store", "data"),
+        State("annotation-store", "data"),
         State(annotation_graph_id, "figure"),
         State(chunk_limits_store_id, "data"),
         prevent_initial_call=True
@@ -204,7 +204,7 @@ def register_move_to_next_annotation(
         State(graph_id, "figure"),
         State(dropdown_id, "value"),
         State(checkboxes_id, "value"),
-        State("annotations-store", "data"),
+        State("annotation-store", "data"),
         State(page_selector_id, "value"),
         State(chunk_limits_store_id, "data"),
         prevent_initial_call=True

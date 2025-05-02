@@ -1,6 +1,4 @@
 from pathlib import Path
-from itertools import chain
-
 
 # Function to get model options
 def get_model_options(model_type):

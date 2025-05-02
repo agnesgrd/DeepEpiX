@@ -10,6 +10,7 @@ from layout.sidebar_layout import create_sidebar
 
 # --- Selection ---
 from callbacks.selection_callbacks import (
+    register_update_channels_checklist_options,
     register_cancel_or_confirm_annotation_suppression,
     register_annotation_checkboxes_options,
     register_annotation_dropdown_options,
@@ -57,6 +58,7 @@ from callbacks.history_callbacks import (
 # --- Save ---
 from callbacks.save_callbacks import (
     register_display_annotations_to_save_checkboxes,
+    register_set_old_markerfile_name,
     register_enter_default_saving_folder_path,
     register_save_new_markerfile,
 )
@@ -115,6 +117,17 @@ register_page_buttons_display(
     page_selector_id="page-selector"
 )
 
+# --- Channels checklist ---
+register_update_channels_checklist_options(
+    checkboxes_id="channel-region-checkboxes"
+)
+
+register_manage_channels_checklist(
+    checkboxes_id="channel-region-checkboxes"
+)
+
+register_hide_channel_selection_when_montage()
+
 # --- Annotation Management ---
 register_annotation_checkboxes_options(
     checkboxes_id="annotation-checkboxes",
@@ -159,8 +172,6 @@ register_cancel_or_confirm_annotation_suppression()
 
 # --- Graph & Channel Handling ---
 register_update_graph_time_channel()
-register_manage_channels_checklist()
-register_hide_channel_selection_when_montage()
 register_offset_display()
 
 # --- Topomap Interactions ---
@@ -195,6 +206,7 @@ register_update_selected_model()
 
 # --- Save ---
 register_enter_default_saving_folder_path()
+register_set_old_markerfile_name()
 register_save_new_markerfile()
 
 # --- Analysis ---

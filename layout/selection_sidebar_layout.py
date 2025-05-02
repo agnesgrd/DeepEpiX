@@ -1,7 +1,7 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 import config
-from layout import box_styles, button_styles
+from layout import BOX_STYLES, BUTTON_STYLES
 
 def create_selection(
     montage_radio_id,
@@ -36,7 +36,7 @@ def create_selection(
                 persistence=True,
                 persistence_type="local"
             ),
-        ], style=box_styles["classic"]),
+        ], style=BOX_STYLES["classic"]),
 
         # Channel Selection
         html.Div([
@@ -53,7 +53,7 @@ def create_selection(
                     outline=True,
                     size="sm",
                     n_clicks=0,
-                    style=button_styles["tiny"]
+                    style=BUTTON_STYLES["tiny"]
                 ),
                 dbc.Button(
                     "Clear All",
@@ -62,20 +62,15 @@ def create_selection(
                     outline=True,
                     size="sm",
                     n_clicks=0,
-                    style=button_styles["tiny"]
+                    style=BUTTON_STYLES["tiny"]
                 ),
             ], style={"display": "flex", "justifyContent": "space-between", "gap": "4%"}),  # Align buttons side by side
 
+            # Checklist populated dynamically
             dcc.Checklist(
                 id=channel_region_checkboxes_id,
-                options=[
-                    {
-                        'label': f"{region_code} ({len(channels)})",
-                        'value': region_code
-                    }
-                    for region_code, channels in config.GROUP_CHANNELS_BY_REGION.items()
-                ],
-                value=["MRF", "MLF"],  # Default selected regions
+                options=[],  # will be filled by callback
+                value=[],    # will be filled by callback
                 inline=False,
                 style={
                     "margin": "10px 0",
@@ -87,7 +82,7 @@ def create_selection(
                 persistence=True,
                 persistence_type="local"
             ),
-        ], style=box_styles["classic"]),
+        ], style=BOX_STYLES["classic"]),
 
         # Annotation Selection
         html.Div([
@@ -104,7 +99,7 @@ def create_selection(
                     outline=True,
                     size="sm",
                     n_clicks=0,
-                    style=button_styles["tiny"]
+                    style=BUTTON_STYLES["tiny"]
                 ),
                 dbc.Button(
                     "Clear All",
@@ -113,7 +108,7 @@ def create_selection(
                     outline=True,
                     size="sm",
                     n_clicks=0,
-                    style=button_styles["tiny"]
+                    style=BUTTON_STYLES["tiny"]
                 ),
             ], style={"display": "flex", "justifyContent": "space-between", "gap": "4%", "marginBottom": "6px"}),  # Align buttons side by side
 
@@ -155,7 +150,7 @@ def create_selection(
                 is_open=False,
             )
 
-        ], style=box_styles["classic"]),
+        ], style=BOX_STYLES["classic"]),
 
         # Offset Selection
         html.Div([
@@ -166,14 +161,13 @@ def create_selection(
             html.Div(
                 children=[
                     dbc.Button("-", id=offset_decrement_id, color="primary", size="sm", n_clicks=0),
-                    html.Span(
+                    dbc.Input(
                         id=offset_display_id,
-                        children="5",  # Default offset value
-                        style={
-                            "margin": "0 10px",  # Space between buttons
-                            "fontWeight": "bold",
-                            "fontSize": "12px"
-                        }
+                        type="number",
+                        value=5,
+                        persistence=True,
+                        persistence_type="local",  # or "session", "memory"
+                        style={"width": "60px", "fontWeight": "bold", "fontSize": "12px"}
                     ),
                     dbc.Button("+", id=offset_increment_id, color="primary", size="sm", n_clicks=0),
                 ],
@@ -183,7 +177,7 @@ def create_selection(
                     "gap": "12px"  # Space between elements
                 }
             ),
-        ], style=box_styles["classic"]),
+        ], style=BOX_STYLES["classic"]),
 
         # Montage Selection
         html.Div([
@@ -200,6 +194,6 @@ def create_selection(
                 persistence=True,
                 persistence_type="local"
             ),
-        ], style=box_styles["classic"]),
+        ], style=BOX_STYLES["classic"]),
 
     ])

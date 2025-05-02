@@ -63,14 +63,14 @@ def register_add_event_onset_duration_on_click():
             
 def register_add_event_to_annotation():
     @callback(
-        Output("annotations-store", "data", allow_duplicate=True),
+        Output("annotation-store", "data", allow_duplicate=True),
         Output("history-store", "data", allow_duplicate=True),
         Output("annotation-checkboxes", "value", allow_duplicate=True),
         Input("add-event-button", "n_clicks"),
         State("event-name", "value"),
         State("event-onset", "value"),
         State("event-duration", "value"),  # New input for duration
-        State("annotations-store", "data"),
+        State("annotation-store", "data"),
         State("history-store", "data"),
         State("annotation-checkboxes", "value"),
         prevent_initial_call=True
@@ -108,11 +108,11 @@ def register_add_event_to_annotation():
     
 def register_delete_selected_spike():
     @callback(
-        Output("annotations-store", "data", allow_duplicate=True),
+        Output("annotation-store", "data", allow_duplicate=True),
         Output("history-store", "data", allow_duplicate=True),
         Input("delete-event-button", "n_clicks"),
         State("meg-signal-graph", "selectedData"),
-        State("annotations-store", "data"),
+        State("annotation-store", "data"),
         State("annotation-checkboxes", "value"),
         State("history-store", "data"),
         prevent_initial_call=True
