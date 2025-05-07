@@ -19,6 +19,7 @@ from flask_caching import Cache
 
 # Local Modules
 import config
+from callbacks.utils import folder_path_utils as fpu
 from callbacks.utils import cache_utils as cu
 
 app = dash.get_app()
@@ -33,7 +34,7 @@ cache = Cache(app.server, config={
 
 def filter_resample(folder_path, freq_data):
       
-    raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
+    raw = fpu.read_raw(folder_path, preload=True, verbose=False)
     
     resample_freq = freq_data.get("resample_freq")
     low_pass_freq = freq_data.get("low_pass_freq")
@@ -54,10 +55,11 @@ def filter_resample(folder_path, freq_data):
 
 def update_chunk_limits(total_duration):
     chunk_duration = config.CHUNK_RECORDING_DURATION
-    return [
-        [start, min(start + chunk_duration, total_duration)]
-        for start in range(0, math.ceil(total_duration / chunk_duration) * chunk_duration, chunk_duration)
+    chunk_limits= [
+        [start, min(start + chunk_duration, total_duration - 0.005)]
+        for start in range(0, int(total_duration), chunk_duration)
     ]
+    return chunk_limits
 
 def get_cache_filename(folder_path, freq_data, start_time, end_time, cache_dir=f"./{config.CACHE_DIR}"):
     # Create a unique hash key
@@ -140,7 +142,7 @@ def _compute_ica(folder_path, n_components, ica_method, max_iter, decim):
         print("ICA already exists in cache.")
         return str(path)
 
-    raw = mne.io.read_raw_ctf(folder_path, preload=True).pick_types(meg=True)
+    raw = fpu.read_raw(folder_path, preload=True, verbose=False).pick(['meg'])
     raw = raw.filter(l_freq=1.0, h_freq=None)
 
     ica = mne.preprocessing.ICA(
@@ -160,8 +162,7 @@ def get_ica_sources_for_chunk(folder_path, start_time, end_time, n_components, i
     ica_path = _compute_ica(folder_path, n_components, ica_method, max_iter, decim)
 
     # Load and crop raw data for the chunk
-    raw = mne.io.read_raw_ctf(folder_path, preload=True)
-    raw = raw.pick_types(meg=True)
+    raw = fpu.read_raw(folder_path, preload=True, verbose=False).pick(['meg'])
     raw = raw.filter(l_freq=1.0, h_freq=None)
 
     ica = mne.preprocessing.read_ica(ica_path)
@@ -188,7 +189,7 @@ def get_ica_sources_for_chunk(folder_path, start_time, end_time, n_components, i
 ################################## POWER SPECTRUM DECOMPOSITION ######################################################
 
 def compute_power_spectrum_decomposition(folder_path, freq_data):
-    raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
+    raw = fpu.read_raw(folder_path, preload=True, verbose=False)
     print(raw.ch_names)
 
     low_pass_freq = freq_data.get("low_pass_freq")
@@ -209,7 +210,7 @@ def compute_power_spectrum_decomposition(folder_path, freq_data):
 
     psd_fig = go.Figure()
 
-    for ch_idx, ch_name in enumerate(config.ALL_CH_NAMES_PREFIX):
+    for ch_idx, ch_name in enumerate(psd_data.ch_names):
         psd_fig.add_trace(go.Scatter(
             x=freqs,
             y=psd_dB[ch_idx],  

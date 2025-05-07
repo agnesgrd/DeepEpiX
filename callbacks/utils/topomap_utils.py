@@ -5,7 +5,7 @@ from io import BytesIO
 import base64
 import matplotlib.pyplot as plt
 
-def create_topomap(raw, timepoint):
+def create_topomap_from_raw(raw, sfreq, t0, t):
     """
     Create a topomap image at a specific timepoint.
     Parameters:
@@ -17,12 +17,12 @@ def create_topomap(raw, timepoint):
     """
       
     # Extract the sampling frequency and calculate the time index
-    timepoint = float(timepoint)
-    sfreq = raw.info['sfreq']
+    timepoint = float(t-t0)
     time_idx = int(timepoint * sfreq)
 
     # Extract the data at the specified time index
     data = raw.get_data()  # Shape (n_channels, n_times)
+    print(data.shape)
     if time_idx < 0 or time_idx >= data.shape[1]:
         raise ValueError("Timepoint is out of range for the provided data.")
     
@@ -44,7 +44,7 @@ def create_topomap(raw, timepoint):
     )
 
     # Customize the plot appearance
-    ax.set_title(f'Time: {timepoint:.3f}s', fontsize=20, color="white")  # Add a title
+    ax.set_title(f'Time: {t:.3f}s', fontsize=20, color="white")  # Add a title
     ax.axis('off')  # Hide axes for a clean look
 
     # Save the image to a buffer
@@ -59,3 +59,34 @@ def create_topomap(raw, timepoint):
     plt.close('all')
     
     return img_str
+
+def create_topomap_from_preprocessed(original_raw, raw_ddf, sfreq, t0, t):
+    """
+    Create a topomap using preprocessed Dask data and original Raw metadata.
+    
+    Parameters:
+    - raw_ddf: Dask DataFrame with shape (time, channels)
+    - original_raw: MNE Raw object used to get info structure
+    - timepoint: time in seconds at which to extract data
+    
+    Returns:
+    - base64-encoded topomap image string
+    """
+    # Step 1: Compute Dask DataFrame to NumPy
+    preprocessed_df = raw_ddf.compute()
+    
+    # Step 2: Make sure data is in shape (n_channels, n_times)
+    # Dask DFs are usually (n_times, n_channels), so we transpose
+    data = preprocessed_df.values.T
+    
+    # Step 3: Create MNE RawArray using original metadata
+    info = original_raw.info.copy()
+    
+    # Optional: filter only MEG channels if needed
+    picks = mne.pick_types(info, meg=True)
+    picked_info = mne.pick_info(info, picks)
+    
+    raw_processed = mne.io.RawArray(data, picked_info).pick('mag')
+    
+    # Step 4: Use your existing topomap function
+    return create_topomap_from_raw(raw_processed, sfreq, t0, t)

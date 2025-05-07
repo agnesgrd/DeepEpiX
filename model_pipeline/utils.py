@@ -85,10 +85,7 @@ def save_data_matrices(good_channels_file, subject, path_output):
 			raw.drop_channels('MRO23-2805')
 
 		#Resample the data
-		raw.resample(params.sfreq)
-		raw.pick_types(meg=True, ref_meg=False)#, exclude=[]
-		#keep only meg channels
-		# raw.pick_channels(ch_names=good_channels)
+		raw.resample(params.sfreq).pick(['mag'])
 		raw=interpolate_missing_channels(raw, good_channels, loc_meg_channels)
 		
 		raw.filter(0.5,50, n_jobs=8)

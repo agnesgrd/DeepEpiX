@@ -8,8 +8,6 @@ import traceback
 import plotly.graph_objects as go
 import pickle
    
-
-
 def register_update_graph_time_channel(): 
     @callback(
         Output("meg-signal-graph", "figure"),
@@ -27,12 +25,14 @@ def register_update_graph_time_channel():
         State("montage-store", "data"),
         State("channel-store", "data"),
         State("sensitivity-analysis-store", "data"),
+        # State("annotation-checkboxes", "value"),
+        # State("annotation-store", "data"),
         running=[(Output("update-button", "disabled"), True, False)],
-        prevent_initial_call=False
+        prevent_initial_call=True
     )
     def update_graph_time_channel(n_clicks, page_selection, graph, montage_selection, channel_selection, folder_path, offset_selection, color_selection, chunk_limits, freq_data, montage_store, channel_store, sensitivity_analysis_store):
         """Update MEG signal visualization based on time and channel selection."""
-      
+
         if n_clicks == 0:
             return dash.no_update, dash.no_update
         
@@ -53,7 +53,6 @@ def register_update_graph_time_channel():
                 if region_code in channel_store
                 for channel in channel_store[region_code]
             ]
-            print(selected_channels)
 
             if not selected_channels:
                 return dash.no_update, "No channels selected from the given regions"
@@ -79,9 +78,15 @@ def register_update_graph_time_channel():
                 filter = pickle.load(f)
 
         try:                  
-            fig = gu.generate_graph_time_channel(selected_channels, float(offset_selection), time_range, folder_path, freq_data, color_selection, xaxis_range, channel_store, filter)
-            return fig, None
+            fig, error = gu.generate_graph_time_channel(selected_channels, float(offset_selection), time_range, folder_path, freq_data, color_selection, xaxis_range, channel_store, filter)
+
+            # if not annotations_to_show or len(annotations_to_show) == 0 or not fig['data']:
+            #     return fig, error
+    
+            # fig = gu.update_annotations_on_graph(fig, annotations_to_show, page_selection, annotations, chunk_limits)
             
+            return fig, error
+        
         except FileNotFoundError:
             return dash.no_update, f"Error: Folder not found."
         except ValueError as ve:

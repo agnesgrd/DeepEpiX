@@ -30,7 +30,7 @@ def register_update_dropdown():
 
             if folder_path:
                 if not fpu.test_ds_folder(folder_path):
-                    return dash.no_update, dash.no_update, "Selected folder is not a valid .ds MEG folder."
+                    return dash.no_update, dash.no_update, "Selected folder is not a valid MEG folder (.ds or .fif)."
 
                 # Prevent duplicates
                 if not any(option["value"] == folder_path for option in folder_path_list):
@@ -54,19 +54,16 @@ def register_handle_valid_folder_path():
     def handle_valid_folder_path(folder_path):
         """Validate folder path and show warning if invalid."""
         if folder_path:
-            if not os.path.isdir(folder_path):
-                return True, {"display": "none"}, "Selected path is not a valid folder."
-
-            if not folder_path.endswith(".ds"):
-                return True, {"display": "none"},"Folder must end with '.ds' to be a valid MEG directory."
+            if not folder_path.endswith((".ds", ".fif")):
+                return True, {"display": "none"},"Path must end with '.ds' or '.fif' to be a valid raw MEG object."
 
             try:
-                mne.io.read_raw_ctf(folder_path, preload=False, verbose=False)
+                raw = fpu.read_raw(folder_path, preload=False, verbose=False)
                 return False, {"display": "none"}, ""  # Valid: enable button and clear warning
             except Exception as e:
-                return True, {"display": "none"}, f"Invalid MEG folder: {str(e)}"
+                return True, {"display": "none"}, f"Invalid MEG path: {str(e)}"
 
-        return True, {"display": "none"}, "Please select a folder."
+        return True, {"display": "none"}, "Please select a path."
 
 def register_store_folder_path_and_clear_data():
     @callback(

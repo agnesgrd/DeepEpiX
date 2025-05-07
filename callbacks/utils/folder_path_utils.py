@@ -10,7 +10,7 @@ from collections import Counter
 # Function to get model options
 def get_folder_path_options():
     data_dir = Path("data")
-    data = list(data_dir.glob("*.ds"))
+    data = list(data_dir.glob("*.ds")) + list(data_dir.glob("*.fif"))
     return (
         [{"label": d.name, "value": str(d.resolve())} for d in data]
         if data
@@ -28,20 +28,27 @@ def browse_folder():
 def test_ds_folder(path):
     parts = path.split(os.sep)  # Split path by OS separator ('/' or '\')
     for part in reversed(parts):  # Iterate from the end
-        if part.endswith(".ds"):  # Check if it ends with ".ds"
+        if part.endswith((".ds", ".fif")):  # Check if it ends with ".ds"
             return True
     return False
 
 def get_ds_folder(path):
     parts = path.split(os.sep)  # Split path by OS separator ('/' or '\')
     for part in reversed(parts):  # Iterate from the end
-        if part.endswith(".ds"):  # Check if it ends with ".ds"
+        if part.endswith((".ds", ".fif")):  # Check if it ends with ".ds"
             return part
     return None  # If no matching folder is found
 
+def read_raw(folder_path, preload, verbose):
+    if folder_path.endswith(".ds"):
+        raw = mne.io.read_raw_ctf(folder_path, preload=preload, verbose=verbose)
+    if folder_path.endswith(".fif"):
+        raw = mne.io.read_raw_fif(folder_path, preload=preload, verbose=verbose)
+    return raw
+
 def build_table_raw_info(folder_path):
 
-    raw = mne.io.read_raw_ctf(folder_path, preload=False, verbose=False)
+    raw = read_raw(folder_path, preload=False, verbose=False)
     info = raw.info
 
     return dbc.Card(
@@ -118,7 +125,7 @@ def build_table_raw_info(folder_path):
 
 def build_table_events_statistics(folder_path):
 
-    raw = mne.io.read_raw_ctf(folder_path, preload=False, verbose=False)
+    raw = read_raw(folder_path, preload=False, verbose=False)
     annotations = raw.annotations
 
     if len(annotations) == 0:

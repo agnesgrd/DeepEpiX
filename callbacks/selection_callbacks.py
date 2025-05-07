@@ -11,10 +11,10 @@ import config
 # 📄 Page Navigation Callbacks
 # ─────────────────────────────
 
-def register_page_buttons_display(chunk_limits_store_id, page_buttons_container_id, page_selector_id):
+def register_page_buttons_display(page_buttons_container_id, page_selector_id):
     @callback(
         Output(page_buttons_container_id, "children"),
-        Input(chunk_limits_store_id, "data"),
+        Input("chunk-limits-store", "data"),
         prevent_initial_call=False
     )
     def _display_page_buttons(chunk_limits):

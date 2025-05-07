@@ -1,123 +1,47 @@
-import plotly.graph_objects as go
 import dash
 from dash import Patch, Input, Output, State, callback
 import callbacks.utils.dataframe_utils as du
+from callbacks.utils import graph_utils as gu
 import plotly.graph_objects as go
 import pandas as pd
 import itertools
 from layout import COLOR_PALETTE
+from dash.exceptions import PreventUpdate
 
 def register_update_annotations_on_graph(
     graph_id,
     checkboxes_id,
-    page_selector_id,
-    chunk_limits_store_id
+    page_selector_id
 ):
     @callback(
         Output(graph_id, "figure", allow_duplicate=True),
+        Input(checkboxes_id, "value"),  # Annotations to show
         Input(graph_id, "figure"),  # Current figure to update
-        State(checkboxes_id, "value"),  # Annotations to show
         State(page_selector_id, "value"),
         State("annotation-store", "data"),
-        State(chunk_limits_store_id, "data"),
+        State("chunk-limits-store", "data"),
         prevent_initial_call=True,
-        suppress_callback_exceptions=True
+        # suppress_callback_exceptions=True
     )
-    def _update_annotations_on_graph(fig_dict, annotations_to_show, page_selection, annotations, chunk_limits):
+    def _update_annotations_on_graph(annotations_to_show, fig_dict, page_selection, annotations, chunk_limits):
         """Update annotations visibility based on the checklist selection."""
-        if not annotations_to_show or len(annotations_to_show) == 0 or fig_dict is None or 'layout' not in fig_dict or 'yaxis' not in fig_dict['layout']:
+
+        if not annotations_to_show or len(annotations_to_show) == 0 or not fig_dict['data']: # is None or 'layout' not in fig_dict or 'yaxis' not in fig_dict['layout']:
             fig_patch = Patch()
             fig_patch["layout"]["shapes"] = []
             fig_patch["layout"]["annotations"] = []
             return fig_patch
-
-        fig_patch = Patch()
-        y_min, y_max = fig_dict['layout']['yaxis'].get('range', [0, 1])
-
-        # Filter annotations based on the current time range
-        time_range = chunk_limits[int(page_selection)]
-        annotations_df = pd.DataFrame(annotations).set_index('onset')
-        filtered_annotations_df = du.get_annotations_df_filtered_on_time(time_range, annotations_df)
-        unique_descriptions = sorted(filtered_annotations_df["description"].unique())
-
-        # Prepare the shapes and annotations for the selected annotations
-        new_shapes = []
-        new_annotations = []
-
-        description_colors = {}
-        color_cycle = itertools.cycle(COLOR_PALETTE)
-        for desc in unique_descriptions:
-            description_colors[desc] = next(color_cycle)
-
-        for _, row in filtered_annotations_df.iterrows():
-            description = row["description"]
-            duration = row['duration']
-            color = description_colors[description]  # Get assigned color
-
-            if str(description) in annotations_to_show:
-                # Check the duration and add either a vertical line or a rectangle
-                if duration == 0:
-                    # Vertical line if duration is 0
-                    new_shapes.append(
-                        dict(
-                            type="line",
-                            x0=row.name,
-                            x1=row.name,
-                            y0=y_min,
-                            y1=y_max,
-                            xref="x",
-                            yref="y",
-                            line=dict(color=color, width=2, dash="line"),
-                            opacity=0.9
-                        )
-                    )
-                else:
-                    # Rectangle if duration > 0
-                    new_shapes.append(
-                        dict(
-                            type="rect",
-                            x0=row.name,
-                            x1=row.name + duration,
-                            y0=y_min,
-                            y1=y_max,
-                            xref="x",
-                            yref="y",
-                            line=dict(color=color, width=2),
-                            fillcolor=color,  # Set the color of the rectangle
-                            opacity=0.3
-                        )
-                    )
-                # Add the label in the margin
-                new_annotations.append(
-                    dict(
-                        x=row.name,
-                        y=0,  # Middle of the plot area; adjust as needed
-                        xref="x",
-                        yref="paper",  # Use relative y position in the plotting area
-                        text=description,
-                        showarrow=False,
-                        font=dict(size=10, color=color),
-                        align="center",
-                        xanchor="center",  # Center horizontally on x
-                        textangle=-90,  # Horizontal text
-                        bgcolor="white",  # Semi-transparent white background
-                        borderwidth=1,
-                        opacity=1
-                    )
-                )
-
-        # Update the figure with the new shapes and annotations
-        fig_patch["layout"]["shapes"] = new_shapes
-        fig_patch["layout"]["annotations"] = new_annotations
-
-        return fig_patch
+        
+        if dash.callback_context.triggered[0]['prop_id'].split('.')[0] == graph_id and fig_dict['layout'].get('shapes', []):        
+            return dash.no_update
+    
+        return gu.update_annotations_on_graph(fig_dict, annotations_to_show, page_selection, annotations, chunk_limits)
         
 def register_update_annotation_graph(
     update_button_id,
     page_selector_id,
     checkboxes_id,
-    annotation_graph_id,
-    chunk_limits_store_id
+    annotation_graph_id
 ):
     @callback(
         Output(annotation_graph_id, "figure"),
@@ -127,7 +51,7 @@ def register_update_annotation_graph(
         State(checkboxes_id, "value"),
         State("annotation-store", "data"),
         State(annotation_graph_id, "figure"),
-        State(chunk_limits_store_id, "data"),
+        State("chunk-limits-store", "data"),
         prevent_initial_call=True
     )
     def update_annotation_graph(n_clicks, page_selection, annotation_options, annotations_to_show, annotations_data, annotation_fig, chunk_limits):
@@ -193,8 +117,7 @@ def register_move_to_next_annotation(
     graph_id,
     dropdown_id,
     checkboxes_id,
-    page_selector_id,
-    chunk_limits_store_id
+    page_selector_id
 ):
     @callback(
         Output(graph_id, "figure", allow_duplicate=True),
@@ -206,7 +129,7 @@ def register_move_to_next_annotation(
         State(checkboxes_id, "value"),
         State("annotation-store", "data"),
         State(page_selector_id, "value"),
-        State(chunk_limits_store_id, "data"),
+        State("chunk-limits-store", "data"),
         prevent_initial_call=True
     )
     def _move_to_next_annotation(prev_spike, next_spike, graph, annotations_to_show, selected_annotations, annotations_data, page_selection, chunk_limits):
@@ -246,7 +169,7 @@ def register_move_to_next_annotation(
         for i, (start, end) in enumerate(chunk_limits):
             if start <= next_spike_x <= end:
                 time_range_limits = chunk_limits[int(i)]
-                page_selection = i
+                new_page_selection = i
                 
         # Extract time range limits
         time_range_min, time_range_max = time_range_limits
@@ -265,4 +188,7 @@ def register_move_to_next_annotation(
         # Update the graph layout
         graph["layout"]["xaxis"]["range"] = [x_min, x_max]
 
-        return graph, page_selection
+        if new_page_selection == page_selection:
+            return graph, dash.no_update
+        else:
+            return graph, new_page_selection

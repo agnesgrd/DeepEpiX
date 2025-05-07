@@ -112,7 +112,6 @@ layout = html.Div([
 
 # --- Page Navigation ---
 register_page_buttons_display(
-    chunk_limits_store_id="chunk-limits-store",
     page_buttons_container_id="page-buttons-container",
     page_selector_id="page-selector"
 )
@@ -147,16 +146,14 @@ register_clear_check_all_annotation_checkboxes(
 register_update_annotations_on_graph(
     graph_id="meg-signal-graph",
     checkboxes_id="annotation-checkboxes",
-    page_selector_id="page-selector",
-    chunk_limits_store_id="chunk-limits-store"
+    page_selector_id="page-selector"
 )
 
 register_update_annotation_graph(
     update_button_id="update-button",
     page_selector_id="page-selector",
     checkboxes_id="annotation-checkboxes",
-    annotation_graph_id="annotation-graph",
-    chunk_limits_store_id="chunk-limits-store"
+    annotation_graph_id="annotation-graph"
 )
 
 register_display_annotations_to_save_checkboxes()
@@ -191,8 +188,7 @@ register_move_to_next_annotation(
     graph_id="meg-signal-graph",
     dropdown_id="annotation-dropdown",
     checkboxes_id="annotation-checkboxes",
-    page_selector_id="page-selector",
-    chunk_limits_store_id="chunk-limits-store"
+    page_selector_id="page-selector"
 )
 
 # --- History ---

@@ -7,23 +7,12 @@ import io
 import random
 import base64
 import matplotlib.pyplot as plt
-from layout.config_layout import BOX_STYLES
+from layout import REGION_COLOR_PALETTE, BOX_STYLES, FLEXDIRECTION
 import itertools
-import pandas as pd
+from callbacks.utils import folder_path_utils as fpu
 
 
 dash.register_page(__name__, name="Settings", path="/settings/montage")
-
-# Define a rainbow palette for group headers
-rainbow_colors = itertools.cycle([
-    "#FF4136",  # red
-    "#FF851B",  # orange
-    "#FFDC00",  # yellow
-    "#2ECC40",  # green
-    "#0074D9",  # blue
-    "#B10DC9",  # purple
-    "#F012BE",  # pink/fuchsia
-])
 
 layout = html.Div([
 
@@ -116,14 +105,7 @@ layout = html.Div([
                     style={"marginTop": "5px", "width": "100%"}
                 ),
             ],
-            style={
-                "padding": "15px",
-                "border": "1px solid #ddd",
-                "borderRadius": "8px",
-                "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",
-                "width": "20%",  # Set width for left panel
-                "marginRight": "20px"  # Add spacing between elements
-            }
+            style={**BOX_STYLES["classic"], "width": "20%"}
         ),
 
         # Right Side: Montage Selection
@@ -181,14 +163,7 @@ layout = html.Div([
                     ], style={"display": "none"}
                 )
             ],
-            style={
-                "padding": "15px",
-                "border": "1px solid #ddd",
-                "borderRadius": "8px",
-                "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",
-                "width": "60°%",  # Set width for right panel
-                "display": "none"
-            }
+            style={**BOX_STYLES["classic"], "width": "60%", "display": "none"}
         ), 
 
         html.Div(
@@ -212,23 +187,9 @@ layout = html.Div([
                     style={"marginTop": "5px", "width": "100%"}
                 ),
             ],
-            style={
-                "padding": "15px",
-                "border": "1px solid #ddd",
-                "borderRadius": "8px",
-                "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",
-                "width": "20%",  # Set width for left panel
-                "marginRight": "20px",  # Add spacing between elements
-                "display":"none"
-            }
+            style={**BOX_STYLES["classic"], "width": "20%", "display": "none"}
         ),
-    ], style={
-        "display": "flex",  # Initially hidden
-        "flexDirection": "row",  # Side-by-side layout
-        "alignItems": "flex-start",  # Align to top
-        "gap": "20px",  # Add spacing between elements
-        "width": "100%"  # Ensure full width
-    })
+    ], style={**FLEXDIRECTION['row-flex'], "display": "flex"})
 ])
 
 @callback(
@@ -340,12 +301,11 @@ def handle_create_button(n_clicks, new_montage_name, montage_store_data):
     # Check if the name already exists in the montage store
     if n_clicks > 0:
         return (
-            {"padding": "15px", "border": "1px solid #ddd", "borderRadius": "8px", "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)", "width": "60%"},
-            {"padding": "15px", "border": "1px solid #ddd", "borderRadius": "8px", "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)", "width": "20%"},
+            {**BOX_STYLES["classic"], "width": "60%"},
+            {**BOX_STYLES["classic"], "width": "20%"},
             True
         )
 
-    
 @callback(
     Output("checklist-method-container", "style"),
     Output("random-pick-method-container", "style"),
@@ -375,11 +335,7 @@ def update_checklist_method_container(style, channel_data):
     if not channel_data:
         return []
     
-    rainbow_colors = itertools.cycle([
-        "#e6194b", "#3cb44b", "#ffe119", "#4363d8", "#f58231", 
-        "#911eb4", "#46f0f0", "#f032e6", "#bcf60c", "#fabebe",
-        "#008080", "#e6beff", "#9a6324", "#fffac8", "#800000"
-    ])
+    rainbow_colors = itertools.cycle(REGION_COLOR_PALETTE)
 
     children = []
     for group, channels in channel_data.items():
@@ -446,6 +402,8 @@ def update_random_pick_inputs(style, channel_groups):
     
     if not channel_groups:
         return []
+    
+    rainbow_colors = itertools.cycle(REGION_COLOR_PALETTE)
 
     layout = [html.Div(
                 children=[
@@ -578,7 +536,7 @@ def update_meg_layout(checked_values, pick_values, channel_groups, folder_path, 
                 selected = random.sample(available, min(pick_count, len(available)))
                 selected_channels_by_group[i].extend(selected)
 
-    raw = mne.io.read_raw_ctf(folder_path, preload=False, verbose=False)
+    raw = fpu.read_raw(folder_path, preload=False, verbose=False)
     # raw.rename_channels({ch['ch_name']: ch['ch_name'].split('-')[0] for ch in raw.info['chs']})
     info = raw.info
 

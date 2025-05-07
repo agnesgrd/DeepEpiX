@@ -1,8 +1,12 @@
 import numpy as np
+import pandas as pd
+import itertools
 import plotly.graph_objects as go
+import dash
+from dash import Patch
+import time
 
-import config
-from layout import DEFAULT_FIG_LAYOUT, REGION_COLOR_PALETTE
+from layout import DEFAULT_FIG_LAYOUT, REGION_COLOR_PALETTE, COLOR_PALETTE
 from callbacks.utils import preprocessing_utils as pu
 from callbacks.utils import dataframe_utils as du
 from callbacks.utils import smoothgrad_utils as su
@@ -75,8 +79,12 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
 
     # Filter the dataframe based on the selected channels
     filter_df_start_time = time.time()
-    print(raw_ddf.compute())
-    filtered_raw_df = raw_ddf[selected_channels].compute()
+    try:
+        filtered_raw_df = raw_ddf[selected_channels].compute()
+    except Exception:
+        return dash.no_update, f"Error: Selected channels are invalid. This may be due to choosing a montage that is incompatible with the current data format."
+
+
     print(f"Step 3: Dataframe filtering completed in {time.time() - filter_df_start_time:.2f} seconds.")
 
     # Offset channel traces along the y-axis
@@ -142,4 +150,105 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
     print(f"Step 6: Layout update completed in {time.time() - layout_start_time:.2f} seconds.")
 
     print(f"Total execution time: {time.time() - start_time:.2f} seconds.")
-    return fig
+    return fig, None
+
+def update_annotations_on_graph(fig_dict, annotations_to_show, page_selection, annotations, chunk_limits):
+    """Update annotations visibility based on the checklist selection."""
+    
+    # Start time measurement
+    start_time = time.time()
+
+    fig_patch = Patch()
+    y_min, y_max = fig_dict['layout']['yaxis'].get('range', [0, 1])
+
+    # Measure time for this part
+    annotations_start_time = time.time()
+    
+    # Filter annotations based on the current time range
+    time_range = chunk_limits[int(page_selection)]
+    annotations_df = pd.DataFrame(annotations).set_index('onset')
+    filtered_annotations_df = du.get_annotations_df_filtered_on_time(time_range, annotations_df)
+    unique_descriptions = sorted(filtered_annotations_df["description"].unique())
+
+    annotations_end_time = time.time()
+    print(f"Time to filter annotations: {annotations_end_time - annotations_start_time:.4f} seconds")
+
+    # Prepare the shapes and annotations for the selected annotations
+    new_shapes = []
+    new_annotations = []
+
+    description_colors = {}
+    color_cycle = itertools.cycle(COLOR_PALETTE)
+    for desc in unique_descriptions:
+        description_colors[desc] = next(color_cycle)
+
+    shapes_start_time = time.time()
+    
+    for _, row in filtered_annotations_df.iterrows():
+        description = row["description"]
+        duration = row['duration']
+        color = description_colors[description]  # Get assigned color
+
+        if str(description) in annotations_to_show:
+            # Check the duration and add either a vertical line or a rectangle
+            if duration == 0:
+                # Vertical line if duration is 0
+                new_shapes.append(
+                    dict(
+                        type="line",
+                        x0=row.name,
+                        x1=row.name,
+                        y0=y_min,
+                        y1=y_max,
+                        xref="x",
+                        yref="y",
+                        line=dict(color=color, width=2, dash="line"),
+                        opacity=0.9
+                    )
+                )
+            else:
+                # Rectangle if duration > 0
+                new_shapes.append(
+                    dict(
+                        type="rect",
+                        x0=row.name,
+                        x1=row.name + duration,
+                        y0=y_min,
+                        y1=y_max,
+                        xref="x",
+                        yref="y",
+                        line=dict(color=color, width=2),
+                        fillcolor=color,  # Set the color of the rectangle
+                        opacity=0.3
+                    )
+                )
+            # Add the label in the margin
+            new_annotations.append(
+                dict(
+                    x=row.name,
+                    y=0,  # Middle of the plot area; adjust as needed
+                    xref="x",
+                    yref="paper",  # Use relative y position in the plotting area
+                    text=description,
+                    showarrow=False,
+                    font=dict(size=10, color=color),
+                    align="center",
+                    xanchor="center",  # Center horizontally on x
+                    textangle=-90,  # Horizontal text
+                    bgcolor="white",  # Semi-transparent white background
+                    borderwidth=1,
+                    opacity=1
+                )
+            )
+
+    shapes_end_time = time.time()
+    print(f"Time to generate shapes and annotations: {shapes_end_time - shapes_start_time:.4f} seconds")
+
+    # Update the figure with the new shapes and annotations
+    fig_patch["layout"]["shapes"] = new_shapes
+    fig_patch["layout"]["annotations"] = new_annotations
+
+    end_time = time.time()
+    print(f"Total execution time for update_annotations_on_graph: {end_time - start_time:.4f} seconds")
+
+    return fig_patch

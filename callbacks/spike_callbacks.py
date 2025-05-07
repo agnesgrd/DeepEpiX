@@ -3,8 +3,6 @@ from dash import Input, Output, State, callback
 import pandas as pd
 from callbacks.utils import history_utils as hu
 
-
-
 def register_enable_delete_event_button():
     @callback(
         Output("delete-event-button", "disabled"),
@@ -43,16 +41,20 @@ def register_add_event_onset_duration_on_click():
         prevent_initial_call=True
     )
     def _update_event_onset_duration_on_click(click_info, selected_data):
+        trigger_id = dash.ctx.triggered[0]['prop_id'].split('.')[0]
+
         try:
-            if selected_data:
+            if trigger_id == 'meg-signal-graph' and selected_data:
+                # Triggered by selection
                 start_time = selected_data['range']['x'][0]
                 end_time = selected_data['range']['x'][1]
                 duration = end_time - start_time
                 return round(start_time, 3), round(duration, 3)
-            
-            elif click_info:
-                    t = click_info["points"][0]['x']
-                    return round(t, 3), 0
+
+            elif trigger_id == 'meg-signal-graph' and click_info:
+                # Triggered by click
+                t = click_info["points"][0]['x']
+                return round(t, 3), 0
             
         except (KeyError, TypeError, IndexError):
             return dash.no_update, dash.no_update

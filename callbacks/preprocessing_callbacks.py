@@ -6,6 +6,7 @@ from dash import Input, Output, State, callback
 import mne
 
 # Local Imports
+from callbacks.utils import folder_path_utils as fpu
 from callbacks.utils import preprocessing_utils as pu
 from callbacks.utils import annotation_utils as au
 from callbacks.utils import channel_utils as chu
@@ -54,11 +55,9 @@ def register_preprocess_meg_data():
         """Preprocess MEG data and save it, store annotations and chunk limits in memory."""
         if n_clicks > 0:
             try:
-                raw = mne.io.read_raw_ctf(folder_path, preload=True, verbose=False)
-
+                raw = fpu.read_raw(folder_path, preload=True, verbose=False)
                 annotations_dict, max_length = au.get_annotations_dataframe(raw, heartbeat_ch_name)
                 channels_dict = chu.get_grouped_channels_by_prefix(raw)
-                print(channels_dict)
                 chunk_limits = pu.update_chunk_limits(max_length)
 
                 # Store the frequency values when the folder is valid
