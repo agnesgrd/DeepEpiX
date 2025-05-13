@@ -1,13 +1,14 @@
+import pandas as pd
+
 import dash
 from dash import html, dcc, callback
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
+
 from layout import INPUT_STYLES, BOX_STYLES, FLEXDIRECTION
-import pandas as pd
-from callbacks.utils import performance_utils as pu
 from callbacks.utils import annotation_utils as au
+from callbacks.utils import performance_utils as pu
 import callbacks.utils.model_utils as mu
-import numpy as np
 
 dash.register_page(__name__, name = "Model performance", path="/model/performance")
 

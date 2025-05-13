@@ -32,7 +32,7 @@ def register_update_annotations_on_graph(
             fig_patch["layout"]["annotations"] = []
             return fig_patch
         
-        if dash.callback_context.triggered[0]['prop_id'].split('.')[0] == graph_id and fig_dict['layout'].get('shapes', []):        
+        if dash.callback_context.triggered[0]['prop_id'].split('.')[0] == graph_id and fig_dict['layout'].get('shapes', []):      
             return dash.no_update
     
         return gu.update_annotations_on_graph(fig_dict, annotations_to_show, page_selection, annotations, chunk_limits)

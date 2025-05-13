@@ -56,8 +56,9 @@ def register_preprocess_meg_data():
         if n_clicks > 0:
             try:
                 raw = fpu.read_raw(folder_path, preload=True, verbose=False)
-                annotations_dict, max_length = au.get_annotations_dataframe(raw, heartbeat_ch_name)
+                annotations_dict = au.get_annotations_dataframe(raw, heartbeat_ch_name)
                 channels_dict = chu.get_grouped_channels_by_prefix(raw)
+                max_length = pu.get_max_length(raw, resample_freq)
                 chunk_limits = pu.update_chunk_limits(max_length)
 
                 # Store the frequency values when the folder is valid

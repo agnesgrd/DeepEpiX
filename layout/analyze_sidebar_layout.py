@@ -30,23 +30,6 @@ def create_analyze():
                 ),
             ]),
             html.Div(id="topomap-picture"),
-            # Modal (popup) for displaying the topomap video
-            dbc.Modal(
-                [
-                    dbc.ModalHeader("Topomap", close_button=True),
-                    dbc.ModalBody(
-                        children=[
-                            html.Div(id="topomap-modal-content"),  # Content dynamically populated
-                        ]
-                    )
-                ],
-                id="topomap-range-modal",
-                is_open=False,  # Initially hidden
-                size="lg",
-                style={
-                    "maxWidth": "90vw"
-                }
-            ),
         ], style=BOX_STYLES["classic"]),
 
         # Add a spike

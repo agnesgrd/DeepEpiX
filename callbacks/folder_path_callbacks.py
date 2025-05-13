@@ -75,6 +75,7 @@ def register_store_folder_path_and_clear_data():
         Output('channel-store', 'clear_data'),
         Output('model-probabilities-store', 'clear_data'),
         Output('sensitivity-analysis-store', 'clear_data'),
+        Output("ica-store", "clear_data"),
         Input("load-button", "n_clicks"),
         State("folder-path-dropdown", "value"),
         prevent_initial_call=True
@@ -82,11 +83,11 @@ def register_store_folder_path_and_clear_data():
     def store_folder_path_and_clear_data(n_clicks, folder_path):
         """Clear all stores and display frequency section on load."""
         if not folder_path:
-            return (dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update)
+            return (dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update)
         return (
             {**FLEXDIRECTION["row-flex"], "display": "flex"},
             folder_path, 
-            True, True, True, True, True, True
+            True, True, True, True, True, True, True
         )
 
 def register_populate_tab_contents():

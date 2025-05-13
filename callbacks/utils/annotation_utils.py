@@ -1,6 +1,6 @@
 import math
 from collections import Counter
-
+import numpy as np
 import dash_bootstrap_components as dbc
 from dash import dcc, html
 import mne
@@ -53,11 +53,12 @@ def get_annotations_dataframe(raw, heartbeat_ch_name):
     annotations_df['onset'] = pd.to_datetime(annotations_df['onset']).dt.tz_localize('UTC')
     origin_time = pd.Timestamp(raw.annotations.orig_time)
     annotations_df['onset'] = (annotations_df['onset'] - origin_time).dt.total_seconds()
-    time_secs = raw.times
+
     heartbeat_df = get_heartbeat_event(raw, heartbeat_ch_name)
     df_combined = pd.concat([annotations_df, heartbeat_df], ignore_index=True)
     annotations_dict = df_combined.to_dict(orient="records")
-    return annotations_dict, math.floor(time_secs[-1]*100)/100
+
+    return annotations_dict
 
 def get_annotations(prediction_or_truth, annotations_df):
     """

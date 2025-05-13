@@ -10,21 +10,22 @@ def create_sidebar():
     return html.Div([
         dbc.Tabs([
                 dbc.Tab(create_selection(
-                    montage_radio_id="montage-radio", 
-                    check_all_button_id="check-all-channels-btn", 
-                    clear_all_button_id="clear-all-channels-btn",
-                    channel_region_checkboxes_id="channel-region-checkboxes", 
                     check_all_annotations_btn_id="check-all-annotations-btn", 
                     clear_all_annotations_btn_id="clear-all-annotations-btn", 
                     delete_annotations_btn_id="delete-annotations-btn",
                     annotation_checkboxes_id="annotation-checkboxes",
                     delete_confirmation_modal_id="delete-confirmation-modal",
+                    delete_modal_body_id="delete-modal-body",
                     cancel_delete_btn_id="cancel-delete-btn",
                     confirm_delete_btn_id="confirm-delete-btn",
                     offset_decrement_id="offset-decrement", 
                     offset_display_id="offset-display", 
                     offset_increment_id="offset-increment", 
-                    colors_radio_id="colors-radio"
+                    colors_radio_id="colors-radio",
+                    montage_radio_id="montage-radio", 
+                    check_all_button_id="check-all-channels-btn", 
+                    clear_all_button_id="clear-all-channels-btn",
+                    channel_region_checkboxes_id="channel-region-checkboxes", 
                 ), label='Select', tab_id='selection-tab'),
                 dbc.Tab(create_analyze(), label='Analyze', tab_id='analyzing-tab'),
                 dbc.Tab(create_predict(), label='SpikePred', tab_id='prediction-tab'),

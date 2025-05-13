@@ -1,0 +1,91 @@
+import dash
+from dash import Input, Output, State, callback
+from callbacks.utils import preprocessing_utils as pu
+from callbacks.utils import folder_path_utils as fpu
+from callbacks.utils import history_utils as hu
+import mne
+from pathlib import Path
+import config
+import os
+
+def register_compute_ica():
+    @callback(
+        Output("ica-status", "children"),
+        Output("compute-ica-button", "n_clicks"),
+        Output("ica-store", "data"),
+        Output("history-store", "data", allow_duplicate=True),
+        Input("compute-ica-button", "n_clicks"),  # Trigger the callback with the button
+        State("folder-store", "data"),
+        State("chunk-limits-store", "data"),
+        State("n-components", "value"),  # Number of ICA components
+        State("ica-method", "value"),  # ICA method selected ('fastica', 'infomax', etc.)
+        State("max-iter", "value"),  # Max iterations for ICA fitting
+        State("decim", "value"),  # Temporal decimation
+        State("frequency-store", "data"),
+        State("history-store", "data"),
+        State("ica-store", "data"),
+        prevent_initial_call=True
+    )
+    def _compute_ica(n_clicks, folder_path, chunk_limits, n_components, ica_method, max_iter, decim, freq_data, history_data, ica_store):
+        """Update ICA signal visualization."""
+        
+        if n_clicks == 0:
+            return dash.no_update, dash.no_update, dash.no_update, dash.no_update
+        
+        # Validation: Check if all required fields are filled
+        if not folder_path:
+            error_message = f"Please choose a subject to display on Home page."
+            return error_message, dash.no_update, dash.no_update, dash.no_update 
+    
+        if not chunk_limits:
+            error_message = f"You have a subject in memory but its recording has not been preprocessed yet. Please go back on Home page to reprocess the signal."
+            return error_message, dash.no_update, dash.no_update, dash.no_update
+        
+        missing_fields = []
+        if not n_components:
+            missing_fields.append("N components")
+        if not ica_method:
+            missing_fields.append("ICA method")
+        if not max_iter:
+            missing_fields.append("Max iterations")
+        if not decim:
+            missing_fields.append("Temporal decimation")
+        if missing_fields:
+            error_message = f"⚠️ Please fill in all required fields: {', '.join(missing_fields)}"
+            return error_message, dash.no_update, dash.no_update,
+        
+        cache_dir = Path.cwd() / f"{config.CACHE_DIR}"
+        ica_result_path = cache_dir/f"{n_components}_{ica_method}_{max_iter}_{decim}-ica.fif"
+        if ica_result_path.exists() and str(ica_result_path) in ica_store:
+            return "✅ Reusing existing ICA results", 0, dash.no_update, dash.no_update
+        
+        raw = fpu.read_raw(folder_path, preload=True, verbose=False).pick_types(meg=True)
+        raw = raw.filter(l_freq=1.0, h_freq=None)  # Apply 1 Hz high-pass filter
+
+        ica = mne.preprocessing.ICA(n_components=n_components, method=ica_method, max_iter=max_iter, random_state=97)
+        ica.fit(raw, decim=decim)
+        ica.save(ica_result_path, overwrite=True)
+
+        for chunk_idx in chunk_limits:
+            start_time, end_time = chunk_idx
+            raw_df = pu.get_ica_dataframe_dask(folder_path, start_time, end_time, ica_result_path, raw)
+
+        ica_store = [str(ica_result_path)]
+
+        # Action to log the history (adding an event with the name and time)
+        action = f"Computed ICA with <n_components = {n_components}, method: {ica_method}, max_iter: {max_iter}, decim: {decim}> as parameters.\n"
+        history_data = hu.fill_history_data(history_data, "ICA", action)
+        return None, 0, ica_store, history_data
+
+def register_fill_ica_results(ica_result_radio_id):
+    @callback(
+        Output(ica_result_radio_id, "options"),
+        Input("ica-sidebar-tabs", "active_tab"),
+        Input("ica-store", "data"),
+        prevent_initial_call=False
+    )
+    def fill_ica_results(pathname, ica_store):
+        if ica_store is None:
+            return dash.no_update
+    
+        return [{'label': os.path.basename(k), 'value': k} for k in ica_store]

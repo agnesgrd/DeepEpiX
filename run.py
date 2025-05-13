@@ -21,75 +21,141 @@ app.layout = html.Div(
         dcc.Store(id="history-store", data = {}, storage_type="session"),
         dcc.Store(id="model-probabilities-store", data={}, storage_type="session"),
         dcc.Store(id="sensitivity-analysis-store", data={}, storage_type="session"),
+        dcc.Store(id="ica-store", data={}, storage_type="session"),
 
-        # Row for title and links
         html.Div(
-            children=[
-                # Panel with the logo and clickable tabs
-                html.Div(
-                    children=[
-                        # Logo
-                        html.Img(
-                            src="/assets/deepepix-logo.jpeg",
-                            style={
-                                "border-radius": "10%",  # Bordure arrondie
-                                "padding-top": "0px",
-                                "height": "60px",  # Adjust size as needed
-                            }
-                        ),
-                        # Panel tabs (navigation links)
-                        html.I(dbc.DropdownMenu(
-                            toggle_style={
-                                "border": "none",
-                                "background": "none",
-                                "font-size": "30px",
-                                "color": "white",
-                            },
-                            children=[
-                                dbc.DropdownMenuItem("Dataset", header=True),
-                                dbc.DropdownMenuItem("Home", href="/"),
+        children=[
+            # Row for title and links
+            html.Div(
+                children=[
+                    # Left section: Logo and navigation menu
+                    html.Div(
+                        children=[
+                            dbc.DropdownMenu(
+                                children=[
+                                    dbc.DropdownMenuItem("Dataset", header=True),
+                                    dbc.DropdownMenuItem("Home", href="/"),
+                                    dbc.DropdownMenuItem(divider=True),
 
-                                dbc.DropdownMenuItem(divider=True),
-                                
-                                dbc.DropdownMenuItem("Visualization", header=True),
-                                dbc.DropdownMenuItem("Raw Signal", href="/viz/raw-signal"),
-                                dbc.DropdownMenuItem("ICA", href="/viz/ica"),
+                                    dbc.DropdownMenuItem("Visualization", header=True),
+                                    dbc.DropdownMenuItem("Raw Signal", href="/viz/raw-signal"),
+                                    dbc.DropdownMenuItem("ICA", href="/viz/ica"),
+                                    dbc.DropdownMenuItem(divider=True),
 
-                                dbc.DropdownMenuItem(divider=True),
+                                    dbc.DropdownMenuItem("Model", header=True),
+                                    dbc.DropdownMenuItem("Performance", href="/model/performance"),
+                                    dbc.DropdownMenuItem("Fine-Tuning", href="/model/fine-tuning"),
+                                    dbc.DropdownMenuItem(divider=True),
 
-                                dbc.DropdownMenuItem("Model", header=True),
-                                dbc.DropdownMenuItem("Performance", href="/model/performance"),
-                                dbc.DropdownMenuItem("Fine-Tuning", href="/model/fine-tuning"),
+                                    dbc.DropdownMenuItem("Settings", header=True),
+                                    dbc.DropdownMenuItem("Montage", href="/settings/montage"),
+                                    dbc.DropdownMenuItem("Help", href="/settings/help"),
+                                ],
+                                toggle_class_name="bi bi-list",
+                                toggle_style={
+                                    "fontSize": "50px",
+                                    "color": "white",
+                                    "cursor": "pointer",
+                                },
+                                direction="down",
+                                in_navbar=True,
+                                nav=True,
+                                caret=False,
+                            ),
+                            html.Img(
+                                src="/assets/deepepix-logo.jpeg",
+                                style={
+                                    "borderRadius": "10%",
+                                    "height": "36px"
+                                }
+                            ),
+                            html.Span(
+                                "DeepEpiX ©",
+                                style={
+                                    "color": "white",
+                                    "fontWeight": "bold",
+                                    "fontSize": "16px",
+                                    "marginLeft": "8px",
+                                    "alignSelf": "center",
+                                }
+                            ),
+                        ],
+                        style={
+                            "marginLeft": "20px",
+                            "display": "flex",
+                            "alignItems": "center",
+                            "gap": "30px",
+                        }
+                    ),
 
-                                dbc.DropdownMenuItem(divider=True),
+                    # Right section: Logos
+                    html.Div(
+                        children=[
+                            html.Img(
+                                src="/assets/crnl-logo.png",
+                                style={
+                                    "height": "36px",
+                                    "borderRadius": "20%",
+                                    "padding": "3px",
+                                    "backgroundColor": "#ffffff",  # Set any hex color or name
+                                }
+                            ),
+                            html.Img(
+                                src="/assets/inserm-logo.png",
+                                style={
+                                    "height": "36px",
+                                    "borderRadius": "10%",
+                                    "padding": "8px",
+                                    "backgroundColor": "#ffffff",  # Set any hex color or name
+                                }
+                            ),
+                            html.Img(
+                                src="/assets/ucbl-logo.jpg",
+                                style={
+                                    "height": "36px",
+                                    "borderRadius": "15%",
+                                    "padding": "6px",
+                                    "marginRight": "20px",
+                                    "backgroundColor": "#ffffff",  # Set any hex color or name
+                                }
+                            ),
+                        ],
+                        style={
+                            "display": "flex",
+                            "alignItems": "center",
+                            "gap": "20px"
+                        }
+                    ),
+                ],
+                style={
+                    "display": "flex",
+                    "justifyContent": "space-between",
+                    "alignItems": "center",
+                    # "padding": "10px 20px",
+                    "backgroundColor": "#1c1c1c",
+                },
+            ),
 
-                                dbc.DropdownMenuItem("Settings", header=True),
-                                dbc.DropdownMenuItem("Montage", href="/settings/montage"),
-                                dbc.DropdownMenuItem("Help", href="/settings/help"),
-                            ],
-                            style={"display": "flex"},
-                            className="bi bi-list"  
-                        ))
-                    ],
-                    style={
-                        "display": "flex",
-                        "font-size": "60px",  # Make the icon bigger
-                        "padding-bottom": "20px"
-                    },
-                ),
-                # Main content container (display content based on the tab selected)
-                html.Div(
-                    children=[
-                        page_container,
-                    ],
-                    style={"width": "100%", "display": "inline-block"}  # Main content area
-                ),
-            ],
-            style={"width": "100%", "padding": "20px"},  # Row layout
-        ),
-    ],
-    style={"display": "flex", "flex-direction": "column", "height": "100vh"},  # Full-page flex layout
-)
+            # Main content container
+            html.Div(
+                children=[
+                    page_container,
+                ],
+                style={
+                    "padding-top": "10px",
+                    "width": "100%",
+                    "display": "inline-block",
+                },
+            ),
+        ],
+        style={
+            "display": "flex",
+            "flexDirection": "column",
+            "height": "100vh",
+        },
+    )])
+
+
 
 server = app.server
 

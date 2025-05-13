@@ -25,7 +25,7 @@ from callbacks.selection_callbacks import (
 )
 
 # --- Graph ---
-from callbacks.graph_callbacks import register_update_graph_time_channel
+from callbacks.graph_callbacks import register_update_graph_raw_signal
 
 # --- Annotation ---
 from callbacks.annotation_callbacks import (
@@ -51,8 +51,8 @@ from callbacks.spike_callbacks import (
 
 # --- History ---
 from callbacks.history_callbacks import (
-    register_clean_history,
-    register_update_history,
+    register_clean_annotation_history,
+    register_update_annotation_history,
 )
 
 # --- Save ---
@@ -164,12 +164,25 @@ register_clear_check_all_annotation_checkboxes(
     checkboxes_id="annotations-to-save-checkboxes"
 )
 
-register_popup_annotation_suppression()
-register_cancel_or_confirm_annotation_suppression()
+register_popup_annotation_suppression(
+        btn_id="delete-annotations-btn",
+        checkboxes_id="annotation-checkboxes",
+        modal_id="delete-confirmation-modal",
+        modal_body_id="delete-modal-body")
+
+register_cancel_or_confirm_annotation_suppression(
+    confirm_btn_id="confirm-delete-btn", 
+    cancel_btn_id="cancel-delete-btn", 
+    checkboxes_id="annotation-checkboxes", 
+    modal_id="delete-confirmation-modal")
 
 # --- Graph & Channel Handling ---
-register_update_graph_time_channel()
-register_offset_display()
+register_update_graph_raw_signal()
+register_offset_display(
+    offset_decrement_id="offset-decrement", 
+    offset_increment_id="offset-increment", 
+    offset_display_id="offset-display"
+)
 
 # --- Topomap Interactions ---
 register_display_topomap_on_click()
@@ -192,8 +205,8 @@ register_move_to_next_annotation(
 )
 
 # --- History ---
-register_update_history()
-register_clean_history()
+register_update_annotation_history()
+register_clean_annotation_history()
 
 # --- Predict ---
 register_execute_predict_script()

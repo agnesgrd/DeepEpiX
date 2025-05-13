@@ -53,10 +53,13 @@ def filter_resample(folder_path, freq_data):
 
 ############################### MAIN CACHED FUNCTIONS (PREPROCESSING) ##############################################
 
+def get_max_length(raw, resample_freq):
+    return raw.n_times/raw.info['sfreq']-1/resample_freq
+
 def update_chunk_limits(total_duration):
     chunk_duration = config.CHUNK_RECORDING_DURATION
     chunk_limits= [
-        [start, min(start + chunk_duration, total_duration - 0.005)]
+        [start, min(start + chunk_duration, total_duration)]
         for start in range(0, int(total_duration), chunk_duration)
     ]
     return chunk_limits
@@ -134,57 +137,99 @@ def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw
 
 ###################################################### ICA ########################################################################
 
-@cache.memoize()
-def _compute_ica(folder_path, n_components, ica_method, max_iter, decim):
-    path = config.CACHE_DIR / f"{Path(folder_path).stem}_{n_components}_{ica_method}_{max_iter}_{decim}-ica.fif"
-    
-    if path.exists():
-        print("ICA already exists in cache.")
-        return str(path)
+def get_cache_filename_ica(folder_path, start_time, end_time, ica_result_path, cache_dir):
+    hash_input = f"{folder_path}_{start_time}_{end_time}_{ica_result_path}"
+    hash_key = hashlib.md5(hash_input.encode()).hexdigest()
+    return os.path.join(cache_dir, f"{hash_key}.parquet")
 
-    raw = fpu.read_raw(folder_path, preload=True, verbose=False).pick(['meg'])
-    raw = raw.filter(l_freq=1.0, h_freq=None)
+def get_ica_dataframe_dask(folder_path, start_time, end_time, ica_result_path, raw=None, cache_dir=f"./{config.CACHE_DIR}"):
+    os.makedirs(cache_dir, exist_ok=True)
+    cu.clear_old_cache_files(cache_dir)
 
-    ica = mne.preprocessing.ICA(
-        n_components=n_components,
-        method=ica_method,
-        max_iter=max_iter,
-        random_state=97
-    )
-    ica.fit(raw, decim=decim)
-    ica.save(path)
+    cache_file = get_cache_filename_ica(folder_path, start_time, end_time, ica_result_path, cache_dir)
 
-    return str(path)
+    if os.path.exists(cache_file):
+        return dd.read_parquet(cache_file)
 
-@cache.memoize()
-def get_ica_sources_for_chunk(folder_path, start_time, end_time, n_components, ica_method, max_iter, decim):
-    # Get the cached ICA from step 1
-    ica_path = _compute_ica(folder_path, n_components, ica_method, max_iter, decim)
+    if raw is None:
+        raw = fpu.read_raw(folder_path, preload=True, verbose=False).pick_types(meg=True)
+        raw.filter(l_freq=1.0, h_freq=None)
 
-    # Load and crop raw data for the chunk
-    raw = fpu.read_raw(folder_path, preload=True, verbose=False).pick(['meg'])
-    raw = raw.filter(l_freq=1.0, h_freq=None)
+    raw = raw.copy().crop(tmin=start_time, tmax=end_time)
 
-    ica = mne.preprocessing.read_ica(ica_path)
-
-    # Use cached ICA to get sources for the chunk
+    ica = mne.preprocessing.read_ica(ica_result_path)
     sources = ica.get_sources(raw)
 
     data = sources.get_data()
     sfreq = sources.info['sfreq']
     ch_names = sources.ch_names
     info = mne.create_info(ch_names=ch_names, sfreq=sfreq, ch_types='misc')  # ICA comps = misc
+
     new_sources = mne.io.RawArray(data, info)
-
     sources = new_sources.resample(300)
+    sources_df = sources.to_data_frame(index="time")  # Get numerical data (channels × time)
 
-    # Transform the raw data into a dataframe
-    ica_df = sources.to_data_frame(index="time")  # Get numerical data (channels × time)
+    # Convert to Dask array
+    ddf = dd.from_pandas(sources_df, npartitions=10)
+    ddf = ddf - ddf.mean(axis=0)
+    ddf.to_parquet(cache_file)
 
-    # Standardization per channel
-    ica_df_standardized = (ica_df - ica_df.mean()) / ica_df.std()
+    return ddf
 
-    return ica_df_standardized
+
+
+# @cache.memoize()
+# def _compute_ica(folder_path, n_components, ica_method, max_iter, decim):
+#     path = config.CACHE_DIR / f"{Path(folder_path).stem}_{n_components}_{ica_method}_{max_iter}_{decim}-ica.fif"
+    
+#     if path.exists():
+#         print("ICA already exists in cache.")
+#         return str(path)
+
+#     raw = fpu.read_raw(folder_path, preload=True, verbose=False).pick(['meg'])
+#     raw = raw.filter(l_freq=1.0, h_freq=None)
+
+#     ica = mne.preprocessing.ICA(
+#         n_components=n_components,
+#         method=ica_method,
+#         max_iter=max_iter,
+#         random_state=97
+#     )
+#     ica.fit(raw, decim=decim)
+#     ica.save(path)
+
+#     return str(path)
+
+# @cache.memoize()
+# def get_ica_sources_for_chunk(folder_path, start_time, end_time, n_components, ica_method, max_iter, decim, ica_result_path, raw=None):
+#     # Get the cached ICA from step 1
+#     ica_path = _compute_ica(folder_path, n_components, ica_method, max_iter, decim)
+
+#     # Load and crop raw data for the chunk
+#     if raw is None:
+#         raw = fpu.read_raw(folder_path, preload=True, verbose=False).pick(['meg'])
+#         raw = raw.filter(l_freq=1.0, h_freq=None)
+
+#     ica = mne.preprocessing.read_ica(ica_path)
+
+#     # Use cached ICA to get sources for the chunk
+#     sources = ica.get_sources(raw)
+
+#     data = sources.get_data()
+#     sfreq = sources.info['sfreq']
+#     ch_names = sources.ch_names
+#     info = mne.create_info(ch_names=ch_names, sfreq=sfreq, ch_types='misc')  # ICA comps = misc
+#     new_sources = mne.io.RawArray(data, info)
+
+#     sources = new_sources.resample(300)
+
+#     # Transform the raw data into a dataframe
+#     ica_df = sources.to_data_frame(index="time")  # Get numerical data (channels × time)
+
+#     # Standardization per channel
+#     ica_df_standardized = (ica_df - ica_df.mean()) / ica_df.std()
+
+#     return ica_df_standardized
 
 ################################## POWER SPECTRUM DECOMPOSITION ######################################################
 

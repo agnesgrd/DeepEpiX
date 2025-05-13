@@ -56,9 +56,11 @@ def register_execute_predict_script():
             return None, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
         # Validation: Check if all required fields are filled
-        missing_fields = []
         if not subject_folder_path:
-            missing_fields.append("Subject Folder")
+            error_message = f"Please choose a subject to display on Home page."
+            return error_message, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+        
+        missing_fields = []
         if not model_path:
             missing_fields.append("Model")
         if not venv:
@@ -106,6 +108,7 @@ def register_execute_predict_script():
         try: 
             start_time = time.time()
             subprocess.run(command, env=env, text=True) #stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            model_probabilities_store = [str(predictions_csv_path)]
             print(f"Model testing executed in {time.time()-start_time:.2f} seconds")
 
         except Exception as e:
@@ -131,11 +134,10 @@ def register_execute_predict_script():
             except Exception as e:
                 return f"Error running smoothgrad: {e}", 0, {"display": "none"}, dash.no_update, dash.no_update
 
-            model_probabilities_store = [str(predictions_csv_path)]
             sensitivity_analysis_store = [str(smoothgrad_path)]
             return True, 0, {"display": "block"}, model_probabilities_store, sensitivity_analysis_store
 
-        return True, 0, {"display": "block"}, [str(predictions_csv_path)], dash.no_update
+        return True, 0, {"display": "block"}, model_probabilities_store, dash.no_update
 
 
 @callback(

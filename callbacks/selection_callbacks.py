@@ -120,12 +120,12 @@ def register_clear_check_all_annotation_checkboxes(check_all_btn_id, clear_all_b
 # 🧭 Offset Display
 # ─────────────────────────────
 
-def register_offset_display():
+def register_offset_display(offset_decrement_id, offset_increment_id, offset_display_id):
     @callback(
-        Output("offset-display", "value", allow_duplicate=True),
-        Input("offset-decrement", "n_clicks"),
-        Input("offset-increment", "n_clicks"),
-        State("offset-display", "value"),
+        Output(offset_display_id, "value", allow_duplicate=True),
+        Input(offset_decrement_id, "n_clicks"),
+        Input(offset_increment_id, "n_clicks"),
+        State(offset_display_id, "value"),
         prevent_initial_call=True
     )
     def update_offset(decrement_clicks, increment_clicks, current_offset):
@@ -138,26 +138,26 @@ def register_offset_display():
             offset = 5  # fallback default if current_offset is not valid
 
         triggered = dash.ctx.triggered_id
-        if triggered == "offset-increment":
+        if triggered == offset_increment_id:
             offset += step
-        elif triggered == "offset-decrement":
+        elif triggered == offset_decrement_id:
             offset -= step
 
         offset = max(min_value, min(max_value, offset))
-        return str(offset)
+        return offset
 
 
 # ─────────────────────────────
 # ❌ Annotation Suppression Popup
 # ─────────────────────────────
 
-def register_popup_annotation_suppression():
+def register_popup_annotation_suppression(btn_id, checkboxes_id, modal_id, modal_body_id):
     @callback(
-        Output("delete-confirmation-modal", "is_open"),
-        Output("delete-modal-body", "children"),
-        Input("delete-annotations-btn", "n_clicks"),
-        State("annotation-checkboxes", "value"),
-        State("delete-confirmation-modal", "is_open"),
+        Output(modal_id, "is_open"),
+        Output(modal_body_id, "children"),
+        Input(btn_id, "n_clicks"),
+        State(checkboxes_id, "value"),
+        State(modal_id, "is_open"),
         prevent_initial_call=True
     )
     def _open_delete_modal(delete_click, selected_annotations, is_open):
@@ -167,15 +167,15 @@ def register_popup_annotation_suppression():
         return is_open, dash.no_update
 
 
-def register_cancel_or_confirm_annotation_suppression():
+def register_cancel_or_confirm_annotation_suppression(confirm_btn_id, cancel_btn_id, checkboxes_id, modal_id):
     @callback(
-        Output("delete-confirmation-modal", "is_open", allow_duplicate=True),
+        Output(modal_id, "is_open", allow_duplicate=True),
         Output("annotation-store", "data", allow_duplicate=True),
-        Input("confirm-delete-btn", "n_clicks"),
-        Input("cancel-delete-btn", "n_clicks"),
-        State("annotation-checkboxes", "value"),
+        Input(confirm_btn_id, "n_clicks"),
+        Input(cancel_btn_id, "n_clicks"),
+        State(checkboxes_id, "value"),
         State("annotation-store", "data"),
-        State("delete-confirmation-modal", "is_open"),
+        State(modal_id, "is_open"),
         prevent_initial_call=True
     )
     def handle_delete_confirmation(confirm_click, cancel_click, selected_annotations, annotations_dict, is_open):
@@ -185,10 +185,10 @@ def register_cancel_or_confirm_annotation_suppression():
 
         trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
 
-        if trigger_id == "confirm-delete-btn":
+        if trigger_id == confirm_btn_id:
             annotations_dict = [a for a in annotations_dict if a['description'] not in selected_annotations]
             return False, annotations_dict
-        if trigger_id == "cancel-delete-btn":
+        if trigger_id == cancel_btn_id:
             return False, dash.no_update
         return is_open, dash.no_update
 

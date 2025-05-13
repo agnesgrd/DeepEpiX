@@ -1,14 +1,10 @@
-import traceback
-import plotly.graph_objects as go
-import dash
-from dash import Input, Output, State, Patch, callback, ClientsideFunction, clientside_callback
-import config
-import callbacks.utils.graph_utils as gu
-import traceback
-import plotly.graph_objects as go
 import pickle
+import traceback
+import dash
+from dash import Input, Output, State, callback
+from callbacks.utils import graph_utils as gu
    
-def register_update_graph_time_channel(): 
+def register_update_graph_raw_signal(): 
     @callback(
         Output("meg-signal-graph", "figure"),
         Output("python-error", "children"),
@@ -25,12 +21,10 @@ def register_update_graph_time_channel():
         State("montage-store", "data"),
         State("channel-store", "data"),
         State("sensitivity-analysis-store", "data"),
-        # State("annotation-checkboxes", "value"),
-        # State("annotation-store", "data"),
         running=[(Output("update-button", "disabled"), True, False)],
         prevent_initial_call=True
     )
-    def update_graph_time_channel(n_clicks, page_selection, graph, montage_selection, channel_selection, folder_path, offset_selection, color_selection, chunk_limits, freq_data, montage_store, channel_store, sensitivity_analysis_store):
+    def _update_graph_raw_signal(n_clicks, page_selection, graph, montage_selection, channel_selection, folder_path, offset_selection, color_selection, chunk_limits, freq_data, montage_store, channel_store, sensitivity_analysis_store):
         """Update MEG signal visualization based on time and channel selection."""
 
         if n_clicks == 0:
@@ -80,11 +74,57 @@ def register_update_graph_time_channel():
         try:                  
             fig, error = gu.generate_graph_time_channel(selected_channels, float(offset_selection), time_range, folder_path, freq_data, color_selection, xaxis_range, channel_store, filter)
 
-            # if not annotations_to_show or len(annotations_to_show) == 0 or not fig['data']:
-            #     return fig, error
-    
-            # fig = gu.update_annotations_on_graph(fig, annotations_to_show, page_selection, annotations, chunk_limits)
-            
+            return fig, error
+        
+        except FileNotFoundError:
+            return dash.no_update, f"Error: Folder not found."
+        except ValueError as ve:
+            return dash.no_update, f"Error: {str(ve)}.\n Details: {traceback.format_exc()}"
+        except Exception as e:
+            return dash.no_update, f"Error: Unexpected error {str(e)}.\n Details: {traceback.format_exc()}"
+
+def register_update_graph_ica(ica_result_radio_id):     
+    @callback(
+        Output("graph-ica", "figure"),  # Trigger the callback to update the graph
+        Output("python-error-ica", "children"),
+        Input("update-button-ica", "n_clicks"),  # Button trigger
+        Input("page-selector-ica", "value"),  # Page selection (if needed)
+        State(ica_result_radio_id, "value"),
+        State("folder-store", "data"),  # Folder path (for loading data)
+        State("offset-display-ica", "value"),
+        State("colors-radio-ica", "value"),
+        State("chunk-limits-store", "data"),  # Limits for chunking data
+        State("n-components", "value"),  # Number of ICA components
+        State("ica-method", "value"),  # ICA method selected ('fastica', 'infomax', etc.)
+        State("max-iter", "value"),  # Max iterations for ICA fitting
+        State("decim", "value"),  # Temporal decimation
+        State("graph-ica", "figure"),  # MEG signal graph figure (to update)
+        prevent_initial_call=True
+    )
+    def _update_graph_ica(n_clicks, page_selection, ica_result_path, folder_path, offset_selection, color_selection, chunk_limits, n_components, ica_method, max_iter, decim, graph):
+        """Update ICA signal visualization."""
+        if n_clicks == 0:
+            return dash.no_update, dash.no_update
+        
+        if not folder_path:
+            return dash.no_update, "Please choose a subject to display on Home page."
+        
+        if None in (page_selection, offset_selection, color_selection) or not chunk_limits:
+            return dash.no_update, "You have a subject in memory but its recording has not been preprocessed yet. Please go back on Home page to reprocess the signal."
+
+        if None in (n_components, ica_method, max_iter, decim):
+            return dash.no_update, "You haven't compt"
+        
+        time_range = chunk_limits[int(page_selection)]
+
+        # Get the current x-axis center
+        xaxis_range = graph["layout"]["xaxis"].get("range", [])
+        if xaxis_range[1] < time_range[0] or xaxis_range[0] > time_range[1]:
+            xaxis_range = [time_range[0], time_range[0]+10]
+
+        try:                  
+            fig, error = gu.generate_graph_time_ica(offset_selection, time_range, folder_path, ica_result_path, color_selection, xaxis_range)
+
             return fig, error
         
         except FileNotFoundError:
