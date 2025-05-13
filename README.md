@@ -90,12 +90,10 @@ This software is designed for clinicians to annotate raw MEG data and run predic
 
 ### Prerequisites
 
-- **Data Format**: CTF  
+- **Data Format**: CTF (dir .ds), 4D Neuroimaging / BTI data (dir), raw FIF (.fif) 
 - **Skills**: Basic terminal usage and Python/Docker knowledge
 
 ### Fast Installation with Docker
-
-<details>
 
 #### 1. Clone the Repository in Your Working Directory  
 ```bash
@@ -107,8 +105,12 @@ git clone https://github.com/agnesgrd/DeepEpiX.git
 cd DeepEpiX
 docker build -t deepepix-app .
 docker run -p 8050:8050 -v /home/user/DeepEpiX/data:/DeepEpiX/data deepepix-app # Modify this to point your local data path
+# Example for Windows
+docker run -p 8050:8050 -v //c/Users/pauli/Documents/MEGBase/data/exampleData:/DeepEpiX/data deepepix-app
 ```
-</details>
+
+#### 3. Then, open the app in your web browser at:  
+[http://localhost:8050/](http://localhost:8050/)  
 
 ### Manual Installation for Development Mode
 
