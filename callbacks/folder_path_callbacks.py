@@ -2,9 +2,6 @@
 import dash
 from dash import Input, Output, State, callback
 
-# External Libraries
-import mne
-import os
 
 # Local Imports
 from layout import FLEXDIRECTION
@@ -58,7 +55,7 @@ def register_handle_valid_folder_path():
                 return True, {"display": "none"},"Path must end with '.ds' or '.fif' to be a valid raw MEG object."
 
             try:
-                raw = fpu.read_raw(folder_path, preload=False, verbose=False)
+                fpu.read_raw(folder_path, preload=False, verbose=False)
                 return False, {"display": "none"}, ""  # Valid: enable button and clear warning
             except Exception as e:
                 return True, {"display": "none"}, f"Invalid MEG path: {str(e)}"

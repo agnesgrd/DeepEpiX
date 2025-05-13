@@ -1,6 +1,5 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-import config
 from layout import INPUT_STYLES, BOX_STYLES, BUTTON_STYLES
 
 
@@ -10,7 +9,7 @@ def create_analyze():
     # Plot topomap on a interval timepoint
         html.Div([
             html.Div([
-                html.H6([html.I(className=f"bi bi-crosshair"), " Topomap"], style={"fontWeight": "bold", "marginBottom": "10px"}),
+                html.H6([html.I(className="bi bi-crosshair"), " Topomap"], style={"fontWeight": "bold", "marginBottom": "10px"}),
                 dbc.Button(
                     "Activate",
                     id="plot-topomap-button",  # Unique ID for each button
@@ -34,7 +33,7 @@ def create_analyze():
 
         # Add a spike
         html.Div([
-            html.H6([html.I(className=f"bi bi-pencil"), " Annotation"], style={"fontWeight": "bold", "marginBottom": "10px"}),
+            html.H6([html.I(className="bi bi-pencil"), " Annotation"], style={"fontWeight": "bold", "marginBottom": "10px"}),
             dbc.Input(
                 id="event-name",  # Unique ID for each input
                 type="text",
@@ -94,7 +93,7 @@ def create_analyze():
 
         # History Section
         html.Div([
-            html.H6([html.I(className=f"bi bi-activity"), " Annotations History"], style={"fontWeight": "bold", "marginBottom": "10px"}),  # Title for the history section
+            html.H6([html.I(className="bi bi-activity"), " Annotations History"], style={"fontWeight": "bold", "marginBottom": "10px"}),  # Title for the history section
             html.Div(
                 id="history-log",  # Dynamic log area
                 style={

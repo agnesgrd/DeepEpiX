@@ -172,7 +172,6 @@ layout = html.Div([
 def display_model_names_checklist(annotations_store):
 	description_counts = au.get_annotation_descriptions(annotations_store)
 	options = [{'label': f"{name} ({count})", 'value': f"{name}"} for name, count in description_counts.items()]
-	value = [f"{name}" for name in description_counts.keys()]
 	return options, options #dash.no_update  # Set all annotations as default selected
 
 @callback(
@@ -306,16 +305,16 @@ def compute_performance(n_clicks, model_prediction, ground_truth, tolerance, thr
 	title =  html.Div([
 		html.Small([
 			html.I(className="bi bi-flag-fill me-2 text-primary"),  # icon for ground truth
-			f"Ground Truth: ",
+			"Ground Truth: ",
 			html.Span(ground_truth, className="fw-bold text-dark"),
 			html.I(className="bi bi-stars mx-3 text-success"),   # icon for prediction
-			f"Prediction: ",
+			"Prediction: ",
 			html.Span(model_prediction, className="fw-bold text-dark"),
 			html.I(className="bi bi-sliders2-vertical mx-3 text-warning"),  # icon for parameters
-			f"Tolerance: ",
+			"Tolerance: ",
 			html.Span(f"{tolerance} ms", className="fw-bold text-dark"),
 			html.Span(" | ", className="mx-2"),
-			f"Threshold: ",
+			"Threshold: ",
 			html.Span(f"{threshold}", className="fw-bold text-dark"),
 	], className="text-muted")])
 	

@@ -3,7 +3,6 @@ import dash
 from dash import Input, Output, State, callback
 
 # External Libraries
-import mne
 
 # Local Imports
 from callbacks.utils import folder_path_utils as fpu
@@ -23,10 +22,10 @@ def register_handle_frequency_parameters():
     def handle_frequency_parameters(resample_freq, high_pass_freq, low_pass_freq, notch_freq):
         """Retrieve frequency parameters and store them."""
         if not low_pass_freq or not high_pass_freq or not notch_freq:
-            return f"⚠️ Please fill in all frequency parameters."
+            return "⚠️ Please fill in all frequency parameters."
         
         elif high_pass_freq >= low_pass_freq:
-            return f"⚠️ High-pass frequency must be less than low-pass frequency."
+            return "⚠️ High-pass frequency must be less than low-pass frequency."
 
         return dash.no_update
 
@@ -73,7 +72,7 @@ def register_preprocess_meg_data():
 
                 for chunk_idx in chunk_limits:
                     start_time, end_time = chunk_idx
-                    raw_df = pu.get_preprocessed_dataframe_dask(folder_path, freq_data, start_time, end_time, prep_raw)
+                    pu.get_preprocessed_dataframe_dask(folder_path, freq_data, start_time, end_time, prep_raw)
 
                 return "Preprocessed and saved data", freq_data, annotations_dict, channels_dict, chunk_limits, "/viz/raw-signal"
             

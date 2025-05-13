@@ -83,7 +83,7 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
     try:
         filtered_raw_df = raw_ddf[selected_channels].compute()
     except Exception:
-        return dash.no_update, f"Error: Selected channels are invalid. This may be due to choosing a montage that is incompatible with the current data format."
+        return dash.no_update, "Error: Selected channels are invalid. This may be due to choosing a montage that is incompatible with the current data format."
 
 
     print(f"Step 3: Dataframe filtering completed in {time.time() - filter_df_start_time:.2f} seconds.")
@@ -174,7 +174,7 @@ def generate_graph_time_ica(offset_selection, time_range, folder_path, ica_resul
     try:
         filtered_raw_df = raw_ddf[selected_channels].compute()
     except Exception:
-        return dash.no_update, f"Error: Selected channels are invalid. This may be due to choosing a montage that is incompatible with the current data format."
+        return dash.no_update, "Error: Selected channels are invalid. This may be due to choosing a montage that is incompatible with the current data format."
 
 
     print(f"Step 3: Dataframe filtering completed in {time.time() - filter_df_start_time:.2f} seconds.")

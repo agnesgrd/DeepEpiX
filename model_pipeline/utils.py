@@ -5,7 +5,6 @@ import mne
 from tqdm import tqdm
 import pandas as pd
 import model_pipeline.params as params
-import pandas as pd
 from scipy.ndimage import gaussian_filter1d
 
 #####################################################################Preparing the data
@@ -113,8 +112,6 @@ def create_windows(path_output, window_size_ms, stand=False):
 	window_size = window_size_ms * params.sfreq
 	#Spacing between two window centers (made such that windows slightly overlap)
 	window_spacing = (window_size_ms - 2*params.spike_spacing_from_border_ms) * params.sfreq
-	#size of window border in which we ignore potential spikes (because too much on the border) (in time points)
-	spike_spacing_from_border = params.spike_spacing_from_border_ms * params.sfreq
 
 	data = load_obj('data_raw_%s' % params.subject_number+'.pkl', path_output)
 
@@ -172,47 +169,47 @@ def generate_database(total_nb_windows):
 	return X_test_ids
 
 ########################################################################### Compute features functions ###########################################################################
-def compute_window_ppa(window):
-	return np.max(window, axis=0) - np.min(window, axis=0)
+# def compute_window_ppa(window):
+# 	return np.max(window, axis=0) - np.min(window, axis=0)
 
-def compute_window_upslope(window):
-	return np.max(np.diff(window, axis=0), axis=0)
+# def compute_window_upslope(window):
+# 	return np.max(np.diff(window, axis=0), axis=0)
 
-def compute_window_std(window):
-	return np.std(window, axis=0)
+# def compute_window_std(window):
+# 	return np.std(window, axis=0)
 
-def compute_window_average_slope(window):
-	abs_slopes = np.abs(np.diff(window, axis=0))
-	return np.max((abs_slopes[:-1] + abs_slopes[1:]) / 2, axis=0)
+# def compute_window_average_slope(window):
+# 	abs_slopes = np.abs(np.diff(window, axis=0))
+# 	return np.max((abs_slopes[:-1] + abs_slopes[1:]) / 2, axis=0)
 
-def compute_window_downslope(window):
-	return np.max(np.diff(window, axis=0), axis=0)
+# def compute_window_downslope(window):
+# 	return np.max(np.diff(window, axis=0), axis=0)
 
-def compute_window_amplitude_ratio(window):
-	ampl = (np.max(window, axis=0)-np.min(window, axis=0))
-	mean = np.mean(window, axis=0)
-	mean[mean==0]=1
-	return ampl/mean
+# def compute_window_amplitude_ratio(window):
+# 	ampl = (np.max(window, axis=0)-np.min(window, axis=0))
+# 	mean = np.mean(window, axis=0)
+# 	mean[mean==0]=1
+# 	return ampl/mean
 
-def compute_window_sharpness(window):
-	slopes = np.diff(window, axis=0)
-	return np.max(np.abs(slopes[1:]-slopes[:-1]), axis=0)
+# def compute_window_sharpness(window):
+# 	slopes = np.diff(window, axis=0)
+# 	return np.max(np.abs(slopes[1:]-slopes[:-1]), axis=0)
 
-def compute_window_main_frequency(window):
-	n = len(window)
-	fft_result = fft(window)
-	frequencies = fftfreq(n)
-	amplitudes = np.abs(fft_result)
-	peak_frequency_index = np.argmax(amplitudes)
-	main_frequency = frequencies[peak_frequency_index]
-	return main_frequency
+# def compute_window_main_frequency(window):
+# 	n = len(window)
+# 	fft_result = fft(window)
+# 	frequencies = fftfreq(n)
+# 	amplitudes = np.abs(fft_result)
+# 	peak_frequency_index = np.argmax(amplitudes)
+# 	main_frequency = frequencies[peak_frequency_index]
+# 	return main_frequency
 
-def compute_window_phase_congruency(window):
-	fft_window = fft(window)
-	phases = np.angle(fft_window)
-	phase_diff = np.diff(phases)
-	phase_congruencies = 1 - (np.abs(phase_diff)/np.pi)
-	return np.max(phase_congruencies)
+# def compute_window_phase_congruency(window):
+# 	fft_window = fft(window)
+# 	phases = np.angle(fft_window)
+# 	phase_diff = np.diff(phases)
+# 	phase_congruencies = 1 - (np.abs(phase_diff)/np.pi)
+	# return np.max(phase_congruencies)
 
 def compute_gfp(window):
     """Compute Global Field Power (GFP) as standard deviation across channels."""

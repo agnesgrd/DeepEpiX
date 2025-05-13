@@ -1,7 +1,6 @@
 from model_pipeline.utils import save_data_matrices, create_windows, generate_database
 import sys
 import params
-import os
 
 def run_model_pipeline(
 		model_name, 

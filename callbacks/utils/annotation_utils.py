@@ -1,6 +1,4 @@
-import math
 from collections import Counter
-import numpy as np
 import dash_bootstrap_components as dbc
 from dash import dcc, html
 import mne

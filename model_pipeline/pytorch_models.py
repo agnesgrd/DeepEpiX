@@ -8,7 +8,7 @@ import os.path as op
 import params
 import pandas as pd
 import csv
-from utils import save_obj, load_obj, standardize
+from utils import load_obj
 from model_pipeline.utils import compute_gfp, find_peak_gfp
 
 def resume(model, filename):
@@ -84,8 +84,6 @@ class TimeSeriesDataSet(Dataset):
 
     _x = sample
     _y = np.array(self.X[index])[2]
-    rand_nb = np.random.randint(2)
-
     return torch.tensor(_x,dtype = torch.float32),torch.tensor(_y,dtype = torch.float32)
 
 def load_generators_memeff(X_test_ids):
@@ -122,8 +120,6 @@ def test_model(model_name, testing_generator, X_test_ids):
             y_pred_probas = torch.squeeze(outputs)
             y_pred.append((y_pred_probas.cpu().numpy() > 0.5).astype("int32"))
 
-    y_test = X_test_ids[:,2]
-
     sub = X_test_ids[:,1]
     win = X_test_ids[:,0]
 
@@ -159,7 +155,7 @@ def get_win_data_signal(f,win,sub,dim):
     sample_norm = (sample - mean)/std
     
     return sample_norm
-s
+
 def test_model_dash(model_name, X_test_ids, output_path, threshold, adjust_onset, subject):
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

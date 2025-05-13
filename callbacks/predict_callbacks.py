@@ -57,7 +57,7 @@ def register_execute_predict_script():
 
         # Validation: Check if all required fields are filled
         if not subject_folder_path:
-            error_message = f"Please choose a subject to display on Home page."
+            error_message = "Please choose a subject to display on Home page."
             return error_message, dash.no_update, dash.no_update, dash.no_update, dash.no_update
         
         missing_fields = []
@@ -91,7 +91,7 @@ def register_execute_predict_script():
         
         command = [
             ACTIVATE_ENV,
-            f"model_pipeline/run_model.py",
+            "model_pipeline/run_model.py",
             str(model_path),
             str(venv),
             str(subject_folder_path),
@@ -117,7 +117,7 @@ def register_execute_predict_script():
         if sensitivity_analysis:
             command = [
                 ACTIVATE_ENV,
-                f"model_pipeline/run_smoothgrad.py",
+                "model_pipeline/run_smoothgrad.py",
                 str(model_path),
                 str(venv),
                 str(cache_dir),

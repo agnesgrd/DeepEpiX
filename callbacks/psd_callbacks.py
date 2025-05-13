@@ -20,7 +20,7 @@ def register_display_psd():
     def display_psd(n_clicks, folder_path, resample_freq, high_pass_freq, low_pass_freq, notch_freq):
         """ Compute and display power spectrum decomposition depending on the frequency parameters stored."""
         if None in (folder_path, resample_freq, high_pass_freq, low_pass_freq, notch_freq):
-            return f"⚠️ Please fill in all frequency parameters."
+            return "⚠️ Please fill in all frequency parameters."
         
         if n_clicks > 0:
             freq_data = {

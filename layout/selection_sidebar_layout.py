@@ -1,6 +1,5 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-import config
 from layout import BOX_STYLES, BUTTON_STYLES
 
 def create_selection(

@@ -1,11 +1,10 @@
 import dash
-from dash import html, dcc, Input, Output, State, callback
+from dash import html, Input, Output, State, callback
 import dash_bootstrap_components as dbc
 from dash.exceptions import PreventUpdate
 
 # Local import
 import callbacks.utils.annotation_utils as au
-import config
 
 # ─────────────────────────────
 # 📄 Page Navigation Callbacks

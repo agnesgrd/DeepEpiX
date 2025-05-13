@@ -2,7 +2,6 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
 import tensorflow.keras as keras
-from keras import backend as K
 import numpy as np
 import model_pipeline.utils as utils
 from scipy import signal

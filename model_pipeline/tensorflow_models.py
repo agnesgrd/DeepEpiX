@@ -8,12 +8,11 @@ from keras import backend as K
 
 import numpy as np
 import os.path as op
-import matplotlib.pyplot as plt
 import model_pipeline.params as params
 import pandas as pd
 import gc
-from model_pipeline.utils import save_obj, load_obj, standardize
-from model_pipeline.utils import compute_window_ppa, compute_window_upslope, compute_window_std, compute_window_average_slope, compute_window_downslope, compute_window_amplitude_ratio, compute_window_sharpness, compute_gfp, find_peak_gfp
+from model_pipeline.utils import load_obj
+from model_pipeline.utils import compute_window_ppa, compute_window_upslope, compute_window_std, compute_window_average_slope, compute_window_downslope, compute_window_sharpness, compute_gfp, find_peak_gfp
 
 #####################################################################Running the model
 
@@ -83,11 +82,10 @@ def classify_sfcn(first_direction,sfreq,window_size):
 
 def classify_features_only(first_direction,sfreq,window_size,initial_bias, alpha=0.25, nb_features=1):
 
-    reg = 0
     if first_direction == 'channel':
-        input_shape = (274, int(sfreq*window_size), 1)
+        (274, int(sfreq*window_size), 1)
     elif first_direction == 'time':
-        input_shape = (int(sfreq*window_size), 274, 1)
+        (int(sfreq*window_size), 274, 1)
 
     input_features = keras.layers.Input(shape=(nb_features,274))
 
@@ -163,7 +161,7 @@ class DataGenerator_memeff(tf.keras.utils.Sequence):
         for i, ID in enumerate(list_IDs_temp):
 
             win = np.array(ID)[0]
-            sub = np.array(ID)[1]
+            np.array(ID)[1]
             label = np.array(ID)[2]
 
             # Store sample 
@@ -243,7 +241,7 @@ class DataGenerator_memeff_feat_only(tf.keras.utils.Sequence):
         for i, ID in enumerate(list_IDs_temp):
             # get infos from the "ids" array
             win = np.array(ID)[0]
-            sub = np.array(ID)[1]
+            np.array(ID)[1]
             label = np.array(ID)[2]
 
             if np.array(ID).shape[0]>3:

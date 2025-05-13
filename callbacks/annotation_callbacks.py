@@ -1,12 +1,8 @@
 import dash
 from dash import Patch, Input, Output, State, callback
-import callbacks.utils.dataframe_utils as du
 from callbacks.utils import graph_utils as gu
 import plotly.graph_objects as go
 import pandas as pd
-import itertools
-from layout import COLOR_PALETTE
-from dash.exceptions import PreventUpdate
 
 def register_update_annotations_on_graph(
     graph_id,
