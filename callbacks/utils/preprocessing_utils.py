@@ -128,7 +128,7 @@ def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw
             return raw_df_standardized
 
         except Exception as e:
-            return f"Error during processing: {str(e)}"
+            return f"⚠️ Error during processing: {str(e)}"
 
     # Process and return the result in JSON format
     return process_data_in_chunks(folder_path, freq_data, start_time, end_time, raw)

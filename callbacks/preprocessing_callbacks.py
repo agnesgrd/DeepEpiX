@@ -77,6 +77,6 @@ def register_preprocess_meg_data():
                 return "Preprocessed and saved data", freq_data, annotations_dict, channels_dict, chunk_limits, "/viz/raw-signal"
             
             except Exception as e:
-                return f"Error during preprocessing : {str(e)}", dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+                return f"⚠️ Error during preprocessing : {str(e)}", dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
         return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update

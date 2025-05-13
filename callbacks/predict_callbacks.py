@@ -57,7 +57,7 @@ def register_execute_predict_script():
 
         # Validation: Check if all required fields are filled
         if not subject_folder_path:
-            error_message = "Please choose a subject to display on Home page."
+            error_message = "⚠️ Please choose a subject to display on Home page."
             return error_message, dash.no_update, dash.no_update, dash.no_update, dash.no_update
         
         missing_fields = []
@@ -112,7 +112,7 @@ def register_execute_predict_script():
             print(f"Model testing executed in {time.time()-start_time:.2f} seconds")
 
         except Exception as e:
-            return f"Error running model: {e}", dash.no_update, dash.no_update, dash.no_update, dash.no_update
+            return f"⚠️ Error running model: {e}", dash.no_update, dash.no_update, dash.no_update, dash.no_update
         
         if sensitivity_analysis:
             command = [
@@ -132,13 +132,15 @@ def register_execute_predict_script():
                 print(f"Smoothgrad executed in {time.time()-start_time:.2f} seconds")
 
             except Exception as e:
-                return f"Error running smoothgrad: {e}", 0, {"display": "block"}, model_probabilities_store, dash.no_update
+                return f"⚠️ Error running smoothgrad: {e}", 0, {"display": "block"}, model_probabilities_store, dash.no_update
 
             sensitivity_analysis_store = [str(smoothgrad_path)]
             if not smoothgrad_path.exists():
-                return "Error running smoothgrad.", 0, {"display": "block"}, model_probabilities_store, dash.no_update
+                return "⚠️ Error running smoothgrad.", 0, {"display": "block"}, model_probabilities_store, dash.no_update
             return True, 0, {"display": "block"}, model_probabilities_store, sensitivity_analysis_store
 
+        if not predictions_csv_path.exists():
+            return "⚠️ Error running model.", 0, {"display": "none"}, dash.no_update, dash.no_update
         return True, 0, {"display": "block"}, model_probabilities_store, dash.no_update
 
 
@@ -174,7 +176,7 @@ def update_prediction_table(style, threshold, prediction_csv_path):
         )
         return au.build_table_prediction_statistics(df, threshold), au.build_prediction_distribution_statistics(df, threshold), table
     except Exception as e:
-        error_msg = html.P(f"Error loading predictions: {e}")
+        error_msg = html.P(f"⚠️ Error loading predictions: {e}")
         return error_msg, error_msg, error_msg
     
 @callback(

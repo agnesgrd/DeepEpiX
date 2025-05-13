@@ -45,7 +45,7 @@ def register_display_topomap_on_click():
                 return True, topomap_image, dash.no_update
 
             except Exception as e:
-                print(f"Error in plot_topomap: {str(e)}")
+                print(f"⚠️ Error in plot_topomap: {str(e)}")
                 return None, dash.no_update, dash.no_update
 
         return dash.no_update, dash.no_update, dash.no_update

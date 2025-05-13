@@ -58,9 +58,9 @@ def register_save_new_markerfile():
         """Modify name of old markerfile and create new markerfile."""
         if n_clicks > 0:
             if not folder_path:
-                return "Error: No folder path selected."
+                return "⚠️ Error: No folder path selected."
             if not annotations:
-                return "Error: No annotations found."
+                return "⚠️ Error: No annotations found."
             if annotations_to_save == []:
                 return dash.no_update
             
@@ -69,6 +69,6 @@ def register_save_new_markerfile():
                 mu.save_mrk_file(folder_path, new_mrk_name, annotations_to_save, annotations)
                 return "File saved successfully!"
             except Exception as e:
-                return f"Error saving the file: {str(e)}"
+                return f"⚠️ Error saving the file: {str(e)}"
             
         return dash.no_update

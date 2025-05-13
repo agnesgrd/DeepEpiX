@@ -77,11 +77,11 @@ def register_update_graph_raw_signal():
             return fig, error
         
         except FileNotFoundError:
-            return dash.no_update, "Error: Folder not found."
+            return dash.no_update, "⚠️ Error: Folder not found."
         except ValueError as ve:
-            return dash.no_update, f"Error: {str(ve)}.\n Details: {traceback.format_exc()}"
+            return dash.no_update, f"⚠️ Error: {str(ve)}.\n Details: {traceback.format_exc()}"
         except Exception as e:
-            return dash.no_update, f"Error: Unexpected error {str(e)}.\n Details: {traceback.format_exc()}"
+            return dash.no_update, f"⚠️ Error: Unexpected error {str(e)}.\n Details: {traceback.format_exc()}"
 
 def register_update_graph_ica(ica_result_radio_id):     
     @callback(
@@ -128,8 +128,8 @@ def register_update_graph_ica(ica_result_radio_id):
             return fig, error
         
         except FileNotFoundError:
-            return dash.no_update, "Error: Folder not found."
+            return dash.no_update, "⚠️ Error: Folder not found."
         except ValueError as ve:
-            return dash.no_update, f"Error: {str(ve)}.\n Details: {traceback.format_exc()}"
+            return dash.no_update, f"⚠️ Error: {str(ve)}.\n Details: {traceback.format_exc()}"
         except Exception as e:
-            return dash.no_update, f"Error: Unexpected error {str(e)}.\n Details: {traceback.format_exc()}"
+            return dash.no_update, f"⚠️ Error: Unexpected error {str(e)}.\n Details: {traceback.format_exc()}"

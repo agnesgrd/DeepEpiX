@@ -211,7 +211,7 @@ def toggle_compute_button(model_prediction, ground_truth):
 )
 def compute_performance(n_clicks, model_prediction, ground_truth, tolerance, threshold, panel_index, annotations):
 	if not model_prediction or not ground_truth or tolerance is None:
-		return dash.no_update, "Error: Missing inputs. Please select model predictions, ground truth, and delta.", dash.no_update, dash.no_update
+		return dash.no_update, "⚠️ Error: Missing inputs. Please select model predictions, ground truth, and delta.", dash.no_update, dash.no_update
 	
 	if model_prediction == "run prediction":
 		return "/viz/raw-signal", dash.no_update, dash.no_update, dash.no_update

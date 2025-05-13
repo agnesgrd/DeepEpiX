@@ -34,11 +34,11 @@ def register_compute_ica():
         
         # Validation: Check if all required fields are filled
         if not folder_path:
-            error_message = "Please choose a subject to display on Home page."
+            error_message = "⚠️ Please choose a subject to display on Home page."
             return error_message, dash.no_update, dash.no_update, dash.no_update 
     
         if not chunk_limits:
-            error_message = "You have a subject in memory but its recording has not been preprocessed yet. Please go back on Home page to reprocess the signal."
+            error_message = "⚠️ You have a subject in memory but its recording has not been preprocessed yet. Please go back on Home page to reprocess the signal."
             return error_message, dash.no_update, dash.no_update, dash.no_update
         
         missing_fields = []

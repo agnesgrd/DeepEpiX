@@ -36,7 +36,7 @@ def modify_name_oldmarkerfile(folder_path, old_mrk_name):
 def save_mrk_file(folder_path, new_mrk_name, annotations_to_save,annotations):
 	"""Saves annotation data to a .mrk file in the specified folder."""
 	if not os.path.exists(folder_path):
-		return f"Error: Folder '{folder_path}' does not exist."
+		return f"⚠️ Error: Folder '{folder_path}' does not exist."
 	
 	new_mrk_path = os.path.join(folder_path, new_mrk_name + '.mrk')
 	
@@ -66,4 +66,4 @@ def save_mrk_file(folder_path, new_mrk_name, annotations_to_save,annotations):
 		print(f"File saved successfully: {new_mrk_path}")
 
 	except Exception as e:
-		print(f"Error saving file: {e}")
+		print(f"⚠️ Error saving file: {e}")

@@ -68,9 +68,7 @@ def save_data_matrices(good_channels_file, subject, path_output):
 
 	with open(params.loc_meg_channels_path, 'rb') as fp: #path to the file.pkl containing for each channel name its location
 		loc_meg_channels = pickle.load(fp)
-	#raw_names = [r for r in os.listdir(params.subject) if ('.ds' in r) and not ('._' in r) and not ('misc' in r)]
-	#raw_names.sort()
-	#print(raw_names)
+
 	raw_names = list([subject])
 	data = dict()
 	all_raws = list()
@@ -93,10 +91,6 @@ def save_data_matrices(good_channels_file, subject, path_output):
 		all_raws.append(raw)
 		all_files.append(raw_file)
 			
-		# except:
-		# 	err_type, error, traceback = sys.exc_info()
-		# 	print('error: {err}'.format(err=error))
-		# 	pass
 		data['meg'] = all_raws
 		data['file'] = all_files
 
