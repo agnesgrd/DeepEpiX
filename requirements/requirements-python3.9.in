@@ -12,3 +12,4 @@ dash-extensions
 gunicorn
 flask
 orjson
+dask
