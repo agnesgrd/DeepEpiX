@@ -75,7 +75,7 @@ def register_execute_predict_script():
         predictions_csv_path = cache_dir/f"{os.path.basename(model_path)}_predictions.csv"
         smoothgrad_path = cache_dir/f"{config.CACHE_DIR}/{os.path.basename(model_path)}_smoothGrad.pkl"
 
-        # ✅ If already exists, skip execution
+        # If already exists, skip execution
         if predictions_csv_path.exists() and str(predictions_csv_path) in model_probabilities_store:
             if sensitivity_analysis and smoothgrad_path.exists() and str(smoothgrad_path) in model_probabilities_store:
                 return "✅ Reusing existing model predictions", 0, {"display": "block"}, dash.no_update, dash.no_update
@@ -132,9 +132,11 @@ def register_execute_predict_script():
                 print(f"Smoothgrad executed in {time.time()-start_time:.2f} seconds")
 
             except Exception as e:
-                return f"Error running smoothgrad: {e}", 0, {"display": "none"}, dash.no_update, dash.no_update
+                return f"Error running smoothgrad: {e}", 0, {"display": "block"}, model_probabilities_store, dash.no_update
 
             sensitivity_analysis_store = [str(smoothgrad_path)]
+            if not smoothgrad_path.exists():
+                return "Error running smoothgrad.", 0, {"display": "block"}, model_probabilities_store, dash.no_update
             return True, 0, {"display": "block"}, model_probabilities_store, sensitivity_analysis_store
 
         return True, 0, {"display": "block"}, model_probabilities_store, dash.no_update
