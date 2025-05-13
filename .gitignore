@@ -24,11 +24,8 @@ data/*
 !data/.gitkeep
 
 # Cache
-cache-directory/
-
-# Model prediction results
-results/*
-!results/.gitkeep
+cache-directory/*
+!cache-directory/.gitkeep
 
 # Jupyter Notebook test
 *.ipynb
