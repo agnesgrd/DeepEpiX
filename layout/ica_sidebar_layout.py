@@ -1,6 +1,6 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-from layout import INPUT_STYLES, BOX_STYLES, BUTTON_STYLES, LABEL_STYLES, ICON
+from layout.config_layout import INPUT_STYLES, BOX_STYLES, BUTTON_STYLES, LABEL_STYLES, ICON
 from layout.selection_sidebar_layout import create_selection
 
 def create_compute():

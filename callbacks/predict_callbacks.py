@@ -87,7 +87,7 @@ def register_execute_predict_script():
             ACTIVATE_ENV = f"{config.TENSORFLOW_ENV}/bin/python"        
             #ACTIVATE_ENV = f"../{config.TENSORFLOW_ENV}/bin/python"
         elif "PyTorch" in venv:
-            ACTIVATE_ENV = f"../{config.TORCH_ENV}/bin/python"
+            ACTIVATE_ENV = f"{config.TORCH_ENV}/bin/python"
         
         command = [
             ACTIVATE_ENV,

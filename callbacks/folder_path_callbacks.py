@@ -4,7 +4,7 @@ from dash import Input, Output, State, callback
 
 
 # Local Imports
-from layout import FLEXDIRECTION
+from layout.config_layout import FLEXDIRECTION
 from callbacks.utils import folder_path_utils as fpu
 
 def register_update_dropdown():

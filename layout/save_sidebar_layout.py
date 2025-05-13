@@ -1,7 +1,7 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 
-from layout import INPUT_STYLES, BOX_STYLES, BUTTON_STYLES, LABEL_STYLES
+from layout.config_layout import INPUT_STYLES, BOX_STYLES, BUTTON_STYLES, LABEL_STYLES
 from callbacks.utils import folder_path_utils as fpu
 
 def create_save():

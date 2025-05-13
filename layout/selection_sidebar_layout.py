@@ -1,6 +1,6 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-from layout import BOX_STYLES, BUTTON_STYLES
+from layout.config_layout import BOX_STYLES, BUTTON_STYLES
 
 def create_selection(
     check_all_annotations_btn_id,

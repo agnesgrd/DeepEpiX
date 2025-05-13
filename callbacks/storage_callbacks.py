@@ -7,7 +7,7 @@ import dash_bootstrap_components as dbc
 from callbacks.utils import folder_path_utils as fpu
 from callbacks.utils import annotation_utils as au
 from callbacks.utils import history_utils as hu
-from layout import ICON
+from layout.config_layout import ICON
 
 def register_populate_memory_tab_contents():
     @callback(

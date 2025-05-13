@@ -5,7 +5,7 @@ from dash import html, dcc, callback
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 
-from layout import INPUT_STYLES, BOX_STYLES, FLEXDIRECTION
+from layout.config_layout import INPUT_STYLES, BOX_STYLES, FLEXDIRECTION
 from callbacks.utils import annotation_utils as au
 from callbacks.utils import performance_utils as pu
 import callbacks.utils.model_utils as mu

@@ -1,6 +1,6 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-from layout import DEFAULT_FIG_LAYOUT
+from layout.config_layout import DEFAULT_FIG_LAYOUT
 import config
 
 def create_graph_container(

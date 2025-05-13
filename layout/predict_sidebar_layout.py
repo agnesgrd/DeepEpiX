@@ -1,5 +1,5 @@
 from dash import html, dcc
-from layout import INPUT_STYLES, BUTTON_STYLES, LABEL_STYLES, FLEXDIRECTION
+from layout.config_layout import INPUT_STYLES, BUTTON_STYLES, LABEL_STYLES, FLEXDIRECTION
 import dash_bootstrap_components as dbc
 from callbacks.utils import predict_utils as pu
 

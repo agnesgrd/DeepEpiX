@@ -7,7 +7,7 @@ import dash_bootstrap_components as dbc
 from callbacks.utils import folder_path_utils as fpu
 
 # --- Layout Config ---
-from layout import INPUT_STYLES, BOX_STYLES, FLEXDIRECTION
+from layout.config_layout import INPUT_STYLES, BOX_STYLES, FLEXDIRECTION
 
 # --- Callbacks ---
 from callbacks.storage_callbacks import register_populate_memory_tab_contents

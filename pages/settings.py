@@ -7,7 +7,7 @@ import io
 import random
 import base64
 import matplotlib.pyplot as plt
-from layout import REGION_COLOR_PALETTE, BOX_STYLES, FLEXDIRECTION
+from layout.config_layout import REGION_COLOR_PALETTE, BOX_STYLES, FLEXDIRECTION
 import itertools
 from callbacks.utils import folder_path_utils as fpu
 

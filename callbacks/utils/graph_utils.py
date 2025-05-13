@@ -6,7 +6,7 @@ import dash
 from dash import Patch
 import time
 
-from layout import DEFAULT_FIG_LAYOUT, REGION_COLOR_PALETTE, COLOR_PALETTE
+from layout.config_layout import DEFAULT_FIG_LAYOUT, REGION_COLOR_PALETTE, COLOR_PALETTE
 from callbacks.utils import preprocessing_utils as pu
 from callbacks.utils import dataframe_utils as du
 from callbacks.utils import smoothgrad_utils as su
