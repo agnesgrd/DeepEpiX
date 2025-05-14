@@ -1,3 +1,4 @@
+import os
 import dash
 from dash import html, Input, Output, State, callback
 import dash_bootstrap_components as dbc
@@ -279,8 +280,6 @@ def register_callbacks_sensivity_analysis():
         if not sa_store:
             return dash.no_update
 
-        sa_options = [{'label': k, 'value': k} for k in sa_store or {}]
-
+        sa_options = [{'label': os.path.basename(k), 'value': k} for k in sa_store or {}]
         new_options = [opt for opt in sa_options if opt not in current_options]
-
         return current_options + new_options

@@ -68,7 +68,7 @@ def register_update_graph_raw_signal():
         filter={}
 
         if "smoothGrad" in color_selection:
-            with open(sensitivity_analysis_store['smoothGrad'], 'rb') as f:
+            with open(sensitivity_analysis_store[0], 'rb') as f:
                 filter = pickle.load(f)
 
         try:                  

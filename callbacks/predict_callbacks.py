@@ -73,7 +73,7 @@ def register_execute_predict_script():
         
         cache_dir = Path.cwd() / f"{config.CACHE_DIR}"
         predictions_csv_path = cache_dir/f"{os.path.basename(model_path)}_predictions.csv"
-        smoothgrad_path = cache_dir/f"{config.CACHE_DIR}/{os.path.basename(model_path)}_smoothGrad.pkl"
+        smoothgrad_path = cache_dir/f"{os.path.basename(model_path)}_smoothGrad.pkl"
 
         # If already exists, skip execution
         if predictions_csv_path.exists() and str(predictions_csv_path) in model_probabilities_store:
