@@ -24,9 +24,10 @@ def register_compute_ica():
         State("frequency-store", "data"),
         State("history-store", "data"),
         State("ica-store", "data"),
+        State('channel-store', 'data'),
         prevent_initial_call=True
     )
-    def _compute_ica(n_clicks, folder_path, chunk_limits, n_components, ica_method, max_iter, decim, freq_data, history_data, ica_store):
+    def _compute_ica(n_clicks, folder_path, chunk_limits, n_components, ica_method, max_iter, decim, freq_data, history_data, ica_store, channel_store):
         """Update ICA signal visualization."""
         
         if n_clicks == 0:
@@ -59,7 +60,7 @@ def register_compute_ica():
         if ica_result_path.exists() and str(ica_result_path) in ica_store:
             return "✅ Reusing existing ICA results", 0, dash.no_update, dash.no_update
         
-        raw = fpu.read_raw(folder_path, preload=True, verbose=False).pick_types(meg=True)
+        raw = fpu.read_raw(folder_path, preload=True, verbose=False, bad_channels=channel_store.get('bad', [])).pick_types(meg=True)
         raw = raw.filter(l_freq=1.0, h_freq=None)  # Apply 1 Hz high-pass filter
 
         ica = mne.preprocessing.ICA(n_components=n_components, method=ica_method, max_iter=max_iter, random_state=97)

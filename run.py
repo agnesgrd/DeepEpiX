@@ -131,7 +131,6 @@ app.layout = html.Div(
                     "display": "flex",
                     "justifyContent": "space-between",
                     "alignItems": "center",
-                    # "padding": "10px 20px",
                     "backgroundColor": "#1c1c1c",
                 },
             ),
@@ -143,7 +142,8 @@ app.layout = html.Div(
                 ],
                 style={
                     "padding-top": "10px",
-                    "width": "100%",
+                    "width": "98%",
+                    "margin": "0 auto",
                     "display": "inline-block",
                 },
             ),
@@ -152,6 +152,7 @@ app.layout = html.Div(
             "display": "flex",
             "flexDirection": "column",
             "height": "100vh",
+
         },
     )])
 

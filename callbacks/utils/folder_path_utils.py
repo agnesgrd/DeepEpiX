@@ -11,8 +11,19 @@ from collections import Counter
 def get_folder_path_options():
     data_dir = Path("data")
     data = list(data_dir.glob("*.ds")) + list(data_dir.glob("*.fif"))
+
+    # Dossiers 4D Neuroimaging
+    folders = []
+    for folder in data_dir.iterdir():
+        if folder.is_dir():
+            files = list(folder.glob("*"))
+            if any(f.name == 'hs_file' for f in files):
+                folders.append(folder)
+
+    all_data = data + folders
+
     return (
-        [{"label": d.name, "value": str(d.resolve())} for d in data]
+        [{"label": d.name, "value": str(d.resolve())} for d in all_data]
         if data
         else [{"label": "No data available", "value": ""}]
     )
@@ -30,6 +41,13 @@ def test_ds_folder(path):
     for part in reversed(parts):  # Iterate from the end
         if part.endswith((".ds", ".fif")):  # Check if it ends with ".ds"
             return True
+    
+    p = Path(path)
+    if p.is_dir():
+        files = list(p.glob("*"))
+        if any(f.name == 'hs_file' for f in files):
+            return True
+
     return False
 
 def get_ds_folder(path):
@@ -39,12 +57,48 @@ def get_ds_folder(path):
             return part
     return None  # If no matching folder is found
 
-def read_raw(folder_path, preload, verbose):
-    if folder_path.endswith(".ds"):
-        raw = mne.io.read_raw_ctf(folder_path, preload=preload, verbose=verbose)
-    if folder_path.endswith(".fif"):
-        raw = mne.io.read_raw_fif(folder_path, preload=preload, verbose=verbose)
+def read_raw(folder_path, preload, verbose, bad_channels=None):
+    folder_path = Path(folder_path)
+
+    if folder_path.suffix == ".ds":
+        raw = mne.io.read_raw_ctf(str(folder_path), preload=preload, verbose=verbose)
+
+
+    elif folder_path.suffix == ".fif":
+        raw = mne.io.read_raw_fif(str(folder_path), preload=preload, verbose=verbose)
+
+    
+    elif folder_path.is_dir():
+        # Assume BTi/4D format: folder must contain 3 specific files
+        files = list(folder_path.glob("*"))
+        # Try to identify the correct files by names
+        raw_fname = next((f for f in files if "rfDC" in f.name and f.suffix==""), None)
+        config_fname = next((f for f in files if "config" in f.name.lower()), None)
+        hs_fname = next((f for f in files if "hs" in f.name.lower()), None)
+
+        if not all([raw_fname, config_fname, hs_fname]):
+            raise ValueError("Could not identify raw, config, or hs file in BTi folder.")
+
+        raw = mne.io.read_raw_bti(
+            pdf_fname=str(raw_fname),
+            config_fname=str(config_fname),
+            head_shape_fname=str(hs_fname),
+            preload=preload,
+            verbose=verbose,
+        )
+    
+    else:
+        raise ValueError("Unrecognized file or folder type for MEG data.")
+    
+    if bad_channels:
+        if isinstance(bad_channels, str):
+            bad_channels_list = [ch.strip() for ch in bad_channels.split(",") if ch.strip()]
+        else:
+            bad_channels_list = list(bad_channels)  # if it's already a list (e.g., from a previous state)
+        raw.drop_channels(bad_channels_list)
+    
     return raw
+
 
 def build_table_raw_info(folder_path):
 

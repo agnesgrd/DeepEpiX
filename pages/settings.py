@@ -537,7 +537,6 @@ def update_meg_layout(checked_values, pick_values, channel_groups, folder_path, 
                 selected_channels_by_group[i].extend(selected)
 
     raw = fpu.read_raw(folder_path, preload=False, verbose=False)
-    # raw.rename_channels({ch['ch_name']: ch['ch_name'].split('-')[0] for ch in raw.info['chs']})
     info = raw.info
 
     highlighted = [

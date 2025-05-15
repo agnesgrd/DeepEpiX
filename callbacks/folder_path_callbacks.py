@@ -27,7 +27,7 @@ def register_update_dropdown():
 
             if folder_path:
                 if not fpu.test_ds_folder(folder_path):
-                    return dash.no_update, dash.no_update, "Selected folder is not a valid MEG folder (.ds or .fif)."
+                    return dash.no_update, dash.no_update, "Selected folder is not a valid MEG folder (.ds or .fif or 4D)."
 
                 # Prevent duplicates
                 if not any(option["value"] == folder_path for option in folder_path_list):
@@ -51,8 +51,8 @@ def register_handle_valid_folder_path():
     def handle_valid_folder_path(folder_path):
         """Validate folder path and show warning if invalid."""
         if folder_path:
-            if not folder_path.endswith((".ds", ".fif")):
-                return True, {"display": "none"},"Path must end with '.ds' or '.fif' to be a valid raw MEG object."
+            if not fpu.test_ds_folder(folder_path):
+                return True, {"display": "none"},"Path must end with '.ds' or '.fif' or contain 3 files for 4D neuroimaging to be a valid raw MEG object."
 
             try:
                 fpu.read_raw(folder_path, preload=False, verbose=False)

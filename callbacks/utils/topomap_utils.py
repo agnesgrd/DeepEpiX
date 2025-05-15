@@ -15,7 +15,7 @@ def create_topomap_from_raw(raw, sfreq, t0, t):
     Returns:
     - Base64-encoded string of the topomap image
     """
-      
+    
     # Extract the sampling frequency and calculate the time index
     timepoint = float(t-t0)
     time_idx = int(timepoint * sfreq)
@@ -60,7 +60,7 @@ def create_topomap_from_raw(raw, sfreq, t0, t):
     
     return img_str
 
-def create_topomap_from_preprocessed(original_raw, raw_ddf, sfreq, t0, t):
+def create_topomap_from_preprocessed(original_raw, raw_ddf, sfreq, t0, t, bad_channels):
     """
     Create a topomap using preprocessed Dask data and original Raw metadata.
     
@@ -73,7 +73,7 @@ def create_topomap_from_preprocessed(original_raw, raw_ddf, sfreq, t0, t):
     - base64-encoded topomap image string
     """
     # Step 1: Compute Dask DataFrame to NumPy
-    preprocessed_df = raw_ddf.compute()
+    preprocessed_df = raw_ddf.drop(columns=bad_channels).compute()
     
     # Step 2: Make sure data is in shape (n_channels, n_times)
     # Dask DFs are usually (n_times, n_channels), so we transpose
@@ -81,9 +81,12 @@ def create_topomap_from_preprocessed(original_raw, raw_ddf, sfreq, t0, t):
     
     # Step 3: Create MNE RawArray using original metadata
     info = original_raw.info.copy()
+
+    if bad_channels:
+        info['bads'] = bad_channels
     
     # Optional: filter only MEG channels if needed
-    picks = mne.pick_types(info, meg=True)
+    picks = mne.pick_types(info, meg=True, exclude='bads')
     picked_info = mne.pick_info(info, picks)
     
     raw_processed = mne.io.RawArray(data, picked_info).pick('mag')

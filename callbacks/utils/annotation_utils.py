@@ -17,10 +17,9 @@ def get_annotation_descriptions(annotations_store):
         list: A list of unique description names.
         """
         if not annotations_store or not isinstance(annotations_store, list):
-            return []
+            return Counter()
         descriptions = [annotation.get('description') for annotation in annotations_store if 'description' in annotation]
-        description_counts = Counter(descriptions)
-        return description_counts
+        return Counter(descriptions)
 
 def get_heartbeat_event(raw, ch_name):
     # Find ECG events using the `find_ecg_events` function

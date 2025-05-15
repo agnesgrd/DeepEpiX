@@ -36,8 +36,6 @@ def interpolate_missing_channels(raw, good_channels, loc_meg_channels):
 	existing_channels = raw.info['ch_names'] # returns the list of chanel names that are present in the data
 	missing_channels = list(set(good_channels) - set(existing_channels)) # gets the list of missing channels by comparing the existing channel names with the list of good channels
 	new_raw = raw.copy() 
-	# missing_channels.append('MRO23-2805')
-	# new_raw.drop_channels('MRO23-2805')
 
 	# creates fake channels and set them to "bad channels", rename them with the name of the missing channels, 
 	#then mne is supposed to be able to reconstruct bad channels with "interpolate_bads" 

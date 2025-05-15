@@ -44,19 +44,20 @@ def register_preprocess_meg_data():
         State("low-pass-freq", "value"),
         State("notch-freq", "value"),
         State("heartbeat-channel", "value"),
+        State("bad-channels", "value"),
         running=[
             (Output("preprocess-display-button", "disabled"), True, False),
             (Output("load-button", "disabled"), True, False),
             (Output("compute-display-psd-button", "disabled"), True, False)],
         prevent_initial_call=True
     )
-    def preprocess_meg_data(n_clicks, folder_path, resample_freq, high_pass_freq, low_pass_freq, notch_freq, heartbeat_ch_name):
+    def preprocess_meg_data(n_clicks, folder_path, resample_freq, high_pass_freq, low_pass_freq, notch_freq, heartbeat_ch_name, bad_channels):
         """Preprocess MEG data and save it, store annotations and chunk limits in memory."""
         if n_clicks > 0:
             try:
-                raw = fpu.read_raw(folder_path, preload=True, verbose=False)
+                raw = fpu.read_raw(folder_path, preload=True, verbose=False, bad_channels=bad_channels)
                 annotations_dict = au.get_annotations_dataframe(raw, heartbeat_ch_name)
-                channels_dict = chu.get_grouped_channels_by_prefix(raw)
+                channels_dict = chu.get_grouped_channels_by_prefix(raw, bad_channels=bad_channels)
                 max_length = pu.get_max_length(raw, resample_freq)
                 chunk_limits = pu.update_chunk_limits(max_length)
 

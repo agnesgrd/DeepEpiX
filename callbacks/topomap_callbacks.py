@@ -16,9 +16,10 @@ def register_display_topomap_on_click():
         State('page-selector', 'value'),
         State('chunk-limits-store', 'data'),
         State('frequency-store', 'data'),
+        State('channel-store', 'data'),
         prevent_initial_call=True
     )
-    def display_clicked_content(click_info, folder_path, button, page_selection, chunk_limits, freq_data):
+    def display_clicked_content(click_info, folder_path, button, page_selection, chunk_limits, freq_data, channel_store):
         if button is False:
             try:
                 start_time = time.time()  # Start timing
@@ -33,7 +34,7 @@ def register_display_topomap_on_click():
                 print(f"Time to load raw and preprocessed data: {time.time() - load_start_time:.4f} seconds")
 
                 img_str_start_time = time.time()
-                img_str = tu.create_topomap_from_preprocessed(raw, raw_ddf, freq_data["resample_freq"], time_range[0], t)  # Returns base64-encoded string
+                img_str = tu.create_topomap_from_preprocessed(raw, raw_ddf, freq_data["resample_freq"], time_range[0], t, channel_store.get("bad", []))  # Returns base64-encoded string
                 print(f"Time to generate topomap image: {time.time() - img_str_start_time:.4f} seconds")
 
                 img_src = f"data:image/png;base64,{img_str}"

@@ -178,6 +178,27 @@ layout = html.Div([
                             ),
                     ]),
 
+                    html.H4([
+                        html.I(className="bi bi-4-circle-fill", style={"marginRight": "10px", "fontSize": "1.2em"}),
+                         "Drop Bad Channels"]),
+
+                    html.Div([
+                        html.Label("Bad Channels:"),
+                        dbc.Input(id="bad-channels", type="text", placeholder="None", style=INPUT_STYLES["number-in-box"]),
+                        dbc.Tooltip(
+                                """
+                                ch_name : None | str | list of str\n
+
+                                - Enter one or more channel names separated by commas (e.g., "MEG 001, MEG 002").
+                                - If left empty (default), no channels are dropped.
+                                - Dropped channels will be excluded from topomaps, ICA, and model predictions, but may still be visible in plots.
+                                """,
+                                target="bad-channels",
+                                placement="right",
+                                class_name="custom-tooltip"
+                            ),
+                    ]),
+
                     html.Div([
                         dbc.Button("Preprocess & Display", id="preprocess-display-button", color="success", disabled=True, n_clicks=0),
                         dcc.Loading(
