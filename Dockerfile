@@ -21,8 +21,16 @@ RUN python3 -m venv /.tfenv
 # Installer les dépendances dans les environnements virtuels respectifs
 RUN /.dashenv/bin/pip install -r requirements/requirements-python3.9.txt
 # RUN /.torchenv/bin/pip install -r requirements/requirements-torchenv.txt
-RUN /.tfenv/bin/pip install -r requirements/requirements-tfenv.txt
 
+# Determine architecture to install proper TensorFlow
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "x86_64" ]; then \
+        /.tfenv/bin/pip install -r requirements/requirements-tfenv-cuda.txt; \
+    else \
+        # Assume ARM64 (e.g. Apple Silicon), install CPU-only TensorFlow
+        /.tfenv/bin/pip install -r requirements/requirements-tfenv-macos.txt; \
+    fi
+    
 # Set dashenv as the default environment
 ENV VIRTUAL_ENV=/.dashenv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"

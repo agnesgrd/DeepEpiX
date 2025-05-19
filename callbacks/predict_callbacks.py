@@ -49,9 +49,10 @@ def register_execute_predict_script():
         State('adjust-onset', 'value'),
         State('model-probabilities-store', 'data'),
         State('sensitivity-analysis-store', 'data'),
+        State('channel-store', 'data'),
         prevent_initial_call = True
     )
-    def _execute_predict_script(n_clicks, subject_folder_path, model_path, venv, threshold, sensitivity_analysis, adjust_onset, model_probabilities_store, sensitivity_analysis_store):
+    def _execute_predict_script(n_clicks, subject_folder_path, model_path, venv, threshold, sensitivity_analysis, adjust_onset, model_probabilities_store, sensitivity_analysis_store, channel_store):
         if not n_clicks or n_clicks == 0:
             return None, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
@@ -88,6 +89,8 @@ def register_execute_predict_script():
         elif "PyTorch" in venv:
             ACTIVATE_ENV = f"../{config.TORCH_ENV}/bin/python"
         
+        print('hello', str(channel_store.get('bad', None)))
+        
         command = [
             ACTIVATE_ENV,
             "model_pipeline/run_model.py",
@@ -97,7 +100,8 @@ def register_execute_predict_script():
             str(Path.cwd() / "model_pipeline/good_channels"),
             str(cache_dir),
             str(threshold),  # Ensure threshold is passed as a string 
-            str(adjust_onset)
+            str(adjust_onset),
+            str(channel_store.get('bad', []))
         ]
     
         working_dir = Path.cwd()

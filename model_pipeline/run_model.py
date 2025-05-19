@@ -9,7 +9,8 @@ def run_model_pipeline(
 		subject,
 		output_path,
 		threshold,
-		adjust_onset):
+		adjust_onset,
+		bad_channels):
 	  
 	# Model Selection
 	if "TensorFlow" in model_type:
@@ -20,7 +21,7 @@ def run_model_pipeline(
 			window_size = params.window_size_ms
 			
 	# Data Preparation
-	save_data_matrices(good_channels_file, subject, output_path)
+	save_data_matrices(good_channels_file, subject, output_path, bad_channels)
 	total_nb_windows = create_windows(output_path, window_size)
 	X_test_ids = generate_database(total_nb_windows)
 
@@ -35,8 +36,9 @@ if __name__ == "__main__":
 	results_path = sys.argv[5]
 	threshold = float(sys.argv[6])  # Convert back to float
 	adjust_onset = sys.argv[7]
+	bad_channels = sys.argv[8]
 
-	run_model_pipeline(model_path, model_type, good_channels_path, subject_folder_path, results_path, threshold, adjust_onset)
+	run_model_pipeline(model_path, model_type, good_channels_path, subject_folder_path, results_path, threshold, adjust_onset, bad_channels)
 
 
 

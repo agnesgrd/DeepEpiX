@@ -6,6 +6,8 @@ from tqdm import tqdm
 import pandas as pd
 import model_pipeline.params as params
 from scipy.ndimage import gaussian_filter1d
+from pathlib import Path
+import ast
 
 #####################################################################Preparing the data
 
@@ -32,7 +34,6 @@ def standardize(X,mean=False,std=False):
 
 # tentative function to interpolate missing channels using mne 
 def interpolate_missing_channels(raw, good_channels, loc_meg_channels):
-	print("interpolate")
 	existing_channels = raw.info['ch_names'] # returns the list of chanel names that are present in the data
 	missing_channels = list(set(good_channels) - set(existing_channels)) # gets the list of missing channels by comparing the existing channel names with the list of good channels
 	new_raw = raw.copy() 
@@ -57,8 +58,38 @@ def interpolate_missing_channels(raw, good_channels, loc_meg_channels):
 
 	return new_raw
 
+def fill_missing_channels(raw, target_channel_count):
+    """
+    Fills missing channels in `raw` by duplicating the last existing channel 
+    repeatedly until the desired number of channels is reached.
+
+    Parameters:
+    - raw (mne.io.Raw): The original raw object.
+    - target_channel_count (int): Desired total number of channels.
+
+    Returns:
+    - numpy
+    """
+    data = raw.get_data()
+    current_count = data.shape[0]
+
+    if current_count >= target_channel_count:
+        return data  # Nothing to add
+
+    n_missing = target_channel_count - current_count
+
+    # Duplicate the last channel n_missing times
+    last_channel = data[-1]
+    repeated = np.repeat(last_channel[np.newaxis, :], n_missing, axis=0)
+
+    # Stack original with new channels
+    full_data = np.vstack([data, repeated])
+    return full_data
+
 #Applies preprocessing, extracts and saves the data in pickle
-def save_data_matrices(good_channels_file, subject, path_output):
+def save_data_matrices(good_channels_file, subject_path, path_output, bad_channels):
+
+	subject_path = Path(subject_path)
 
 	# open a file containing the good 274 channels
 	with open(good_channels_file, 'rb') as fp:
@@ -67,30 +98,51 @@ def save_data_matrices(good_channels_file, subject, path_output):
 	with open(params.loc_meg_channels_path, 'rb') as fp: #path to the file.pkl containing for each channel name its location
 		loc_meg_channels = pickle.load(fp)
 
-	raw_names = list([subject])
-	data = dict()
-	all_raws = list()
-	all_files = list()
-	#FOR EACH .DS
-	for raw_file in (raw_names):
-		# try:
-		raw_file=raw_file
-		raw = mne.io.read_raw_ctf(raw_file, preload=True, verbose=False)
-		if "Liogier_AllDataset1200Hz" in raw_file:
-			raw.drop_channels('MRO23-2805')
+	# Load raw file based on format
+	if subject_path.suffix == ".ds":
+		raw = mne.io.read_raw_ctf(str(subject_path), preload=True, verbose=False)
+	elif subject_path.suffix == ".fif":
+		raw = mne.io.read_raw_fif(str(subject_path), preload=True, verbose=False)
+	elif subject_path.is_dir():
+		files = list(subject_path.glob("*"))
+		raw_fname = next((f for f in files if "rfDC" in f.name and f.suffix == ""), None)
+		config_fname = next((f for f in files if "config" in f.name.lower()), None)
+		hs_fname = next((f for f in files if "hs" in f.name.lower()), None)
 
-		#Resample the data
-		raw.resample(params.sfreq).pick(['mag'])
-		raw=interpolate_missing_channels(raw, good_channels, loc_meg_channels)
-		
-		raw.filter(0.5,50, n_jobs=8)
+		if not all([raw_fname, config_fname, hs_fname]):
+			raise ValueError("Missing BTi raw/config/hs files.")
 
-		raw = raw.get_data()
-		all_raws.append(raw)
-		all_files.append(raw_file)
-			
-		data['meg'] = all_raws
-		data['file'] = all_files
+		raw = mne.io.read_raw_bti(
+			pdf_fname=str(raw_fname),
+			config_fname=str(config_fname),
+			head_shape_fname=str(hs_fname),
+			preload=True,
+			verbose=False,
+		)
+	else:
+		raise ValueError("Unsupported file type for subject path.")
+	
+	# Drop bad channels
+	if ast.literal_eval(bad_channels):
+		raw.drop_channels(ast.literal_eval(bad_channels))
+
+	#Resample the data
+	raw.resample(params.sfreq).pick(['mag'])
+	raw.filter(0.5,50, n_jobs=8)
+
+	if subject_path.suffix == ".ds":
+		raw = interpolate_missing_channels(raw, good_channels, loc_meg_channels)
+		data = {
+			'meg': [raw.get_data()],
+			'file': [subject_path]
+		}
+	
+	elif subject_path.suffix == ".fif" or subject_path.is_dir():
+		meg_data = fill_missing_channels(raw, len(good_channels))
+		data = {
+			'meg': [meg_data],
+			'file': [subject_path]
+		}
 
 	#Saves a pickle file -> one pickle file for each patient
 	#Access MEG data from first .ds: data['meg'][0]
@@ -204,21 +256,21 @@ def compute_window_sharpness(window):
 	# return np.max(phase_congruencies)
 
 def compute_gfp(window):
-    """Compute Global Field Power (GFP) as standard deviation across channels."""
-    return np.std(window, axis=0)
+	"""Compute Global Field Power (GFP) as standard deviation across channels."""
+	return np.std(window, axis=0)
 
 def find_peak_gfp(gfp, times, smoothing_sigma=2, percentile=90):
-    """Find the peak GFP time within a window after smoothing."""
-    gfp_smooth = gaussian_filter1d(gfp, sigma=smoothing_sigma)
-    
-    # Thresholding: Find first peak above percentile threshold
-    threshold = np.percentile(gfp_smooth, percentile)
-    peak_indices = np.where(gfp_smooth >= threshold)[0]
-    
-    if len(peak_indices) > 0:
-        return times[peak_indices[0]]  # First peak above threshold
-    else:
-        return times[np.argmax(gfp_smooth)]  # Default to max if no peak found
+	"""Find the peak GFP time within a window after smoothing."""
+	gfp_smooth = gaussian_filter1d(gfp, sigma=smoothing_sigma)
+	
+	# Thresholding: Find first peak above percentile threshold
+	threshold = np.percentile(gfp_smooth, percentile)
+	peak_indices = np.where(gfp_smooth >= threshold)[0]
+	
+	if len(peak_indices) > 0:
+		return times[peak_indices[0]]  # First peak above threshold
+	else:
+		return times[np.argmax(gfp_smooth)]  # Default to max if no peak found
 
 #####################################################################Saving Predictions As MarkerFile
 
