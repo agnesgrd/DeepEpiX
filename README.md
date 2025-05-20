@@ -17,7 +17,7 @@
 
 <!-- PROJECT LOGO -->
 <div align="center">
-  <a href="https://github.com/github_username/repo_name">
+  <a href="https://github.com/agnesgrd/DeepEpiX">
     <img src="https://github.com/user-attachments/assets/bbe75d9c-204c-4890-8a9b-f8d5131b0032" alt="Logo" width="200" />
   </a>
 </div>
@@ -333,16 +333,16 @@ Project Link: [https://github.com/agnesgrd/DeepEpiX](https://github.com/agnesgrd
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/github_username/repo_name.svg?style=for-the-badge
-[contributors-url]: https://github.com/github_username/repo_name/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/github_username/repo_name.svg?style=for-the-badge
-[forks-url]: https://github.com/github_username/repo_name/network/members
-[stars-shield]: https://img.shields.io/github/stars/github_username/repo_name.svg?style=for-the-badge
-[stars-url]: https://github.com/github_username/repo_name/stargazers
-[issues-shield]: https://img.shields.io/github/issues/github_username/repo_name.svg?style=for-the-badge
-[issues-url]: https://github.com/github_username/repo_name/issues
-[license-shield]: https://img.shields.io/github/license/github_username/repo_name.svg?style=for-the-badge
-[license-url]: https://github.com/github_username/repo_name/blob/master/LICENSE.txt
+[contributors-shield]: https://img.shields.io/github/contributors/agnesgrd/DeepEpiX.svg?style=for-the-badge
+[contributors-url]: https://github.com/agnesgrd/DeepEpiX/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/agnesgrd/DeepEpiX.svg?style=for-the-badge
+[forks-url]: https://github.com/agnesgrd/DeepEpiX/network/members
+[stars-shield]: https://img.shields.io/github/stars/agnesgrd/DeepEpiX.svg?style=for-the-badge
+[stars-url]: https://github.com/agnesgrd/DeepEpiX/stargazers
+[issues-shield]: https://img.shields.io/github/issues/agnesgrd/DeepEpiX.svg?style=for-the-badge
+[issues-url]: https://github.com/agnesgrd/DeepEpiX/issues
+[license-shield]: https://img.shields.io/github/license/agnesgrd/DeepEpiX.svg?style=for-the-badge
+[license-url]: https://github.com/agnesgrd/DeepEpiX/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/linkedin_username
 [product-screenshot]: images/screenshot.png
