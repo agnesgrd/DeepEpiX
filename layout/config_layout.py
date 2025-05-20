@@ -27,7 +27,7 @@ INPUT_STYLES = {
         "margin": "10px"
     },
     "number":{
-        "width": "10%",
+        "width": "15%",
         "padding": "10px",
         "fontSize": "16px",
         "borderWidth": "1px",

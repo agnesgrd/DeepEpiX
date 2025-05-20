@@ -148,18 +148,22 @@ def register_move_to_next_annotation(
 
         # Get the current x-axis center
         xaxis_range = graph["layout"]["xaxis"].get("range", [])
-        if xaxis_range:
-            current_x_center = sum(xaxis_range) / 2  # Midpoint of current view
-        else:
-            current_x_center = spike_x_positions[0]  # Default to first spike
 
-        # Determine next or previous spike
+        current_x_min, current_x_max = xaxis_range
+
+        # Move to next or previous annotation OUTSIDE the current time range
+        next_spike_x = None
         if dash.ctx.triggered_id == next_spike_id:
-            next_spike_x = next((x for x in spike_x_positions if x > current_x_center), spike_x_positions[-1])
+            next_spike_x = next(
+                (x for x in spike_x_positions if x > current_x_max), None
+            )
         elif dash.ctx.triggered_id == prev_spike_id:
-            next_spike_x = next((x for x in reversed(spike_x_positions) if x < current_x_center), spike_x_positions[0])
-        else:
-            return dash.no_update, dash.no_update  # No valid button click
+            next_spike_x = next(
+                (x for x in reversed(spike_x_positions) if x < current_x_min), None
+            )
+
+        if next_spike_x is None:
+            return dash.no_update, dash.no_update  # No spikes outside the current range
         
         # Find which page contains the target x
         for i, (start, end) in enumerate(chunk_limits):

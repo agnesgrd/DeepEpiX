@@ -60,15 +60,15 @@ def interpolate_missing_channels(raw, good_channels, loc_meg_channels):
 
 def fill_missing_channels(raw, target_channel_count):
     """
-    Fills missing channels in `raw` by duplicating the last existing channel 
-    repeatedly until the desired number of channels is reached.
+    Fills missing channels by duplicating existing channels at regular intervals
+    and inserting them next to the originals they are copied from.
 
     Parameters:
     - raw (mne.io.Raw): The original raw object.
     - target_channel_count (int): Desired total number of channels.
 
     Returns:
-    - numpy
+    - numpy.ndarray: Data with inserted channels (shape: target_channel_count, n_times).
     """
     data = raw.get_data()
     current_count = data.shape[0]
@@ -78,12 +78,17 @@ def fill_missing_channels(raw, target_channel_count):
 
     n_missing = target_channel_count - current_count
 
-    # Duplicate the last channel n_missing times
-    last_channel = data[-1]
-    repeated = np.repeat(last_channel[np.newaxis, :], n_missing, axis=0)
+    # Get evenly spaced indices from the existing channels to duplicate
+    duplicate_indices = np.linspace(0, current_count - 1, n_missing, dtype=int)
+	
+    new_data = []
 
-    # Stack original with new channels
-    full_data = np.vstack([data, repeated])
+    for i in range(current_count):
+        new_data.append(data[i])  # Original channel
+        if i in duplicate_indices:
+            new_data.append(data[i])  # Insert duplicate right after
+
+    full_data = np.stack(new_data, axis=0)
     return full_data
 
 #Applies preprocessing, extracts and saves the data in pickle
