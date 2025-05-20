@@ -33,15 +33,24 @@ def standardize(X,mean=False,std=False):
 	return X_stand
 
 # tentative function to interpolate missing channels using mne 
-def interpolate_missing_channels(raw, good_channels, loc_meg_channels):
-	existing_channels = raw.info['ch_names'] # returns the list of chanel names that are present in the data
-	missing_channels = list(set(good_channels) - set(existing_channels)) # gets the list of missing channels by comparing the existing channel names with the list of good channels
-	new_raw = raw.copy() 
+def interpolate_missing_channels(raw, good_channels):
+	
+	# Normalize existing channel names (strip suffixes if any)
+	def get_base(name):
+		return name.split()[0].split('-')[0].strip()  # strips suffix like "-ax", spaces, etc.
+	
+	raw.rename_channels(get_base)
+	existing_channels = raw.info['ch_names']
+	good_basenames = [name for name in good_channels.keys()]
+	
+	# Figure out missing channels by base name
+	missing_basenames = list(set(good_basenames)-set(existing_channels))
+	new_raw = raw.copy()
 
-	# creates fake channels and set them to "bad channels", rename them with the name of the missing channels, 
-	#then mne is supposed to be able to reconstruct bad channels with "interpolate_bads" 
-	for miss in missing_channels:
-		to_copy = raw.info['ch_names'][71] #pick a random channel
+	# Create fake channels for missing ones
+	for miss in missing_basenames:
+		
+		to_copy = raw.info['ch_names'][71]  # just an existing template channel
 		new_channel = raw.copy().pick([to_copy])
 		new_channel.rename_channels({to_copy: miss})
 		new_raw.add_channels([new_channel], force_update_info=True)
@@ -49,59 +58,56 @@ def interpolate_missing_channels(raw, good_channels, loc_meg_channels):
 		#specifies the location of the missing channel
 		for i in range(len(new_raw.info['chs'])):
 			if new_raw.info['chs'][i]['ch_name'] == miss:
-				new_raw.info['chs'][i]['loc'] = loc_meg_channels[miss]
-			
-	new_raw.reorder_channels(good_channels)
-	new_raw.info['bads'] = missing_channels
+				new_raw.info['chs'][i]['loc'] = good_channels[miss]
 
-	new_raw.interpolate_bads(origin=(0, 0, 0.04),reset_bads=True) 
+	# Reorder based on full good_channels list (with no suffixes now)
+	new_raw.reorder_channels(good_basenames)
+	new_raw.info['bads'] = missing_basenames
 
+	# Interpolate
+	new_raw.interpolate_bads(origin=(0, 0, 0.04), reset_bads=True)
 	return new_raw
 
 def fill_missing_channels(raw, target_channel_count):
-    """
-    Fills missing channels by duplicating existing channels at regular intervals
-    and inserting them next to the originals they are copied from.
+	"""
+	Fills missing channels by duplicating existing channels at regular intervals
+	and inserting them next to the originals they are copied from.
 
-    Parameters:
-    - raw (mne.io.Raw): The original raw object.
-    - target_channel_count (int): Desired total number of channels.
+	Parameters:
+	- raw (mne.io.Raw): The original raw object.
+	- target_channel_count (int): Desired total number of channels.
 
-    Returns:
-    - numpy.ndarray: Data with inserted channels (shape: target_channel_count, n_times).
-    """
-    data = raw.get_data()
-    current_count = data.shape[0]
+	Returns:
+	- numpy.ndarray: Data with inserted channels (shape: target_channel_count, n_times).
+	"""
+	data = raw.get_data()
+	current_count = data.shape[0]
 
-    if current_count >= target_channel_count:
-        return data  # Nothing to add
+	if current_count >= target_channel_count:
+		return data  # Nothing to add
 
-    n_missing = target_channel_count - current_count
+	n_missing = target_channel_count - current_count
 
-    # Get evenly spaced indices from the existing channels to duplicate
-    duplicate_indices = np.linspace(0, current_count - 1, n_missing, dtype=int)
+	# Get evenly spaced indices from the existing channels to duplicate
+	duplicate_indices = np.linspace(0, current_count - 1, n_missing, dtype=int)
 	
-    new_data = []
+	new_data = []
 
-    for i in range(current_count):
-        new_data.append(data[i])  # Original channel
-        if i in duplicate_indices:
-            new_data.append(data[i])  # Insert duplicate right after
+	for i in range(current_count):
+		new_data.append(data[i])  # Original channel
+		if i in duplicate_indices:
+			new_data.append(data[i])  # Insert duplicate right after
 
-    full_data = np.stack(new_data, axis=0)
-    return full_data
+	full_data = np.stack(new_data, axis=0)
+	return full_data
 
 #Applies preprocessing, extracts and saves the data in pickle
-def save_data_matrices(good_channels_file, subject_path, path_output, bad_channels):
+def save_data_matrices(subject_path, path_output, bad_channels):
 
 	subject_path = Path(subject_path)
 
-	# open a file containing the good 274 channels
-	with open(good_channels_file, 'rb') as fp:
-		good_channels = pickle.load(fp)
-
-	with open(params.loc_meg_channels_path, 'rb') as fp: #path to the file.pkl containing for each channel name its location
-		loc_meg_channels = pickle.load(fp)
+	with open("model_pipeline/good_channels_dict.pkl", "rb") as f:
+		good_channels = pickle.load(f)
 
 	# Load raw file based on format
 	if subject_path.suffix == ".ds":
@@ -136,7 +142,7 @@ def save_data_matrices(good_channels_file, subject_path, path_output, bad_channe
 	raw.filter(0.5,50, n_jobs=8)
 
 	if subject_path.suffix == ".ds":
-		raw = interpolate_missing_channels(raw, good_channels, loc_meg_channels)
+		raw = interpolate_missing_channels(raw, good_channels)
 		data = {
 			'meg': [raw.get_data()],
 			'file': [subject_path]
@@ -167,7 +173,6 @@ def create_windows(path_output, window_size_ms, stand=False):
 	X_all = np.empty((0,274,int(window_size))) # Will store MEG windows
 	window_center_time = list() # Will store MEG window center timing
 	nb_block = list()  # Will store MEG window block to be able to go back to original .ds files 
-
 
 	for block in range(len(data['meg'])):
 		X_block = list()  # Will store MEG windows for the current .ds

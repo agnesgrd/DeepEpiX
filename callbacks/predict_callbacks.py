@@ -85,19 +85,16 @@ def register_execute_predict_script():
 
         # Otherwise, execute model
         if "TensorFlow" in venv:
-            ACTIVATE_ENV = f"../{config.TENSORFLOW_ENV}/bin/python"      
+            ACTIVATE_ENV = f"{config.TENSORFLOW_ENV}/bin/python"      
         elif "PyTorch" in venv:
             ACTIVATE_ENV = f"../{config.TORCH_ENV}/bin/python"
-        
-        print('hello', str(channel_store.get('bad', None)))
-        
+                
         command = [
             ACTIVATE_ENV,
             "model_pipeline/run_model.py",
             str(model_path),
             str(venv),
             str(subject_folder_path),
-            str(Path.cwd() / "model_pipeline/good_channels"),
             str(cache_dir),
             str(threshold),  # Ensure threshold is passed as a string 
             str(adjust_onset),
