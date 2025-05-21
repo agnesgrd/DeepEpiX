@@ -22,13 +22,14 @@ RUN python3 -m venv /.tfenv
 RUN /.dashenv/bin/pip install -r requirements/requirements-python3.9.txt
 # RUN /.torchenv/bin/pip install -r requirements/requirements-torchenv.txt
 
-# Determine architecture to install proper TensorFlow
-RUN ARCH=$(uname -m) && \
-    if [ "$ARCH" = "x86_64" ]; then \
-        /.tfenv/bin/pip install -r requirements/requirements-tfenv-cuda.txt; \
-    else \
-        # Assume ARM64 (e.g. Apple Silicon), install CPU-only TensorFlow
+# Install TensorFlow based on OS and architecture
+RUN OS=$(uname) && ARCH=$(uname -m) && \
+    if [ "$OS" = "Darwin" ]; then \
+        echo "Detected macOS ($ARCH). Installing Metal-compatible TensorFlow..."; \
         /.tfenv/bin/pip install -r requirements/requirements-tfenv-macos.txt; \
+    elif [ "$ARCH" = "x86_64" ]; then \
+        echo "Detected Linux x86_64. Installing CUDA-compatible TensorFlow..."; \
+        /.tfenv/bin/pip install -r requirements/requirements-tfenv-cuda.txt; \
     fi
     
 # Set dashenv as the default environment
@@ -41,4 +42,4 @@ COPY . /DeepEpiX/
 # Exposer le port
 EXPOSE 8050
 
-CMD ["/.dashenv/bin/gunicorn", "-w", "33", "-b", "0.0.0.0:8050", "--timeout", "600", "run:server"]
+CMD ["/.dashenv/bin/gunicorn", "-w", "25", "-b", "0.0.0.0:8050", "--timeout", "600", "run:server"]
