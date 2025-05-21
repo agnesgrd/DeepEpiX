@@ -1,20 +1,3 @@
-<!-- PROJECT SHIELDS -->
-<!--
-*** I'm using markdown "reference style" links for readability.
-*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
-*** See the bottom of this document for the declaration of the reference variables
-*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
-*** https://www.markdownguide.org/basic-syntax/#reference-style-links
--->
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![project_license][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
-
-
-
 <!-- PROJECT LOGO -->
 <div align="center">
   <a href="https://github.com/agnesgrd/DeepEpiX">
@@ -258,24 +241,6 @@ Then, open the app in your web browser at:
 </details>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/agnesgrd/DeepEpiX.svg?style=for-the-badge
-[contributors-url]: https://github.com/agnesgrd/DeepEpiX/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/agnesgrd/DeepEpiX.svg?style=for-the-badge
-[forks-url]: https://github.com/agnesgrd/DeepEpiX/network/members
-[stars-shield]: https://img.shields.io/github/stars/agnesgrd/DeepEpiX.svg?style=for-the-badge
-[stars-url]: https://github.com/agnesgrd/DeepEpiX/stargazers
-[issues-shield]: https://img.shields.io/github/issues/agnesgrd/DeepEpiX.svg?style=for-the-badge
-[issues-url]: https://github.com/agnesgrd/DeepEpiX/issues
-[license-shield]: https://img.shields.io/github/license/agnesgrd/DeepEpiX.svg?style=for-the-badge
-[license-url]: https://github.com/agnesgrd/DeepEpiX/blob/master/LICENSE.txt
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/linkedin_username
-[product-screenshot]: images/screenshot.png
 
 [Python-url]: https://www.python.org
 [Python-shield]: https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54
