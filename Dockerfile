@@ -23,14 +23,19 @@ RUN /.dashenv/bin/pip install -r requirements/requirements-python3.9.txt
 # RUN /.torchenv/bin/pip install -r requirements/requirements-torchenv.txt
 
 # Install TensorFlow based on OS and architecture
-RUN OS=$(uname) && ARCH=$(uname -m) && \
+RUN bash -c '\
+    OS=$(uname) && ARCH=$(uname -m) && \
+    echo "Detected OS: $OS, ARCH: $ARCH" && \
     if [ "$OS" = "Darwin" ]; then \
-        echo "Detected macOS ($ARCH). Installing Metal-compatible TensorFlow..."; \
+        echo "Installing Metal-compatible TensorFlow..."; \
         /.tfenv/bin/pip install -r requirements/requirements-tfenv-macos.txt; \
     elif [ "$ARCH" = "x86_64" ]; then \
-        echo "Detected Linux x86_64. Installing CUDA-compatible TensorFlow..."; \
+        echo "Installing CUDA-compatible TensorFlow..."; \
         /.tfenv/bin/pip install -r requirements/requirements-tfenv-cuda.txt; \
-    fi
+    else \
+        echo "Unsupported platform: $OS $ARCH"; \
+        exit 1; \
+    fi'
     
 # Set dashenv as the default environment
 ENV VIRTUAL_ENV=/.dashenv
