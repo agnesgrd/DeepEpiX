@@ -27,7 +27,7 @@ RUN OS=$(uname) && ARCH=$(uname -m) && echo "$OS" && echo "$ARCH" && \
     if [ "$OS" = "Darwin" ]; then \
         echo "Detected macOS ($ARCH). Installing Metal-compatible TensorFlow..."; \
         /.tfenv/bin/pip install -r requirements/requirements-tfenv-macos.txt; \
-    elif [ "$ARCH" = "x86_64" ]; then \
+    elif [ "$ARCH" = "x86_64" ] || [ "$ARCH" = "aarch64" ]; then \
         echo "Detected Linux x86_64. Installing CUDA-compatible TensorFlow..."; \
         /.tfenv/bin/pip install -r requirements/requirements-tfenv-cuda.txt; \
     fi
