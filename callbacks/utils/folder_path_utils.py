@@ -57,6 +57,17 @@ def get_ds_folder(path):
             return part
     return None  # If no matching folder is found
 
+def get_bad_channels(raw, new_bad_channels):
+    bad_channels = raw.info.get("bads", [])
+    all_bad_channels = []
+    if new_bad_channels:
+        if isinstance(new_bad_channels, str):
+            new_bad_channels_list=[ch.strip() for ch in new_bad_channels.split(",") if ch.strip()]
+        else:
+            new_bad_channels_list=list(new_bad_channels)  # if it's already a list (e.g., from a previous state)
+        all_bad_channels = list(set(bad_channels + new_bad_channels_list))
+    return all_bad_channels
+
 def read_raw(folder_path, preload, verbose, bad_channels=None):
     folder_path = Path(folder_path)
 
@@ -89,13 +100,9 @@ def read_raw(folder_path, preload, verbose, bad_channels=None):
     
     else:
         raise ValueError("Unrecognized file or folder type for MEG data.")
-    
+
     if bad_channels:
-        if isinstance(bad_channels, str):
-            bad_channels_list = [ch.strip() for ch in bad_channels.split(",") if ch.strip()]
-        else:
-            bad_channels_list = list(bad_channels)  # if it's already a list (e.g., from a previous state)
-        raw.drop_channels(bad_channels_list)
+        raw.drop_channels(bad_channels)
     
     return raw
 
@@ -105,7 +112,7 @@ def build_table_raw_info(folder_path):
     raw = read_raw(folder_path, preload=False, verbose=False)
     info = raw.info
 
-    return dbc.Card(
+    table = dbc.Card(
         dbc.CardBody([
             html.H5([
                 html.I(className="bi bi-clipboard-data", style={"marginRight": "10px", "fontSize": "1.2em"}),
@@ -139,7 +146,7 @@ def build_table_raw_info(folder_path):
                 ]),
                 dbc.ListGroupItem([
                     html.Strong("Channel Names: "),
-                    html.Span(f"{', '.join(info['ch_names'][:5]) + '...' if len(info['ch_names']) > 5 else ', '.join(info['ch_names'])}")
+                    html.Span('...' + f"{', '.join(info['ch_names'][30:35]) + '...' if len(info['ch_names']) > 35 else ', '.join(info['ch_names'])}")
                 ]),
                 dbc.ListGroupItem([
                     html.Strong("Bad Channels: "),
@@ -176,6 +183,8 @@ def build_table_raw_info(folder_path):
             ])
         ])
     )
+
+    return table
 
 def build_table_events_statistics(folder_path):
 

@@ -2,20 +2,6 @@ import re
 from collections import defaultdict
 import mne
 
-# def remove_leading_zeros_from_channels(channel_groups):
-#     updated_groups = {}
-#     for region, channels in channel_groups.items():
-#         updated_channels = []
-#         for ch in channels:
-#             # Strip leading zeros from numeric part, e.g. 'A001' -> 'A1'
-#             if ch.startswith('A') and ch[1:].isdigit():
-#                 num = str(int(ch[1:]))  # convert to int and back to string to remove zeros
-#                 updated_channels.append(f'A{num}')
-#             else:
-#                 updated_channels.append(ch)  # in case of unexpected format
-#         updated_groups[region] = updated_channels
-#     return updated_groups
-
 def get_grouped_channels_by_prefix(raw, bad_channels=None):
     """
     Load channels from raw data and group them by their 3-letter prefix.
@@ -57,8 +43,6 @@ def get_grouped_channels_by_prefix(raw, bad_channels=None):
             if prefix_pattern.match(prefix):
                 grouped_channels[prefix].append(ch_name)
             
-        return dict(grouped_channels)
-
     elif 'A' in meg_ch_names[int(len(meg_ch_names)/2)]:
 
         CHANNEL_GROUPS = {

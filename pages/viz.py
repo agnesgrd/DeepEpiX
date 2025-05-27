@@ -58,9 +58,8 @@ from callbacks.history_callbacks import (
 # --- Save ---
 from callbacks.save_callbacks import (
     register_display_annotations_to_save_checkboxes,
-    register_set_old_markerfile_name,
-    register_enter_default_saving_folder_path,
-    register_save_new_markerfile,
+    register_display_bad_channels_to_save_checkboxes,
+    register_save_modifications,
 )
 
 # --- Predict ---
@@ -214,9 +213,8 @@ register_store_display_prediction()
 register_update_selected_model()
 
 # --- Save ---
-register_enter_default_saving_folder_path()
-register_set_old_markerfile_name()
-register_save_new_markerfile()
+register_display_bad_channels_to_save_checkboxes()
+register_save_modifications()
 
 # --- Analysis ---
 register_callbacks_sensivity_analysis()

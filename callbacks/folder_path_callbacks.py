@@ -2,7 +2,6 @@
 import dash
 from dash import Input, Output, State, callback
 
-
 # Local Imports
 from layout.config_layout import FLEXDIRECTION
 from callbacks.utils import folder_path_utils as fpu
@@ -93,11 +92,11 @@ def register_populate_tab_contents():
         Output("event-stats-container", "children"),
         Input("tabs", "active_tab"),
         Input("folder-store", "data"),
-        prevent_initial_call=False
+        prevent_initial_call=True
     )
     def populate_tab_contents(selected_tab, folder_path):
         """Populate tab content based on selected tab and stored folder path."""
-        if not folder_path:
+        if not folder_path or not selected_tab:
             return dash.no_update, dash.no_update
 
         raw_info_content = dash.no_update
@@ -108,5 +107,5 @@ def register_populate_tab_contents():
 
         if selected_tab == "events-tab":
             event_stats_content = fpu.build_table_events_statistics(folder_path)
-
+                
         return raw_info_content, event_stats_content

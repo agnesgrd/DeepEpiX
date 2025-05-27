@@ -1,8 +1,7 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 
-from layout.config_layout import INPUT_STYLES, BOX_STYLES, BUTTON_STYLES, LABEL_STYLES
-from callbacks.utils import folder_path_utils as fpu
+from layout.config_layout import BOX_STYLES, BUTTON_STYLES, LABEL_STYLES
 
 def create_save():
     layout = html.Div([
@@ -40,22 +39,44 @@ def create_save():
         ], style = BOX_STYLES["classic"]),
 
         html.Div([
-            html.Label("Select Saving Folder:", style={**LABEL_STYLES["classic"]}),
+            html.Label("Select Bad Channels:", style={**LABEL_STYLES["classic"]}),
+
+            dcc.Checklist(
+                id="bad-channels-to-save-checkboxes",
+                inline=False,
+                style={"margin": "10px 0", "fontSize": "12px"},
+                persistence=True,
+                persistence_type="local"
+            ),
+        ], style = BOX_STYLES["classic"]),
+
+        html.Div([
+            html.Label(html.Span(["Select Saving Format: ", html.I(className="bi bi-info-circle-fill", id="help-saving-format")]), style={**LABEL_STYLES["classic"]}),
 
             html.Div([
-                dbc.Button("📂", id="open-folder-button", color="primary", className="me-2"), 
-                dcc.Dropdown(
-                    id="saving-folder-path-dropdown",
-                    options=fpu.get_folder_path_options(),
-                    placeholder="Select ...",
-                )],style={"display": "block", "justifyContent": "space-between", "gap": "4%", "marginBottom": "10px"}
-            ),
+                dbc.RadioItems(
+                    id="saving-format-radio",
+                    options=[
+                        {"label": "Original", "value": "original", "id": "radio-original"},
+                        {"label": "FIF (recommended for full metadata)", "value": "fif", "id": "radio-fif"},
+                    ],
+                    value="fif",
+                    inline=False,
+                    labelStyle={"display": "block", "margin-bottom": "0.5em"},
+                ),
+                
+                # Tooltips
+                dbc.Tooltip(
+                    """
+                    - If the original format is .ds, only the new markerfile is saved; bad channels cannot be saved. By default, the old marker file is renamed to 'OldMarkerFile_{date}.mrk', and the new one is saved as 'MarkerFile.mrk' in the subject folder to ensure backward compatibility.\n
 
-            html.Label("Enter Old MarkerFile.mrk Name:", style={**LABEL_STYLES["classic"]}),
-            dbc.Input(id="old-mrk-name", type="text", value="OldMarkerFile", style={**INPUT_STYLES["small-number"]}),
-
-            html.Label("Enter New MarkerFile.mrk Name:", style={**LABEL_STYLES["classic"]}),
-            dbc.Input(id="new-mrk-name", type="text", value="MarkerFile", style={**INPUT_STYLES["small-number"]}),
+                    - Use the FIF format to include annotations and bad channels. This is recommended for preserving full metadata. By default, keeps a trace of the old .fif file renamed to {original_name}_{date}.fif.
+                    """,
+                    target="help-saving-format",
+                    placement="left",
+                    class_name="custom-tooltip"
+                )
+            ]),
                             
             dbc.Button(
                 "Save",
@@ -67,8 +88,6 @@ def create_save():
                 disabled=False,
                 style=BUTTON_STYLES["big"]
             ),
-
-            dbc.Tooltip("By default, the old marker file is renamed to OldMarkerFile.mrk, and the new one is saved as MarkerFile.mrk in the subject folder, ensuring backward compatibility.", target="save-annotation-button", placement="left"),
 
             dcc.Loading(
                 id="loading",
