@@ -1,6 +1,7 @@
 # view.py
 import dash
 from dash import html
+from dash_extensions import Keyboard
 
 from callbacks.selection_callbacks import (
     register_cancel_or_confirm_annotation_suppression,
@@ -39,6 +40,11 @@ dash.register_page(__name__, name="ICA", path='/viz/ica')
 
 
 layout = html.Div([
+
+    Keyboard(
+        id="keyboard-ica",
+        captureKeys = ["ArrowRight", "ArrowLeft", "+", "-"]
+    ),
 
     html.Div(
         [
@@ -98,7 +104,8 @@ register_clear_check_all_annotation_checkboxes(
 register_offset_display(
     offset_decrement_id="offset-decrement-ica", 
     offset_increment_id="offset-increment-ica", 
-    offset_display_id="offset-display-ica"
+    offset_display_id="offset-display-ica",
+    keyboard_id="keyboard-ica"
 )
 register_page_buttons_display(
     page_buttons_container_id="page-buttons-container-ica",

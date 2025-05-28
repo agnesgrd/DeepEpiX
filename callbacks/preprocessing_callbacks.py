@@ -46,8 +46,8 @@ def register_preprocess_meg_data():
         State("heartbeat-channel", "value"),
         State("bad-channels", "value"),
         running=[
-            (Output("preprocess-display-button", "disabled"), True, False),
-            (Output("load-button", "disabled"), True, False),
+            # (Output("preprocess-display-button", "disabled"), True, False),
+            # (Output("load-button", "disabled"), True, False),
             (Output("compute-display-psd-button", "disabled"), True, False)],
         prevent_initial_call=True
     )

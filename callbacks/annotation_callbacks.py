@@ -107,6 +107,57 @@ def register_update_annotation_graph(
 
         return fig_patch
     
+def register_move_with_keyboard(
+        keyboard_id,
+        graph_id,
+        page_selector_id
+):
+    @callback(
+        Output(graph_id, "figure", allow_duplicate=True),
+        Input(keyboard_id, "n_keydowns"),
+        State(keyboard_id, "keydown"),
+        State(graph_id, "figure"),
+        State(page_selector_id, "value"),
+        State("chunk-limits-store", "data"),
+        prevent_initial_call=True
+    )
+    def _move_with_keyboard(n_keydowns, keydown, graph, page_selection, chunk_limits):
+        if not keydown or "key" not in keydown:
+            return dash.no_update
+
+        key = keydown["key"]
+        x_range = graph["layout"]["xaxis"].get("range", None)
+
+        if x_range is None or len(x_range) != 2:
+            # If no range defined, do nothing
+            return dash.no_update
+
+        x_min, x_max = x_range
+        step = x_max - x_min
+
+        time_range_limits = chunk_limits[int(page_selection)]
+        time_range_min, time_range_max = time_range_limits
+
+        if key == "ArrowLeft":
+            x_min -= step
+            x_max -= step
+        elif key == "ArrowRight":
+            x_min += step
+            x_max += step
+        else:
+            return dash.no_update  # no action on other keys
+        
+        if x_min < time_range_min:
+            x_min = time_range_min
+            x_max = x_min + step
+        if x_max > time_range_max:
+            x_max = time_range_max
+            x_min = x_max - step
+
+        graph["layout"]["xaxis"]["range"] = [x_min, x_max]
+        return graph
+
+
 def register_move_to_next_annotation(
     prev_spike_id,
     next_spike_id,

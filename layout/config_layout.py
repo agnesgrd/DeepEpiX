@@ -18,7 +18,7 @@ INPUT_STYLES = {
         "borderRadius": "5px",
     },
     "number-in-box":{
-        "width": "50%",
+        "width": "30%",
         "padding": "10px",
         "fontSize": "16px",
         "borderWidth": "1px",
@@ -90,7 +90,8 @@ FLEXDIRECTION = {
         "flexDirection": "row",  # Side-by-side layout
         "alignItems": "flex-start",  # Align to top
         "gap": "20px",  # Add spacing between elements
-        "width": "100%"  # Ensure full width
+        "width": "100%",  # Ensure full width
+        "padding": "20px"
     },
     "row-tabs": {
         "display": "flex",

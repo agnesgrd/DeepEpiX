@@ -29,6 +29,11 @@ layout = html.Div([
 
     dbc.Card(
         dbc.CardBody([
+            html.Div([
+                html.H5([
+                    html.I(className="bi bi-database-check", style={"marginRight": "10px", "fontSize": "1.2em"}),
+                    "Database"]),
+            ]),
             html.Div(
                 id="subject-memory",
                 children=[
@@ -86,165 +91,187 @@ layout = html.Div([
                 ]
             )
         ]),
-        className="mb-3",  # Adds margin below the card
+        className="mb-5",  # Adds margin below the card
         style={"width": "100%"}
     ),
 
     html.Div([
-        html.H4([
-            html.I(className="bi bi-1-circle-fill", style={"marginRight": "10px", "fontSize": "1.2em"}),
-            "Choose MEG Data Folder"]),
-
-        html.Div([
-            dbc.Row([
-                dbc.Col(
-                    dbc.Button("📂 Open Folder", id="open-folder-button", color="primary", className="me-2"),
-                    width="auto"
-                ),
-                dbc.Col(
-                    dcc.Dropdown(
-                        id="folder-path-dropdown",
-                        options=fpu.get_folder_path_options(),
-                        placeholder="Select ...",
-                    ),
-                    width=4
-                ),
-                dbc.Col(
-                    dbc.Button(
-                        "Load",
-                        id="load-button",
-                        color="success",
-                        disabled=True,
-                        n_clicks=0
-                    )
-                )
-            ])
+        html.H5([
+            html.I(className="bi bi-person-plus-fill", style={"marginRight": "10px", "fontSize": "1.2em"}),
+            "Choose MEG Data Folder"
         ]),
 
-        html.Div(id="folder-path-warning", className="text-danger", style={"marginTop": "10px"})
+        dbc.Row([
+            dbc.Col(
+                dbc.Button("📂 Open Folder", id="open-folder-button", color="secondary"),
+                width="auto"
+            ),
+            dbc.Col(
+                dcc.Dropdown(
+                    id="folder-path-dropdown",
+                    options=fpu.get_folder_path_options(),
+                    placeholder="Select ...",
+                ),
+                width=4
+            ),
+            dbc.Col(
+                dbc.Button(
+                    [
+                        html.I(className="bi bi-1-circle-fill", style={"marginRight": "10px"}),  # Bootstrap icon + right margin
+                        "Load"
+                    ],
+                    id="load-button",
+                    color="success",
+                    disabled=True,
+                    n_clicks=0
+                ),
+                width="auto"
+            ),
+            dbc.Col(
+                    dbc.Button(
+                        [
+                            html.I(className="bi bi-2-circle-fill", style={"marginRight": "10px"}),  # Preprocessing-style icon with spacing
+                            "Preprocess & Display"
+                        ],
+                        id="preprocess-display-button",
+                        color="warning",
+                        disabled=True,
+                        n_clicks=0
+                    ),
+                width="auto"
+            ),
+            dbc.Col(
+                dcc.Loading(
+                    id="loading",
+                    type="default",
+                    children=[html.Div(id="preprocess-status")],
+                ),
+                width="auto"
+            ),
+        ], className="gy-2 align-items-center"),
 
-    ], style=BOX_STYLES["classic"]),
+        html.Div(id="folder-path-warning", className="text-danger", style={"marginTop": "10px"}),
+
+        dcc.Location(id="url", refresh=True),
+
+    ], style={"padding": "10px"}),
 
     html.Div(
         id="frequency-container",
         children=[
-
-            html.Div(
-                id="frequency-inputs",
+            dbc.Tabs(
+                id="tabs",
+                active_tab='preprocessing-tab',
                 children=[
-                    html.H4([
-                        html.I(className="bi bi-2-circle-fill", style={"marginRight": "10px", "fontSize": "1.2em"}),
-                         "Set Frequency Parameters for Signal Preprocessing"]),
+                    dbc.Tab(label='Preprocessing', tab_id='preprocessing-tab', style = {"maxHeight": "200px"}, children=[
+                        html.Div(
+                            id="frequency-inputs",
+                            children=[
+                                dbc.Card(
+                                    dbc.CardBody([
+                                        html.H5([
+                                            html.I(className="bi bi-sliders2", style={"marginRight": "10px", "fontSize": "1.2em"}),
+                                            "Set Frequency Parameters for Signal Preprocessing"
+                                        ], className="card-title"),
 
-                    html.Div([
-                        html.Label("Resampling Frequency (Hz): "),
-                        dbc.Input(id="resample-freq", type="number", value=150, step=1, min=50, style=INPUT_STYLES["number-in-box"]),
-                    ]),
+                                        html.Hr(),
 
-                    html.Div([
-                        html.Label("High-pass Frequency (Hz): "),
-                        dbc.Input(id="high-pass-freq", type="number", value=0.5, step=0.1, min=0.1, style=INPUT_STYLES["number-in-box"]),
-                    ]),
+                                        html.Div([
+                                            html.Label("Resampling Frequency (Hz): "),
+                                            dbc.Input(id="resample-freq", type="number", value=150, step=1, min=50, style=INPUT_STYLES["number-in-box"]),
+                                        ]),
 
-                    html.Div([
-                        html.Label("Low-pass Frequency (Hz): "),
-                        dbc.Input(id="low-pass-freq", type="number", value=50, step=1, min=1, style=INPUT_STYLES["number-in-box"]),
-                    ]),
+                                        html.Div([
+                                            html.Label("High-pass Frequency (Hz): "),
+                                            dbc.Input(id="high-pass-freq", type="number", value=0.5, step=0.1, min=0.1, style=INPUT_STYLES["number-in-box"]),
+                                        ]),
 
-                    html.Div([
-                        html.Label("Notch filter Frequency (Hz): "),
-                        dbc.Input(id="notch-freq", type="number", value=50, step=1, min=0, style=INPUT_STYLES["number-in-box"]),
-                    ]),
+                                        html.Div([
+                                            html.Label("Low-pass Frequency (Hz): "),
+                                            dbc.Input(id="low-pass-freq", type="number", value=50, step=1, min=1, style=INPUT_STYLES["number-in-box"]),
+                                        ]),
 
-                    html.H4([
-                        html.I(className="bi bi-3-circle-fill", style={"marginRight": "10px", "fontSize": "1.2em"}),
-                         "Give Hint on Channel for Heartbeat Detection"]),
+                                        html.Div([
+                                            html.Label("Notch filter Frequency (Hz): "),
+                                            dbc.Input(id="notch-freq", type="number", value=50, step=1, min=0, style=INPUT_STYLES["number-in-box"]),
+                                        ], style={"marginBottom": "20px"}),
 
-                    html.Div([
-                        html.Label("Channel Name:"),
-                        dbc.Input(id="heartbeat-channel", type="text", placeholder="None", style=INPUT_STYLES["number-in-box"]),
-                        dbc.Tooltip(
-                                """
-                                ch_name : None | str\n
+                                        html.H5([
+                                            html.I(className="bi bi-heart-pulse-fill", style={"marginRight": "10px", "fontSize": "1.2em"}),
+                                            "Give Hint on Channel for ECG Peak Detection"
+                                        ] ,className="card-title"),
+
+                                        html.Hr(),
+
+                                        html.Div([
+                                            html.Label("Channel Name:"),
+                                            dbc.Input(id="heartbeat-channel", type="text", placeholder="None", style=INPUT_STYLES["number-in-box"]),
+                                            dbc.Tooltip(
+                                                """ch_name : None | str
 
                                 - The name of the channel to use for MNE ECG peak detection. 
                                 - If None (default), ECG channel is used if present. 
                                 - If None and no ECG channel is present, a synthetic ECG channel is created from the cross-channel average. 
                                 - This synthetic channel can only be created from MEG channels.
                                 """,
-                                target="heartbeat-channel",
-                                placement="right",
-                                class_name="custom-tooltip"
-                            ),
-                    ]),
+                                                target="heartbeat-channel",
+                                                placement="right",
+                                                class_name="custom-tooltip"
+                                            ),
+                                        ]),
 
-                    html.H4([
-                        html.I(className="bi bi-4-circle-fill", style={"marginRight": "10px", "fontSize": "1.2em"}),
-                         "Drop Bad Channels"]),
+                                        html.H5([
+                                            html.I(className="bi bi-eye-slash-fill", style={"marginRight": "10px", "fontSize": "1.2em"}),
+                                            "Drop New Bad Channels"
+                                        ] ,className="card-title"),
 
-                    html.Div([
-                        html.Label("Bad Channels:"),
-                        dbc.Input(id="bad-channels", type="text", placeholder="None", style=INPUT_STYLES["number-in-box"]),
-                        dbc.Tooltip(
-                                """
-                                ch_name : None | str | list of str\n
+                                        html.Hr(),
+
+                                        html.Div([
+                                            html.Label("Bad Channels:"),
+                                            dbc.Input(id="bad-channels", type="text", placeholder="None", style=INPUT_STYLES["number-in-box"]),
+                                            dbc.Tooltip(
+                                                """ch_name : None | str | list of str
 
                                 - Enter one or more channel names separated by commas (e.g., "MEG 001, MEG 002").
                                 - If left empty (default), no channels are dropped.
                                 - Dropped channels will be excluded from topomaps, ICA, and model predictions, but may still be visible in plots.
                                 """,
-                                target="bad-channels",
-                                placement="right",
-                                class_name="custom-tooltip"
-                            ),
+                                                target="bad-channels",
+                                                placement="right",
+                                                class_name="custom-tooltip"
+                                            ),
+                                        ])
+                                    ]),
+                                    className="mb-3"  # Adds bottom margin
+                                )
+                            ]
+                        )
                     ]),
 
-                    html.Div([
-                        dbc.Button("Preprocess & Display", id="preprocess-display-button", color="success", disabled=True, n_clicks=0),
-                        dcc.Loading(
-                            id="loading",
-                            type="default",
-                            children=[html.Div(id="preprocess-status")]
-                        ),
-                        dcc.Location(id="url", refresh=True),
-                    ], style={"margin-top": "20px"})
+                    dbc.Tab(label='Raw Info', tab_id="raw-info-tab", children=[
+                        html.Div(id="raw-info-container"),
+                    ]),
 
-                ], style={**BOX_STYLES["classic"], "width": "40%"}),
+                    dbc.Tab(label='Event Statistics', tab_id="events-tab", children=[
+                        html.Div(id="event-stats-container"),
+                    ]),
 
-            html.Div(
-                id="analysis", 
-                children = [
+                    dbc.Tab(label='Power Spectral Density', tab_id="psd-tab", children=[
+                        html.Div(id="psd-container", children=[
+                            dbc.Button("Compute & Display", id="compute-display-psd-button", color="secondary", n_clicks=0, style={"marginTop": "15px"}),
+                            dcc.Loading(id="loading", type="default", children=[
+                                html.Div(id="psd-status", style={"margin-top": "10px"})
+                            ])
+                        ])
+                    ]),
+                ]
+            ),
 
-                    dbc.Tabs(id="tabs", active_tab='raw-info-tab', children=[
 
-                            dbc.Tab(label='Raw Info', tab_id="raw-info-tab", children=[
-
-                                html.Div(id="raw-info-container"),
-                            ]),
-
-                            dbc.Tab(label='Event Statistics', tab_id="events-tab", children=[
-
-                                html.Div(id="event-stats-container"),
-                            ]),
-
-                            dbc.Tab(label='Power Spectral Density', tab_id="psd-tab", children=[
-
-                                html.Div(id="psd-container", children=[
-
-                                    dbc.Button("Compute & Display", id="compute-display-psd-button", color="success", n_clicks=0, style = {"marginTop": "15px"}),
-
-                                    dcc.Loading(id="loading", type="default", children=[
-                                        
-                                        html.Div(id="psd-status", style={"margin-top": "10px"})
-                                    ]),    
-                                ]),
-                            ]),
-
-                    ], style=FLEXDIRECTION["row-tabs"]),
-
-                ], style={"width": "60%"}),
-
-        ], style={"display": "none"})
+        ],
+        style={"width": "80%", "display": "none"}
+    )
     ])
 
 register_populate_memory_tab_contents()

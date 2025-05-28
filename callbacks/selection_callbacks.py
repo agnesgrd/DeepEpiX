@@ -2,6 +2,7 @@ import os
 import dash
 from dash import html, Input, Output, State, callback
 import dash_bootstrap_components as dbc
+from dash_extensions import EventListener
 from dash.exceptions import PreventUpdate
 
 # Local import
@@ -120,18 +121,19 @@ def register_clear_check_all_annotation_checkboxes(check_all_btn_id, clear_all_b
 # 🧭 Offset Display
 # ─────────────────────────────
 
-def register_offset_display(offset_decrement_id, offset_increment_id, offset_display_id):
+def register_offset_display(offset_decrement_id, offset_increment_id, offset_display_id, keyboard_id):
     @callback(
         Output(offset_display_id, "value", allow_duplicate=True),
         Input(offset_decrement_id, "n_clicks"),
         Input(offset_increment_id, "n_clicks"),
+        Input(keyboard_id, "n_keydowns"),
+        State(keyboard_id, "keydown"),
         State(offset_display_id, "value"),
         prevent_initial_call=True
     )
-    def update_offset(decrement_clicks, increment_clicks, current_offset):
+    def update_offset(decrement_clicks, increment_clicks, n_keydowns, keydown, current_offset):
         step = 1
         min_value, max_value = 1, 10
-
         try:
             offset = int(current_offset)
         except (TypeError, ValueError):
@@ -142,6 +144,12 @@ def register_offset_display(offset_decrement_id, offset_increment_id, offset_dis
             offset += step
         elif triggered == offset_decrement_id:
             offset -= step
+        elif triggered==keyboard_id:
+            key = keydown["key"]
+            if key in ["+"]:
+                offset += step
+            elif key == "-":
+                offset -= step
 
         offset = max(min_value, min(max_value, offset))
         return offset

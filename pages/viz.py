@@ -32,6 +32,7 @@ from callbacks.annotation_callbacks import (
     register_move_to_next_annotation,
     register_update_annotation_graph,
     register_update_annotations_on_graph,
+    register_move_with_keyboard
 )
 
 # --- Topomap ---
@@ -74,8 +75,8 @@ dash.register_page(__name__, name="Data Viz & Analyze", path='/viz/raw-signal')
 layout = html.Div([
     
     Keyboard(
-        captureKeys=["ArrowLeft", "ArrowRight"],  # Captures ArrowLeft and ArrowRight keys
-        id="keyboard"
+        id="keyboard",
+        captureKeys = ["ArrowRight", "ArrowLeft", "+", "-"]
     ),
 
     dcc.Location(id='url', refresh=False),
@@ -180,7 +181,8 @@ register_update_graph_raw_signal()
 register_offset_display(
     offset_decrement_id="offset-decrement", 
     offset_increment_id="offset-increment", 
-    offset_display_id="offset-display"
+    offset_display_id="offset-display",
+    keyboard_id="keyboard"
 )
 
 # --- Topomap Interactions ---
@@ -193,6 +195,13 @@ register_add_event_to_annotation()
 register_delete_selected_spike()
 register_enable_add_event_button()
 register_enable_delete_event_button()
+
+
+register_move_with_keyboard(
+    keyboard_id="keyboard",
+    graph_id="meg-signal-graph",
+    page_selector_id="page-selector"
+)
 
 register_move_to_next_annotation(
     prev_spike_id="prev-spike",
