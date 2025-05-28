@@ -243,17 +243,18 @@ def update_annotations_on_graph(fig_dict, annotations_to_show, page_selection, a
 
     description_colors = {}
     color_cycle = itertools.cycle(COLOR_PALETTE)
-    for desc in unique_descriptions:
+    for desc in annotations_to_show:
         description_colors[desc] = next(color_cycle)
+    print(description_colors)
 
     shapes_start_time = time.time()
     
     for _, row in filtered_annotations_df.iterrows():
         description = row["description"]
-        duration = row['duration']
-        color = description_colors[description]  # Get assigned color
-
+                
         if str(description) in annotations_to_show:
+            duration = row['duration']
+            color = description_colors[description]  # Get assigned color
             # Check the duration and add either a vertical line or a rectangle
             if duration == 0:
                 # Vertical line if duration is 0
@@ -266,7 +267,7 @@ def update_annotations_on_graph(fig_dict, annotations_to_show, page_selection, a
                         y1=y_max,
                         xref="x",
                         yref="y",
-                        line=dict(color=color, width=2, dash="line"),
+                        line=dict(color=color, width=1, dash="line"),
                         opacity=0.9
                     )
                 )
