@@ -1,8 +1,7 @@
 import numpy as np
 import plotly.express as px
-import config
 
-def add_smoothgrad_scatter(fig, shifted_filtered_raw_df, time_range, selected_channels, filter):
+def add_smoothgrad_scatter(fig, shifted_filtered_raw_df, time_range, selected_channels, filter, all_channels):
     """
     Adds a scatter plot with smooth gradient color to an existing figure based on the given selection.
     Also updates the layout and trace styles for smooth gradient visualizations.
@@ -20,10 +19,15 @@ def add_smoothgrad_scatter(fig, shifted_filtered_raw_df, time_range, selected_ch
 
     # Calculate the time indices and channel indices for the given time range and selected channels
     time_range_indices = np.arange(round(time_range[0] * 150), round(time_range[1] * 150) + 1).astype(int)
-    channel_indices = np.where(np.isin(config.ALL_CH_NAMES_PREFIX, selected_channels))[0]
+    print(time_range_indices)
+    print(len(selected_channels))
+    print(len(all_channels))
+    channel_indices = np.where(np.isin(all_channels, selected_channels))[0]
+    print(len(channel_indices))
     
     # Filter the data based on the calculated indices
     filtered_sa_array = filter[time_range_indices[:, None], channel_indices]
+    print(filtered_sa_array.shape)
     
     # Melt the dataframe for plotting
     scatter_df = shifted_filtered_raw_df.melt(id_vars=["Time"], var_name="Channel", value_name="Value")
