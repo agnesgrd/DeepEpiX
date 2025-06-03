@@ -3,7 +3,7 @@ import dash
 from dash import Input, Output, State, callback
 
 # Local Imports
-from layout.config_layout import FLEXDIRECTION
+from layout.config_layout import FREQUENCY_CONTAINER_STYLE
 from callbacks.utils import folder_path_utils as fpu
 
 def register_update_dropdown():
@@ -52,15 +52,15 @@ def register_handle_valid_folder_path():
         """Validate folder path and show warning if invalid."""
         if folder_path:
             if not fpu.test_ds_folder(folder_path):
-                return True, True, {"display": "none"},"Path must end with '.ds' or '.fif' or contain 3 files for 4D neuroimaging to be a valid raw MEG object."
+                return True, True, {**FREQUENCY_CONTAINER_STYLE, "display": "none"},"Path must end with '.ds' or '.fif' or contain 3 files for 4D neuroimaging to be a valid raw MEG object."
 
             try:
                 fpu.read_raw(folder_path, preload=False, verbose=False)
-                return False, True, {"display": "none"}, ""  # Valid: enable button and clear warning
+                return False, True, {**FREQUENCY_CONTAINER_STYLE, "display": "none"}, ""  # Valid: enable button and clear warning
             except Exception as e:
-                return True, True, {"display": "none"}, f"Invalid MEG path: {str(e)}"
+                return True, True, {**FREQUENCY_CONTAINER_STYLE, "display": "none"}, f"Invalid MEG path: {str(e)}"
 
-        return True, True, {"display": "none"}, "Please select a path."
+        return True, True, {**FREQUENCY_CONTAINER_STYLE, "display": "none"}, "Please select a path."
 
 def register_store_folder_path_and_clear_data():
     @callback(
@@ -83,7 +83,7 @@ def register_store_folder_path_and_clear_data():
         if not folder_path:
             return (dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update)
         return (
-            {"display": "block", "width": "60%", "padding": "10px"},
+            {**FREQUENCY_CONTAINER_STYLE, "display": "flex"},
             False,
             folder_path, 
             True, True, True, True, True, True, True

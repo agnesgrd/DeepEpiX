@@ -9,7 +9,7 @@ from collections import Counter
 
 # Function to get model options
 def get_folder_path_options():
-    data_dir = Path("data")
+    data_dir = Path("../data")
     data = list(data_dir.glob("*.ds")) + list(data_dir.glob("*.fif"))
 
     # Dossiers 4D Neuroimaging

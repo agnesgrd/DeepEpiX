@@ -42,4 +42,4 @@ COPY . /DeepEpiX/
 # Exposer le port
 EXPOSE 8050
 
-CMD ["/.dashenv/bin/gunicorn", "-w", "25", "-b", "0.0.0.0:8050", "--timeout", "600", "run:server"]
+CMD ["/.dashenv/bin/gunicorn", "-w", "25", "-b", "0.0.0.0:8050", "--timeout", "600", "src/run:server"]

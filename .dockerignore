@@ -24,11 +24,7 @@ data/
 !data/.gitkeep  # Keep empty data folder if necessary
 
 # Cache
-cache-directory/
-
-# Model prediction results
-results/
-!results/.gitkeep  # Keep results folder empty if necessary
+src/cache-directory/
 
 # Jupyter Notebook test files
 *.ipynb_checkpoints/

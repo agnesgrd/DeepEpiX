@@ -1,0 +1,35 @@
+site_name: DeepEpiX
+repo_url: https://github.com/agnesgrd/DeepEpiX
+theme:
+  name: material
+  features:
+    - navigation.expand
+    - navigation.sections
+    - content.code.copy
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_root_toc_entry: false
+            separate_signature: true
+markdown_extensions:
+  - admonition
+  - pymdownx.superfences        # nicer code blocks
+  - pymdownx.tabbed
+nav:
+  - Overview: index.md
+  - Architecture:
+      - Folder layout: structure.md
+      - App lifecycle: app-lifecycle.md
+  - Pages:
+      - Preprocessing tab: pages/preprocessing.md
+      - PSD tab: pages/psd.md
+  - Callbacks:
+      - Overview: callbacks/index.md
+      - Frequency controls: callbacks/frequency.md
+  - Developer Guide:
+      - Setup & run: dev/setup.md
+      - Add a new tab: dev/new-page.md
+      - Style guide: dev/style.md

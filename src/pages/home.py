@@ -7,7 +7,7 @@ import dash_bootstrap_components as dbc
 from callbacks.utils import folder_path_utils as fpu
 
 # --- Layout Config ---
-from layout.config_layout import INPUT_STYLES, BOX_STYLES, FLEXDIRECTION
+from layout.config_layout import INPUT_STYLES, FREQUENCY_CONTAINER_STYLE, FLEXDIRECTION
 
 # --- Callbacks ---
 from callbacks.storage_callbacks import register_populate_memory_tab_contents
@@ -29,11 +29,13 @@ layout = html.Div([
 
     dbc.Card(
         dbc.CardBody([
+
             html.Div([
                 html.H5([
                     html.I(className="bi bi-database-check", style={"marginRight": "10px", "fontSize": "1.2em"}),
                     "Database"]),
-            ]),
+            ], style={"display": "flex", "justifyContent": "center", "alignItems": "center", "gap": "20px", "margin": "30px"}),
+
             html.Div(
                 id="subject-memory",
                 children=[
@@ -48,7 +50,7 @@ layout = html.Div([
                                     html.Div(
                                         id="subject-container-memory",
                                         children=[html.Span("No subject in memory. Please choose one below.")],
-                                        style={"margin-top": "10px", "maxHeight": "450px", "overflowY": "auto"}
+                                        style={"maxHeight": "350px", "overflowY": "auto", "width": "600px"}
                                     )
                                 ]
                             ),
@@ -59,7 +61,7 @@ layout = html.Div([
                                     html.Div(
                                         id="raw-info-container-memory",
                                         children=[html.Label("No subject in memory. Please choose one below.")],
-                                        style={"margin-top": "10px", "maxHeight": "450px", "overflowY": "auto"}
+                                        style={"maxHeight": "350px", "overflowY": "auto", "width": "600px"}
                                     )
                                 ]
                             ),
@@ -70,7 +72,7 @@ layout = html.Div([
                                     html.Div(
                                         id="event-stats-container-memory",
                                         children=[html.Label("No subject in memory. Please choose one below.")],
-                                        style={"margin-top": "10px", "maxHeight": "450px", "overflowY": "auto"}
+                                        style={"maxHeight": "350px", "overflowY": "auto", "width": "600px"}
                                     )
                                 ]
                             ),
@@ -81,7 +83,7 @@ layout = html.Div([
                                     html.Div(
                                         id="history-container-memory",
                                         children=[html.Label("No history in memory. Please do further analysis.")],
-                                        style={"margin-top": "10px", "maxHeight": "450px", "overflowY": "auto"}
+                                        style={ "maxHeight": "350px", "overflowY": "auto", "width": "600px"}
                                     )
                                 ]
                             ),
@@ -90,7 +92,7 @@ layout = html.Div([
                     )
                 ]
             )
-        ]),
+        ], style = {"display": "flex", "flexDirection": "column", "justifyContent": "center", "alignItems": "center", "gap": "20px", "margin": "30px"}),
         className="mb-5",  # Adds margin below the card
         style={"width": "100%"}
     ),
@@ -243,35 +245,31 @@ layout = html.Div([
                                             ),
                                         ])
                                     ]),
-                                    className="mb-3"  # Adds bottom margin
                                 )
-                            ]
-                        )
+                            ], style={"maxHeight": "800px", "overflowY": "auto", "width": "1200px"}
+                        ), 
                     ]),
 
                     dbc.Tab(label='Raw Info', tab_id="raw-info-tab", children=[
-                        html.Div(id="raw-info-container"),
+                        html.Div(id="raw-info-container", style={"maxHeight": "800px", "overflowY": "auto", "width": "1200px"}),
                     ]),
 
                     dbc.Tab(label='Event Statistics', tab_id="events-tab", children=[
-                        html.Div(id="event-stats-container"),
+                        html.Div(id="event-stats-container", style={"maxHeight": "800px", "overflowY": "auto", "width": "1200px"}),
                     ]),
 
                     dbc.Tab(label='Power Spectral Density', tab_id="psd-tab", children=[
                         html.Div(id="psd-container", children=[
                             dbc.Button("Compute & Display", id="compute-display-psd-button", color="secondary", n_clicks=0, style={"marginTop": "15px"}),
                             dcc.Loading(id="loading", type="default", children=[
-                                html.Div(id="psd-status", style={"margin-top": "10px"})
+                                html.Div(id="psd-status")
                             ])
-                        ])
+                        ], style = {"maxHeight": "800px", "overflowY": "auto", "width": "1200px"})
                     ]),
-                ]
-            ),
-
-
+                ], 
+                style = {**FLEXDIRECTION["row-tabs"], "width": "80%"}),
         ],
-        style={"width": "80%", "display": "none"}
-    )
+        style={**FREQUENCY_CONTAINER_STYLE, "display": "none"})
     ])
 
 register_populate_memory_tab_contents()

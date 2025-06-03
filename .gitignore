@@ -24,8 +24,8 @@ data/*
 !data/.gitkeep
 
 # Cache
-cache-directory/*
-!cache-directory/.gitkeep
+src/cache-directory/*
+!src/cache-directory/.gitkeep
 
 # Jupyter Notebook test
 *.ipynb
