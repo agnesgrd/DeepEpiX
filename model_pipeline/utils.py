@@ -108,6 +108,7 @@ def save_data_matrices(subject_path, path_output, bad_channels):
 
 	with open("model_pipeline/good_channels_dict.pkl", "rb") as f:
 		good_channels = pickle.load(f)
+	good_channels.pop('MRP52')
 
 	# Load raw file based on format
 	if subject_path.suffix == ".ds":

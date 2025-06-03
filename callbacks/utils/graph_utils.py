@@ -115,10 +115,12 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
             for channel in selected_channels
             if channel in channel_to_color
         }
+    elif color_selection == "blue":
+        color_map = {channel: "blue" for channel in selected_channels}
     elif color_selection == "white":
         color_map = {channel: "white" for channel in selected_channels}
     elif "smoothGrad" in color_selection:
-        color_map = {channel: "#00008B" for channel in selected_channels}
+        color_map = {channel: "blue" for channel in selected_channels} 
 
     # Use Plotly Express for efficient figure generation
     fig_start_time = time.time()
@@ -135,13 +137,14 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
             line=dict(color=color_map.get(col, None), width=1)
         ))
 
-    if 'smoothGrad' in color_selection: 
+    if 'smoothGrad' in color_selection:
         fig = su.add_smoothgrad_scatter(
             fig, 
             shifted_filtered_raw_df, 
             time_range, 
             selected_channels, 
-            filter=filter
+            filter=filter,
+            all_channels=sum(channels_region.values(), [])
         )
 
     print(f"Step 5: Figure creation completed in {time.time() - fig_start_time:.2f} seconds.")
@@ -189,7 +192,9 @@ def generate_graph_time_ica(offset_selection, time_range, folder_path, ica_resul
     if color_selection == "rainbow":
         num_colors = len(REGION_COLOR_PALETTE)
         color_map = {channel: REGION_COLOR_PALETTE[i%num_colors] for i, channel in enumerate(selected_channels)}
-    if color_selection == "white":
+    elif color_selection == "blue":
+        color_map = {channel: "blue" for channel in selected_channels}
+    elif color_selection == "white":
         color_map = {channel: "white" for channel in selected_channels}
 
     # Use Plotly Express for efficient figure generation

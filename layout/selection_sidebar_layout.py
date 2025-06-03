@@ -212,7 +212,7 @@ def create_selection(
             ),
             dcc.RadioItems(
                 id=colors_radio_id,
-                options=[{'label': 'white', 'value': 'white'}, {'label': 'rainbow', 'value': 'rainbow'}],
+                options=[{'label': 'blue', 'value': 'blue'}, {'label': 'white', 'value': 'white'}, {'label': 'rainbow', 'value': 'rainbow'}],
                 value='rainbow',
                 inline=False,
                 style={"margin": "10px 0", "fontSize": "12px"},
