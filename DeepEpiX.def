@@ -1,0 +1,53 @@
+Bootstrap: docker
+From: python:3.9
+
+%labels
+    Author Agnès Guinard <agnes.guinard@inserm.fr>
+    Version 1.0
+    Project DeepEpiX
+    Description "Software for annotation and automatic spike detection in MEG recordings"
+    BuildDate 2025-06-03
+
+%environment
+    export PYTHONDONTWRITEBYTECODE=1
+    export PYTHONUNBUFFERED=1
+    export VIRTUAL_ENV=/.dashenv
+    export PATH="$VIRTUAL_ENV/bin:$PATH"
+
+%post
+    apt-get update && apt-get install -y python3-tk
+
+    # Set working directory
+    mkdir -p /DeepEpiX
+    cd /DeepEpiX
+
+    # Copy requirements files (they will be staged later)
+    cp -r /requirements /DeepEpiX/requirements
+
+    # Create virtual environments
+    python3 -m venv /.dashenv
+    # python3 -m venv /.torchenv
+    python3 -m venv /.tfenv
+
+    # Install dependencies in each environment
+    /.dashenv/bin/pip install -r /DeepEpiX/requirements/requirements-python3.9.txt
+    # /.torchenv/bin/pip install -r /DeepEpiX/requirements/requirements-torchenv.txt
+
+    # TensorFlow installation logic
+    OS=$(uname)
+    ARCH=$(uname -m)
+    echo "$OS $ARCH"
+    if [ "$OS" = "Darwin" ]; then
+        echo "Detected macOS ($ARCH). Installing Metal-compatible TensorFlow..."
+        /.tfenv/bin/pip install -r /DeepEpiX/requirements/requirements-tfenv-macos.txt
+    elif [ "$ARCH" = "x86_64" ] || [ "$ARCH" = "aarch64" ]; then
+        echo "Detected Linux architecture. Installing CUDA-compatible TensorFlow..."
+        /.tfenv/bin/pip install -r /DeepEpiX/requirements/requirements-tfenv-cuda.txt
+    fi
+
+%files
+    . /DeepEpiX
+    requirements/ /requirements
+
+%runscript
+    exec /.dashenv/bin/gunicorn -w 25 -b 0.0.0.0:8050 --timeout 600 run:server
