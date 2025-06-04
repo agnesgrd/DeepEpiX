@@ -17,6 +17,10 @@ This app provides an interactive web interface for loading, preprocessing, annot
 - ✅ Run prediction models
 - ✅ Measure their performances
 
+## 🤔 What This App Should Do in the Future
+
+- 💡 Allow continuous learning of prediction models
+
 ---
 
 ## 🗂 App Structure
@@ -37,29 +41,5 @@ The app is structured around **pages**, **layout** and **callbacks**.
 ## 👩‍💻 Who Is This For?
 
 - Developers extending or maintaining the app
-- Researchers using the app for MEG/EEG studies
+- Researchers and clinicians using the app for MEG/EEG studies
 - Contributors improving UI, performance, or adding features
-
----
-
-## 🛠 Docker Installation (Quick Start)
-
-Clone the Repository in your working directory:
-```bash
-git clone https://github.com/agnesgrd/DeepEpiX.git
-```
-
-Build and run the Docker container with your local data directory:
-```bash
-cd DeepEpiX
-docker build -t deepepix-app .
-docker run -p 8050:8050 -v /home/user/DeepEpiX/data:/DeepEpiX/data deepepix-app # Modify this to point your local data path
-```
-
-Example of path to point to your data directory for Windows
-```bash
-docker run -p 8050:8050 -v //c/Users/pauli/Documents/MEGBase/data/exampleData:/DeepEpiX/data deepepix-app
-```
-
-Then, open the app in your web browser at:
-[http://localhost:8050/](http://localhost:8050/)

@@ -20,8 +20,9 @@ markdown_extensions:
   - pymdownx.tabbed
 nav:
   - Overview: index.md
+  - Installation : install.md
   - Architecture:
-      - Folder layout: structure.md
+      - Folder Structure: structure.md
       - App lifecycle: app-lifecycle.md
   - Pages:
       - Preprocessing tab: pages/preprocessing.md
