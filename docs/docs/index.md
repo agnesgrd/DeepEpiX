@@ -1,6 +1,6 @@
-# 🧠 MEG/EEG Signal Preprocessing App
+# 🧠 MEG/EEG GUI Software
 
-Welcome to the documentation for the Dash-based MEG/EEG preprocessing application.  
+Welcome to the documentation of DeepEpiX, a Dash-based MEG/EEG GUI Software.  
 This app provides an interactive web interface for loading, preprocessing, annotating and analyzing raw MEG/EEG files, and last but not least: running prediction models.
 
 ---

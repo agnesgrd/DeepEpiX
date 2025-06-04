@@ -50,4 +50,4 @@ From: python:3.9
     requirements/ /requirements
 
 %runscript
-    exec /.dashenv/bin/gunicorn -w 25 -b 0.0.0.0:8050 --timeout 600 run:server
+    exec /.dashenv/bin/gunicorn -w 25 -b 0.0.0.0:8050 --timeout 600 src/run:server
