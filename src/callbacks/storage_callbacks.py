@@ -37,7 +37,7 @@ def register_populate_memory_tab_contents():
         if selected_tab == "subject-tab-memory":
                 subject_content = dbc.Card(
                     dbc.CardBody([
-                        html.H5([html.I(className="bi bi-person-rolodex", style={"marginRight": "10px", "fontSize": "1.2em"}), "Subject"], className="card-title"),
+                        html.Span([html.I(className="bi bi-person-rolodex", style={"marginRight": "10px", "fontSize": "1.2em"}), "Subject"], className="card-title"),
                         html.Hr(),
                         dbc.ListGroup([
                             dbc.ListGroupItem([
@@ -45,7 +45,7 @@ def register_populate_memory_tab_contents():
                             ]),
                         ]),
 
-                        html.H5([html.I(className="bi bi-sliders", style={"marginRight": "10px", "fontSize": "1.2em"}), "Frequency Parameters"], className="card-title"),
+                        html.Span([html.I(className="bi bi-sliders", style={"marginRight": "10px", "fontSize": "1.2em"}), "Frequency Parameters"], className="card-title"),
                         html.Hr(),
                         dbc.ListGroup([
                             dbc.ListGroupItem([
@@ -79,7 +79,7 @@ def register_populate_memory_tab_contents():
             history_content = dbc.Card(
                     dbc.CardBody([
                         html.Div([
-                            html.H5([
+                            html.Span([
                                 html.I(className=f"bi {ICON[category]}", style={"marginRight": "10px", "fontSize": "1.2em"}),
                                 category.capitalize()
                             ], className="card-title"),

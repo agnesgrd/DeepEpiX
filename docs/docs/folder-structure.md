@@ -16,18 +16,33 @@ DeepEpiX/
 ├── src/                  
 │   ├── assets/           # Static image/logo/icons
 │   ├── cache-directory/  # Cached intermediate data or results - cleaned every time a new subect is loaded
-│   ├── callbacks/        
+
+│   ├── callbacks/        # Contains chainable functions that are automatically called whenever a UI element on viz.py page is changed
 │   │   ├── utils/
-│   │   │   ├── viz_utils.py
-│   │   └── viz.py        # Chainable functions that are automatically called whenever a UI element on viz.py page is changed
-│   ├── layout/           # UI elements definition
+│   │   │   ├── page1_utils.py 
+│   │   │   ├── page2_utils.py 
+│   │   │   ├── ...
+│   │   │   └── pageN_utils.py
+│   │   ├── page1_layout.py 
+│   │   ├── page2_layout.py 
+│   │   ├── ...
+│   │   └── page3_layout.py  
+
+│   ├── layout/           # Contains UI elements definition
+│   │   ├── page1_callbacks.py 
+│   │   ├── page2_callbacks.py 
+│   │   ├── ...
+│   │   └── pageN_callbacks.py  
+
 │   ├── model_pipeline/   # Extracted from https://github.com/pmouches/DeepEpi/tree/main/pipeline with some modifications
 │   ├── models/           # ML models from from https://github.com/pmouches/DeepEpi/tree/main/
+
 │   ├── pages/            # Multi-page app
-│   │   ├── home.py 
-│   │   ├── viz.py 
+│   │   ├── page1.py 
+│   │   ├── page2.py 
 │   │   ├── ...
-│   │   └── settings.py
+│   │   └── pageN.py
+
 │   ├── static/           # Static files
 │   ├── config.py         # Configuration settings and constants
 │   └── run.py            # Entry point to run the multi-page app
@@ -38,4 +53,13 @@ DeepEpiX/
 └── README.md 
 ```
 
-This structure is constrained by the multi-page construction app. Each page.py is placed in pages/. Each page has its callbacks repartis in callbacks/ and its layout.
+This structure is schematic but aims to help you understand how the multi-page Dash app is organized.
+
+Each page is defined in the `pages/` directory:
+
+- The **layout** of each page is declared in `layout/`.
+- The **interactivity (callbacks)** is handled in `callbacks/`.
+
+> 🔎 Note: Since several pages share common callback functions, the callbacks, layout components, and utilities are organized by major components (e.g., `graph`, `history`, `ica`, `prediction`, `preprocessing`, etc.), rather than strictly by individual pages.
+
+---

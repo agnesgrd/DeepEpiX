@@ -115,15 +115,6 @@ LABEL_STYLES = {
     }
 }
 
-FREQUENCY_CONTAINER_STYLE = {
-    "width": "60%",
-    "margin": "0 auto",
-    "justifyContent": "center",
-    "alignItems": "center",
-    "display": "none",
-    "flexDirection": "column"
-}
-
 ICON = {
         "annotations": "bi-activity",
         "models": "bi-stars",

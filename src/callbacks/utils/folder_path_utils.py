@@ -112,77 +112,75 @@ def build_table_raw_info(folder_path):
     raw = read_raw(folder_path, preload=False, verbose=False)
     info = raw.info
 
-    table = dbc.Card(
-        dbc.CardBody([
-            html.H5([
-                html.I(className="bi bi-clipboard-data", style={"marginRight": "10px", "fontSize": "1.2em"}),
-                "Raw Data Overview"
-            ], className="card-title"),
-            html.Hr(),
-            dbc.ListGroup([
-                dbc.ListGroupItem([
-                    html.Strong("File: "),
-                    html.Span(f"{raw.filenames[0] if raw.filenames else 'Unknown'}")
-                ]),
-                dbc.ListGroupItem([
-                    html.Strong("Number of Channels: "),
-                    html.Span(f"{info['nchan']}")
-                ]),
-                dbc.ListGroupItem([
-                    html.Strong("Sampling Frequency: "),
-                    html.Span(f"{info['sfreq']} Hz")
-                ]),
-                dbc.ListGroupItem([
-                    html.Strong("High-pass Filter: "),
-                    html.Span(f"{info['highpass']} Hz")
-                ]),
-                dbc.ListGroupItem([
-                    html.Strong("Low-pass Filter: "),
-                    html.Span(f"{info['lowpass']} Hz")
-                ]),
-                dbc.ListGroupItem([
-                    html.Strong("Duration: "),
-                    html.Span(f"{round(raw.times[-1], 2)} seconds")
-                ]),
-                dbc.ListGroupItem([
-                    html.Strong("Channel Names: "),
-                    html.Span('...' + f"{', '.join(info['ch_names'][30:35]) + '...' if len(info['ch_names']) > 35 else ', '.join(info['ch_names'])}")
-                ]),
-                dbc.ListGroupItem([
-                    html.Strong("Bad Channels: "),
-                    html.Span(f"{', '.join(info['bads']) if info['bads'] else 'None'}")
-                ]),
-                dbc.ListGroupItem([
-                    html.Strong("Measurement Date: "),
-                    html.Span(f"{str(info['meas_date'])}")
-                ]),
-                dbc.ListGroupItem([
-                    html.Strong("Experimenter: "),
-                    html.Span(f"{info.get('experimenter', 'Unknown')}")
-                ]),
-                dbc.ListGroupItem([
-                    html.Strong("SSP/ICA Components: "),
-                    html.Span(f"{len(info.get('comps', []))} components")
-                ]),
-                dbc.ListGroupItem([
-                    html.Strong("Projections (SSP): "),
-                    html.Span(f"{len(info.get('projs', []))} projections")
-                ]),
-                dbc.ListGroupItem([
-                    html.Strong("Digitized Points: "),
-                    html.Span(f"{len(info.get('dig', []))} points" if info.get('dig') else "None")
-                ]),
-                dbc.ListGroupItem([
-                    html.Strong("CTF Head Transform: "),
-                    html.Span("Available" if info.get('ctf_head_t') else "None")
-                ]),
-                dbc.ListGroupItem([
-                    html.Strong("Device to Head Transform: "),
-                    html.Span("Available" if info.get('dev_head_t') else "None")
-                ])
+    table = [
+        html.Span([
+            html.I(className="bi bi-clipboard-data", style={"marginRight": "10px", "fontSize": "1.2em"}),
+            "Raw Data Overview"
+        ], className="card-title"),
+        html.Hr(),
+        dbc.ListGroup([
+            dbc.ListGroupItem([
+                html.Strong("File: "),
+                html.Span(f"{raw.filenames[0] if raw.filenames else 'Unknown'}")
+            ]),
+            dbc.ListGroupItem([
+                html.Strong("Number of Channels: "),
+                html.Span(f"{info['nchan']}")
+            ]),
+            dbc.ListGroupItem([
+                html.Strong("Sampling Frequency: "),
+                html.Span(f"{info['sfreq']} Hz")
+            ]),
+            dbc.ListGroupItem([
+                html.Strong("High-pass Filter: "),
+                html.Span(f"{info['highpass']} Hz")
+            ]),
+            dbc.ListGroupItem([
+                html.Strong("Low-pass Filter: "),
+                html.Span(f"{info['lowpass']} Hz")
+            ]),
+            dbc.ListGroupItem([
+                html.Strong("Duration: "),
+                html.Span(f"{round(raw.times[-1], 2)} seconds")
+            ]),
+            dbc.ListGroupItem([
+                html.Strong("Channel Names: "),
+                html.Span('...' + f"{', '.join(info['ch_names'][30:35]) + '...' if len(info['ch_names']) > 35 else ', '.join(info['ch_names'])}")
+            ]),
+            dbc.ListGroupItem([
+                html.Strong("Bad Channels: "),
+                html.Span(f"{', '.join(info['bads']) if info['bads'] else 'None'}")
+            ]),
+            dbc.ListGroupItem([
+                html.Strong("Measurement Date: "),
+                html.Span(f"{str(info['meas_date'])}")
+            ]),
+            dbc.ListGroupItem([
+                html.Strong("Experimenter: "),
+                html.Span(f"{info.get('experimenter', 'Unknown')}")
+            ]),
+            dbc.ListGroupItem([
+                html.Strong("SSP/ICA Components: "),
+                html.Span(f"{len(info.get('comps', []))} components")
+            ]),
+            dbc.ListGroupItem([
+                html.Strong("Projections (SSP): "),
+                html.Span(f"{len(info.get('projs', []))} projections")
+            ]),
+            dbc.ListGroupItem([
+                html.Strong("Digitized Points: "),
+                html.Span(f"{len(info.get('dig', []))} points" if info.get('dig') else "None")
+            ]),
+            dbc.ListGroupItem([
+                html.Strong("CTF Head Transform: "),
+                html.Span("Available" if info.get('ctf_head_t') else "None")
+            ]),
+            dbc.ListGroupItem([
+                html.Strong("Device to Head Transform: "),
+                html.Span("Available" if info.get('dev_head_t') else "None")
             ])
         ])
-    )
+    ]
 
     return table
 
@@ -204,21 +202,19 @@ def build_table_events_statistics(folder_path):
     ]
     annotation_table = dbc.Table(table_header + [html.Tbody(table_body)], bordered=True, striped=True, hover=True, size="sm")
 
-    stats_summary = dbc.Card(
-        dbc.CardBody([
-            html.H5([
-                html.I(className="bi bi-bar-chart-line", style={"marginRight": "10px", "fontSize": "1.2em"}),
-                "Event Summary"
-            ], className="card-title"),
-            html.Hr(),
-            dbc.ListGroup([
-                dbc.ListGroupItem(f"Total annotations: {len(annotations)}"),
-                dbc.ListGroupItem(f"Unique event types: {len(description_counts)}"),
-                annotation_table,
-                dbc.ListGroupItem(f"First event starts at {annotations.onset[0]:.2f} s"),
-                dbc.ListGroupItem(f"Last event ends at {(annotations.onset[-1] + annotations.duration[-1]):.2f} s"),
-            ])
+    stats_summary = [
+        html.Span([
+            html.I(className="bi bi-bar-chart-line", style={"marginRight": "10px", "fontSize": "1.2em"}),
+            "Event Summary"
+        ], className="card-title"),
+        html.Hr(),
+        dbc.ListGroup([
+            dbc.ListGroupItem(f"Total annotations: {len(annotations)}"),
+            dbc.ListGroupItem(f"Unique event types: {len(description_counts)}"),
+            annotation_table,
+            dbc.ListGroupItem(f"First event starts at {annotations.onset[0]:.2f} s"),
+            dbc.ListGroupItem(f"Last event ends at {(annotations.onset[-1] + annotations.duration[-1]):.2f} s"),
         ])
-    )
+    ]
 
     return stats_summary

@@ -97,7 +97,7 @@ def build_table_events_statistics(annotations):
     # Summary stats
     stats_summary = dbc.Card(
         dbc.CardBody([
-            html.H5([
+            html.Span([
                 html.I(className="bi bi-bar-chart-line", style={"marginRight": "10px", "fontSize": "1.2em"}),
                 "Event Summary"
             ], className="card-title"),
