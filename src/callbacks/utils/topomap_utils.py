@@ -22,7 +22,6 @@ def create_topomap_from_raw(raw, sfreq, t0, t):
 
     # Extract the data at the specified time index
     data = raw.get_data()  # Shape (n_channels, n_times)
-    print(data.shape)
     if time_idx < 0 or time_idx >= data.shape[1]:
         raise ValueError("Timepoint is out of range for the provided data.")
     

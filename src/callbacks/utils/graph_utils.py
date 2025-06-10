@@ -162,7 +162,6 @@ def generate_graph_time_ica(offset_selection, time_range, folder_path, ica_resul
 
     start_time = time.time()
     raw_ddf = pu.get_ica_dataframe_dask(folder_path, time_range[0], time_range[1], ica_result_path)
-    print(raw_ddf)
     print(f"Step 1: Preprocessing completed in {time.time() - start_time:.2f} seconds.")
 
     # Filter time range
@@ -237,7 +236,6 @@ def update_annotations_on_graph(fig_dict, annotations_to_show, page_selection, a
     time_range = chunk_limits[int(page_selection)]
     annotations_df = pd.DataFrame(annotations).set_index('onset')
     filtered_annotations_df = du.get_annotations_df_filtered_on_time(time_range, annotations_df)
-    unique_descriptions = sorted(filtered_annotations_df["description"].unique())
 
     annotations_end_time = time.time()
     print(f"Time to filter annotations: {annotations_end_time - annotations_start_time:.4f} seconds")
@@ -250,7 +248,6 @@ def update_annotations_on_graph(fig_dict, annotations_to_show, page_selection, a
     color_cycle = itertools.cycle(COLOR_PALETTE)
     for desc in annotations_to_show:
         description_colors[desc] = next(color_cycle)
-    print(description_colors)
 
     shapes_start_time = time.time()
     

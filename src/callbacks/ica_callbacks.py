@@ -55,7 +55,7 @@ def register_compute_ica():
             error_message = f"⚠️ Please fill in all required fields: {', '.join(missing_fields)}"
             return error_message, dash.no_update, dash.no_update,
         
-        cache_dir = Path.cwd() / f"{config.CACHE_DIR}"
+        cache_dir = config.CACHE_DIR
         ica_result_path = cache_dir/f"{n_components}_{ica_method}_{max_iter}_{decim}-ica.fif"
         if ica_result_path.exists() and str(ica_result_path) in ica_store:
             return "✅ Reusing existing ICA results", 0, dash.no_update, dash.no_update

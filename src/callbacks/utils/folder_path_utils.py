@@ -6,10 +6,11 @@ import mne
 from dash import html
 import dash_bootstrap_components as dbc
 from collections import Counter
+from config import DATA_DIR
 
 # Function to get model options
 def get_folder_path_options():
-    data_dir = Path("../data")
+    data_dir = Path(DATA_DIR)
     data = list(data_dir.glob("*.ds")) + list(data_dir.glob("*.fif"))
 
     # Dossiers 4D Neuroimaging

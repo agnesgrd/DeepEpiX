@@ -1,8 +1,9 @@
 from pathlib import Path
+from config import MODELS_DIR
 
 # Function to get model options
 def get_model_options(model_type):
-    model_dir = Path("models")
+    model_dir = Path(MODELS_DIR)
 
     if model_type == "AE":
         models = [f for f in model_dir.iterdir() if f.suffix in {".pth", ".keras", ".h5"} and ('AE' in str(f)) is True]

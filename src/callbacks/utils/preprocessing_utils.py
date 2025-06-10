@@ -61,13 +61,13 @@ def update_chunk_limits(total_duration):
     ]
     return chunk_limits
 
-def get_cache_filename(folder_path, freq_data, start_time, end_time, cache_dir=f"./{config.CACHE_DIR}"):
+def get_cache_filename(folder_path, freq_data, start_time, end_time, cache_dir=f"{config.CACHE_DIR}"):
     # Create a unique hash key
     hash_input = f"{folder_path}_{freq_data}_{start_time}_{end_time}"
     hash_key = hashlib.md5(hash_input.encode()).hexdigest()
     return os.path.join(cache_dir, f"{hash_key}.parquet")
 
-def get_preprocessed_dataframe_dask(folder_path, freq_data, start_time, end_time, prep_raw=None, cache_dir=f"./{config.CACHE_DIR}"):
+def get_preprocessed_dataframe_dask(folder_path, freq_data, start_time, end_time, prep_raw=None, cache_dir=f"{config.CACHE_DIR}"):
     os.makedirs(cache_dir, exist_ok=True)
     cu.clear_old_cache_files(cache_dir)
     cache_file = get_cache_filename(folder_path, freq_data, start_time, end_time, cache_dir)
@@ -139,7 +139,7 @@ def get_cache_filename_ica(folder_path, start_time, end_time, ica_result_path, c
     hash_key = hashlib.md5(hash_input.encode()).hexdigest()
     return os.path.join(cache_dir, f"{hash_key}.parquet")
 
-def get_ica_dataframe_dask(folder_path, start_time, end_time, ica_result_path, raw=None, cache_dir=f"./{config.CACHE_DIR}"):
+def get_ica_dataframe_dask(folder_path, start_time, end_time, ica_result_path, raw=None, cache_dir=f"{config.CACHE_DIR}"):
     os.makedirs(cache_dir, exist_ok=True)
     cu.clear_old_cache_files(cache_dir)
 
@@ -177,7 +177,6 @@ def get_ica_dataframe_dask(folder_path, start_time, end_time, ica_result_path, r
 
 def compute_power_spectrum_decomposition(folder_path, freq_data):
     raw = fpu.read_raw(folder_path, preload=True, verbose=False)
-    print(raw.ch_names)
 
     low_pass_freq = freq_data.get("low_pass_freq")
     high_pass_freq = freq_data.get("high_pass_freq")

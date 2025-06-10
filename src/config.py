@@ -1,4 +1,5 @@
 # config.py
+from pathlib import Path
 
 ##### App settings ##########
 DEBUG = True
@@ -8,13 +9,20 @@ ENV = "development"
 
 ##### Cache settings ##########
 CACHE_TYPE = 'FileSystemCache'
-CACHE_DIR = 'cache-directory'
 CACHE_DEFAULT_TIMEOUT = 84000 # seconds
 
 ##### Useful path ##########
-MODEL_DIR = "models/"
-TENSORFLOW_ENV = ".tfenv"
-TORCH_ENV = ".torchenv"
+# Root directory of the app (thanks to PYTHONPATH)
+APP_ROOT = Path(__file__).parent
+
+# Common paths used everywhere
+MODELS_DIR = APP_ROOT / "models"
+CACHE_DIR = APP_ROOT / "cache-directory"
+DATA_DIR = APP_ROOT.parent / "data"  # assuming data/ is at /DeepEpiX/data
+STATIC_DIR = APP_ROOT / "static"
+MODEL_PIPELINE_DIR = APP_ROOT / "model_pipeline"
+TENSORFLOW_ENV = APP_ROOT.parent / ".tfenv"
+TORCH_ENV = APP_ROOT.parent.parent / ".torchenv"
 
 ##### Default plotting variables #####
 DEFAULT_Y_AXIS_OFFSET = 40

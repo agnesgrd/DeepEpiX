@@ -108,7 +108,6 @@ def save_data_matrices(subject_path, path_output, bad_channels):
 
 	with open("model_pipeline/good_channels_dict.pkl", "rb") as f:
 		good_channels = pickle.load(f)
-	good_channels.pop('MRP52')
 
 	# Load raw file based on format
 	if subject_path.suffix == ".ds":
@@ -171,7 +170,7 @@ def create_windows(path_output, window_size_ms, stand=False):
 
 	data = load_obj('data_raw_%s' % params.subject_number+'.pkl', path_output)
 
-	X_all = np.empty((0,274,int(window_size))) # Will store MEG windows
+	X_all = np.empty((0,params.dim[1],int(window_size))) # Will store MEG windows
 	window_center_time = list() # Will store MEG window center timing
 	nb_block = list()  # Will store MEG window block to be able to go back to original .ds files 
 
@@ -183,7 +182,6 @@ def create_windows(path_output, window_size_ms, stand=False):
 		# Slice in short windows (seconds)
 		# get the center of each windows in seconds
 		window_centers = np.arange(window_size/2, block_data.shape[1], window_spacing)
-		print(window_centers)
 		# Start getting the data for each window
 		for window_center in tqdm(window_centers):
 			# get the data only if time duration is big enough before and after the

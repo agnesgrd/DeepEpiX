@@ -112,53 +112,55 @@ layout = html.Div([
 				)
 			], style={"display": "flex", "alignItems": "center", "marginBottom": "20px"})
 
-		], style={**BOX_STYLES["classic"], "width": "40%"}),
-
+		], style={"width": "40%"}),
+				
 		html.Div(
 			id="performance-results-div",
 			children=[
-				html.Div([
-					html.Div(id=f"performance-results-title-panel-{i}", children=[html.Small(f"Panel {i}")], style= {"marginBottom": "10px"}),
-					dbc.Tabs([
-						dbc.Tab(label="Performance Metrics", tab_id=f"metrics-panel-{i}", children=[
-							html.Div(id=f"performance-metrics-table-panel-{i}")
-						]),
-						dbc.Tab(label="Confusion Matrix", tab_id=f"confusion-panel-{i}", children=[
-							html.Div(id=f"confusion-matrix-table-panel-{i}")
-						]),
-						dbc.Tab(label="Distance Statistics", tab_id=f"stats-panel-{i}", children=[
-							html.I(
-								className="bi bi-info-circle-fill",
-								id="distance-help-icon",
-								style={
-									"fontSize": "0.8em",
-									"cursor": "pointer",
-									"verticalAlign": "middle",
-									"marginLeft": "15px"
-								}
-							),
-							dbc.Tooltip(
-								"This panel shows distances between model predictions and ground truth."
-								"• TP: Time between matched prediction and true event. Smaller values mean more accurate predictions."
-								"• FP: Time to nearest true event (unmatched prediction). Useful for spotting near-misses or totally spurious predictions."
-								"• FN: Time to nearest prediction (missed true event). A small distance means the model nearly detected the event.",
-								target="distance-help-icon",
-								placement="top",
-								style={"maxWidth": "600px"}
-							),
-							html.Div(id=f"distance-statistics-table-panel-{i}")				 
-						])
-					],
-					id=f"performance-tabs-panel-{i}",
-					active_tab=f"metrics-panel-{i}",
-					style={**FLEXDIRECTION['row-tabs']}
-					)
-				],
-				id=f"performance-panel-{i}",
-				style={"marginBottom": "30px"})  # space between panels
+				dbc.Card(
+					dbc.CardBody([
+						html.Div(id=f"performance-results-title-panel-{i}", children=[html.Small(f"Panel {i+1}")], style={"marginBottom": "10px"}),
+						dbc.Tabs([
+							dbc.Tab(label="Performance Metrics", tab_id=f"metrics-panel-{i}", children=[
+								html.Div(id=f"performance-metrics-table-panel-{i}")
+							]),
+							dbc.Tab(label="Confusion Matrix", tab_id=f"confusion-panel-{i}", children=[
+								html.Div(id=f"confusion-matrix-table-panel-{i}")
+							]),
+							dbc.Tab(label="Distance Statistics", tab_id=f"stats-panel-{i}", children=[
+								html.I(
+									className="bi bi-info-circle-fill",
+									id=f"distance-help-icon-{i}",  # make unique per panel
+									style={
+										"fontSize": "0.8em",
+										"cursor": "pointer",
+										"verticalAlign": "middle",
+										"marginLeft": "15px"
+									}
+								),
+								dbc.Tooltip(
+									"This panel shows distances between model predictions and ground truth. "
+									"• TP: Time between matched prediction and true event. Smaller values mean more accurate predictions. "
+									"• FP: Time to nearest true event (unmatched prediction). Useful for spotting near-misses or totally spurious predictions. "
+									"• FN: Time to nearest prediction (missed true event). A small distance means the model nearly detected the event.",
+									target=f"distance-help-icon-{i}",
+									placement="top",
+									style={"maxWidth": "600px"}
+								),
+								html.Div(id=f"distance-statistics-table-panel-{i}")				 
+							])
+						],
+						id=f"performance-tabs-panel-{i}",
+						active_tab=f"metrics-panel-{i}",
+						style={**FLEXDIRECTION['row-tabs']}
+						)
+					]),
+					id=f"performance-panel-{i}",
+					style={"marginBottom": "30px", "boxShadow": "0 2px 8px rgba(0, 0, 0, 0.1)", "borderRadius": "1rem"}
+				)
 				for i in range(3)
 			],
-			style={**BOX_STYLES["classic"], "width": "60%"}
+			style={"width": "60%"}
 		)
 	], style={**FLEXDIRECTION['row-flex'], "display": "flex"})
 ])

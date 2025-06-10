@@ -11,6 +11,7 @@ import dash_bootstrap_components as dbc
 import config
 from callbacks.utils import annotation_utils as au
 from callbacks.utils import history_utils as hu
+from config import APP_ROOT, MODEL_PIPELINE_DIR
 
 def register_update_selected_model():
     @callback(
@@ -72,7 +73,7 @@ def register_execute_predict_script():
             error_message = f"⚠️ Please fill in all required fields: {', '.join(missing_fields)}"
             return error_message, dash.no_update, dash.no_update, dash.no_update, dash.no_update
         
-        cache_dir = Path.cwd() / f"{config.CACHE_DIR}"
+        cache_dir = config.CACHE_DIR
         predictions_csv_path = cache_dir/f"{os.path.basename(model_path)}_predictions.csv"
         smoothgrad_path = cache_dir/f"{os.path.basename(model_path)}_smoothGrad.pkl"
 
@@ -85,13 +86,13 @@ def register_execute_predict_script():
 
         # Otherwise, execute model
         if "TensorFlow" in venv:
-            ACTIVATE_ENV = f"../{config.TENSORFLOW_ENV}/bin/python"      
+            ACTIVATE_ENV = str(config.TENSORFLOW_ENV / "bin/python")      
         elif "PyTorch" in venv:
             ACTIVATE_ENV = f"../{config.TORCH_ENV}/bin/python"
                 
         command = [
             ACTIVATE_ENV,
-            "model_pipeline/run_model.py",
+            str(MODEL_PIPELINE_DIR / "run_model.py"),
             str(model_path),
             str(venv),
             str(subject_folder_path),
@@ -107,7 +108,7 @@ def register_execute_predict_script():
 
         try: 
             start_time = time.time()
-            subprocess.run(command, env=env, text=True) #stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(command, env=env, text=True, cwd=str(APP_ROOT)) #stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             model_probabilities_store = [str(predictions_csv_path)]
             print(f"Model testing executed in {time.time()-start_time:.2f} seconds")
 

@@ -1,9 +1,10 @@
 import pandas as pd
 import dash_bootstrap_components as dbc
 from dash import html
+from config import STATIC_DIR
 
 def render_pretrained_models_table():
-    df = pd.read_csv("static/pretrained-models-info.csv")
+    df = pd.read_csv(STATIC_DIR / "pretrained-models-info.csv")
 
     table_header = html.Thead(
         html.Tr([html.Th(col) for col in df.columns])

@@ -86,11 +86,11 @@ def run_smoothgrad(model_file, model_type, path_to_files, y_pred_path, threshold
     total_nb_points = data_file['meg'][0].shape[1]
 
     # -- instantiate arrays to store the full signal portion between start_win and stop_win and the corresponding gradient values 
-    full_grads = np.zeros((total_nb_points, 274))
+    full_grads = np.zeros((total_nb_points, params.dim[1]))
 
     my_labels = np.ones((params.nb_repeat_sg, 1))
 
-    dim = (int(params.sfreq*params.window_size_ms), 274)
+    dim = (int(params.sfreq*params.window_size_ms), params.dim[1])
 
     # Model Selection
     if "TensorFlow" in model_type:

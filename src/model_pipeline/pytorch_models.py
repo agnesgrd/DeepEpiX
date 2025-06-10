@@ -69,7 +69,7 @@ class TimeSeriesDataSet(Dataset):
 
     # Opens windows_bi binary file
     f = open(path_data+prefixe+str(sub)+suffixe)
-    # Set cursor position to 30 (nb time points)*274 (nb channels)*windows_id*4 because data is stored as float64 and dtype.itemsize = 8
+    # Set cursor position to 30 (nb time points)*275 (nb channels)*windows_id*4 because data is stored as float64 and dtype.itemsize = 8
     f.seek(self.dim[0]*self.dim[1]*win*4)
     # From cursor location, get data from 1 window
     sample = np.fromfile(f, dtype='float32', count=self.dim[0]*self.dim[1])
@@ -171,7 +171,7 @@ def test_model_dash(model_name, X_test_ids, output_path, threshold, adjust_onset
 
     # Use summary to print model details on the selected device
     from torchsummary import summary
-    print(summary(model, (1, 30, 274)))
+    print(summary(model, (1, 30, 275)))
 
     model.eval() 
 
