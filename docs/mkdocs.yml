@@ -24,14 +24,9 @@ nav:
   - Architecture:
       - Folder Structure: folder-structure.md
       - App Structure : app-structure.md
-      - App lifecycle: app-lifecycle.md
-  - User Guide: user.md
-  - Pages:
-      - Preprocessing tab: pages/preprocessing.md
-      - PSD tab: pages/psd.md
-  - Callbacks:
-      - Overview: callbacks/index.md
-      - Frequency controls: callbacks/frequency.md
+  - User Guide:
+      - Load & Preprocess Data: user/dataset.md
+      - Create Sensors Layout : user/montage.md
   - Developer Guide:
       - Setup & run: dev/setup.md
       - Add a new page: dev/new_page.md
@@ -39,3 +34,9 @@ nav:
       - Write a callback: dev/callback.md
       - Useful layout: dev/layout.md
       - Style guide: dev/style.md
+  - Pages:
+      - Preprocessing tab: pages/preprocessing.md
+      - PSD tab: pages/psd.md
+  - Callbacks:
+      - Overview: callbacks/index.md
+      - Frequency controls: callbacks/frequency.md

@@ -8,27 +8,25 @@ Since pages in this app **do not directly communicate** with one another (except
 
 ## ➕ 5 Steps to Add a New Feature Page
 
-1. **Create the page file**  
+1. **Create the page file.**  
    Add a new file named `new_page.py` in the `pages/` directory.
 
-2. **Register the page**
+2. **Register the page.**
    Inside the new file, include the following line:
    ```python
    dash.register_page(__name__, name = "New page", path="/path/to/the/new/page")
    ```
-3. **Define the layout**  
-
+3. **Define the layout.**  
    Create a variable or function named layout that returns the page’s content:
    ```python
-   layout = html.Div([
-        # Your page components here
-    ])
+   layout = html.Div([  
+      #Your page components here 
+   ])
    ```
 
-4. **Define the callbacks** 
-
-   Write callback functions that dynamically update your page components.
-   Use the following pattern to register callbacks:
+4. **Define the callbacks.** 
+   Write callback functions that dynamically update your page components. 
+   Use the following pattern to register callbacks: 
    Call this registration function inside `new_page.py`.  
    ```python
    # callbacks/your_feature.py
@@ -44,21 +42,21 @@ Since pages in this app **do not directly communicate** with one another (except
          return updated_value1, updated_value2
    ```
     
-5. **Update run.py (main app file)**  
-
+5. **Update run.py (main app file).**  
    The app is already initialized with multi-page support:
    ```python
    app = Dash(__name__, use_pages=True)
    ```
    Ensure the new page is included using dash.page_container.
-
    You can also control the page's order or placement in the DropdownMenu component from here.
+
+
+
+> 💡 Best Practice: Group related callbacks into separate files inside the `callbacks/` directory. Structure them by feature or component (e.g., `graph.py`, `prediction.py`), not strictly by page.
 
 ---
 
-
 ## 📚 Resources
-> 💡 Best Practice: Group related callbacks into separate files inside the `callbacks/` directory. Structure them by feature or component (e.g., `graph.py`, `prediction.py`), not strictly by page.
 
 To better understand how multi-page apps work in Dash, see the official documentation:
 

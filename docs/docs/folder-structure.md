@@ -1,3 +1,5 @@
+# 🗃️ Folder Structure
+
 ```
 DeepEpiX/
 
