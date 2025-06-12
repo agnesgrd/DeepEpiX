@@ -1,0 +1,72 @@
+Bootstrap: docker
+From: python:3.9
+
+%labels
+    Author Agnès Guinard <agnes.guinard@inserm.fr>
+    Version 1.0
+    Project DeepEpiX
+    Description "Software for annotation and automatic spike detection in MEG recordings"
+    BuildDate 2025-06-03
+
+%environment
+    export PYTHONDONTWRITEBYTECODE=1
+    export PYTHONUNBUFFERED=1
+    export VIRTUAL_ENV=/DeepEpiX/.dashenv
+    export PATH="$VIRTUAL_ENV/bin:$PATH"
+    export PYTHONPATH=/DeepEpiX/src
+
+%files
+    requirements/ /DeepEpiX/requirements/
+    ./ /DeepEpiX/
+
+%post
+    apt-get update && apt-get install -y python3-tk
+
+    # Set working directory
+    cd /DeepEpiX
+    
+    # Create virtual environments within the project directory
+    python3 -m venv /DeepEpiX/.dashenv
+    python3 -m venv /DeepEpiX/.tfenv
+    
+    # Upgrade pip in both environments
+    /DeepEpiX/.dashenv/bin/pip install --upgrade pip
+    /DeepEpiX/.tfenv/bin/pip install --upgrade pip
+    
+    # Install dash environment dependencies
+    /DeepEpiX/.dashenv/bin/pip install -r requirements/requirements-python3.9.txt
+    
+    # Install TensorFlow environment dependencies based on OS/architecture
+    OS=$(uname)
+    ARCH=$(uname -m)
+    echo "OS: $OS, ARCH: $ARCH"
+    
+    if [ "$OS" = "Darwin" ]; then
+        echo "Detected macOS ($ARCH). Installing Metal-compatible TensorFlow..."
+        /DeepEpiX/.tfenv/bin/pip install -r requirements/requirements-tfenv-macos.txt
+    elif [ "$ARCH" = "x86_64" ] || [ "$ARCH" = "aarch64" ]; then
+        echo "Detected Linux ($ARCH). Installing CUDA-compatible TensorFlow..."
+        /DeepEpiX/.tfenv/bin/pip install -r requirements/requirements-tfenv-cuda.txt
+    else
+        echo "Unknown architecture: $ARCH. Cannot install CPU-only TensorFlow..."
+    fi
+
+%runscript
+    cd /DeepEpiX/src
+    exec /DeepEpiX/.dashenv/bin/gunicorn -w 25 -b 0.0.0.0:8050 --timeout 600 run:server
+
+%startscript
+    cd /DeepEpiX/src
+    /DeepEpiX/.dashenv/bin/gunicorn -w 25 -b 0.0.0.0:8050 --timeout 600 run:server
+
+%help
+    DeepEpiX Application Container
+    
+    This container runs the DeepEpiX web application using Gunicorn.
+    The application will be available on port 8050.
+    
+    To run:
+    apptainer run --bind /tmp:/DeepEpiX/src/cache_directory deepepix.sif
+    
+    To run with custom data directory:
+    apptainer run --bind /path/to/data:/DeepEpiX/data --bind /tmp:/DeepEpiX/src/cache_directory deepepix.sif

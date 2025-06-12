@@ -29,3 +29,6 @@ src/cache-directory/*
 
 # Jupyter Notebook test
 *.ipynb
+
+# Mkdocs
+*/site/
