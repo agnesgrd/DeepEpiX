@@ -68,8 +68,11 @@ def register_update_graph_raw_signal():
         filter={}
 
         if "smoothGrad" in color_selection:
-            with open(sensitivity_analysis_store[0], 'rb') as f:
-                filter = pickle.load(f)
+            try: 
+                with open(sensitivity_analysis_store[0], 'rb') as f:
+                    filter = pickle.load(f)
+            except KeyError:
+                return dash.no_update, "No color selected for graph traces."
 
         try:                  
             fig, error = gu.generate_graph_time_channel(selected_channels, float(offset_selection), time_range, folder_path, freq_data, color_selection, xaxis_range, channel_store, filter)
