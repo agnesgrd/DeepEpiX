@@ -82,7 +82,9 @@ git clone https://github.com/agnesgrd/DeepEpiX.git
 cd DeepEpiX
 docker build -t deepepix-app .
 docker run -p 8050:8050 -v /home/user/DeepEpiX/data:/DeepEpiX/data deepepix-app # Modify this to point your local data path
-# Example for Windows
+```
+Example for Windows :
+```bash
 docker run -p 8050:8050 -v //c/Users/pauli/Documents/MEGBase/data/exampleData:/DeepEpiX/data deepepix-app
 ```
 
@@ -208,7 +210,7 @@ Activate your Dash environment and start DeepEpiX:
 
   ```bash
   source .dashenv/bin/activate
-  python3 run.py
+  python3 src/run.py
   ```
 </details>
 
@@ -217,7 +219,7 @@ Activate your Dash environment and start DeepEpiX:
 
   ```bash
   conda activate .dashenv
-  python3 run.py
+  python3 src/run.py
   ```
 </details>
 
