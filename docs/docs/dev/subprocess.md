@@ -52,11 +52,12 @@ if __name__ == "__main__":
     ```python
         # Select the Python executable based on the virtual environment
         if "TensorFlow" in venv:
-            ACTIVATE_ENV = f"../{config.TENSORFLOW_ENV}/bin/python"
+            ACTIVATE_ENV = str(config.TENSORFLOW_ENV / "bin/python")      
         elif "PyTorch" in venv:
-            ACTIVATE_ENV = f"../{config.TORCH_ENV}/bin/python"
+            ACTIVATE_ENV = str(config.TORCH_ENV / "bin/python")
     ```
     The variable `venv` is determined earlier in the function based on the model file's extension (`.pth`, .`keras`, `h5`).
+    `TENSORFLOW_ENV` and `TORCH_ENV` are paths to the respective virtual environments, defined in the `config` module.
 
 3. **Command Definition**
 
