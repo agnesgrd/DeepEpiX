@@ -25,9 +25,9 @@ def create_graph_container(
                     "position": "absolute",
                     "top": "0px",
                     "left": "30px",
-                    "background-color": "rgba(0,0,0,0)",
-                    "border-radius": "5px",
-                    "box-shadow": "2px 2px 5px rgba(0,0,0,0.2)",
+                    "backgroundColor": "transparent",
+                    "border": "none",
+                    "boxShadow": "none",
                     "z-index": "1000",
                     "opacity": 0.8
                 },
@@ -57,9 +57,9 @@ def create_graph_container(
                     "position": "absolute",
                     "top": "10px",
                     "left": "100px",
-                    "background-color": "rgba(0,0,0,0)",
-                    "border-radius": "5px",
-                    "box-shadow": "2px 2px 5px rgba(0,0,0,0.2)",
+                    "background-color": "transparent",
+                    "border": "none",
+                    "boxShadow": "none",
                     "z-index": "1000",
                     "opacity": 0.8
                 },
@@ -201,7 +201,7 @@ def create_graph_container(
                 figure={
                     'data': [],
                     'layout': {
-                        'template': 'plotly_dark',
+                        # 'template': 'plotly_dark',
                         'xaxis': {
                             'title': '',
                             'showgrid': False,
@@ -216,9 +216,9 @@ def create_graph_container(
                             'range': [0, 1],
                             'color': 'white'
                         },
-                        'paper_bgcolor': 'rgba(0,0,0,1)',
-                        'plot_bgcolor': 'rgba(0,0,0,1)',
-                        'font': {'color': 'white'},
+                        # 'paper_bgcolor': 'rgba(0,0,0,1)',
+                        # 'plot_bgcolor': 'rgba(0,0,0,1)',
+                        # 'font': {'color': 'white'},
                         'margin': {'l': 10, 'r': 0, 't': 0, 'b': 20},
                     },
                 },

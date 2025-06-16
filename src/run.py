@@ -1,11 +1,11 @@
 # run.py
-from dash import Dash, html, dcc, page_container
+from dash import Dash, html, dcc, page_container, Input, Output
 import dash_bootstrap_components as dbc
 import config
 
 app = Dash(__name__,
            use_pages=True,
-           external_stylesheets=[dbc.icons.BOOTSTRAP, dbc.themes.CYBORG])
+           external_stylesheets=[dbc.icons.BOOTSTRAP, dbc.themes.BOOTSTRAP])
 
 app.layout = html.Div(
     children=[
@@ -54,7 +54,7 @@ app.layout = html.Div(
                                 toggle_class_name="bi bi-list",
                                 toggle_style={
                                     "fontSize": "50px",
-                                    "color": "white",
+                                    # "color": "white",
                                     "cursor": "pointer",
                                 },
                                 direction="down",
@@ -72,7 +72,7 @@ app.layout = html.Div(
                             html.Span(
                                 "DeepEpiX ©",
                                 style={
-                                    "color": "white",
+                                    # "color": "white",
                                     "fontWeight": "bold",
                                     "fontSize": "16px",
                                     "marginLeft": "8px",
@@ -91,6 +91,17 @@ app.layout = html.Div(
                     # Right section: Logos
                     html.Div(
                         children=[
+
+                            html.Span(
+                                [
+                                    dbc.Label(className="bi bi-moon", html_for="color-mode-switch"),
+                                    dbc.Switch( id="color-mode-switch", value=False, className="d-inline-block ms-1", persistence=True),
+                                    dbc.Label(className="bi bi-sun", html_for="color-mode-switch"),
+                                ]
+                            ),
+
+                            dcc.Store(id="theme-store"),
+
                             html.Img(
                                 src="/assets/crnl-logo.png",
                                 style={
@@ -131,7 +142,7 @@ app.layout = html.Div(
                     "display": "flex",
                     "justifyContent": "space-between",
                     "alignItems": "center",
-                    "backgroundColor": "#1c1c1c",
+                    # "backgroundColor": "#1c1c1c",
                 },
             ),
 
@@ -155,6 +166,18 @@ app.layout = html.Div(
 
         },
     )])
+
+# Your clientside callback becomes simpler:
+app.clientside_callback(
+    """
+    function(dark_mode) {
+        document.documentElement.setAttribute('data-bs-theme', dark_mode ? 'light' : 'dark');
+        return dark_mode ? 'light' : 'dark';
+    }
+    """,
+    Output("theme-store", "data"),
+    Input("color-mode-switch", "value"),
+)
 
 server = app.server
 

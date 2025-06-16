@@ -204,7 +204,6 @@ def create_selection(
             ),
         ], style=BOX_STYLES["classic"]),
 
-        # Montage Selection
         html.Div([
             html.Label(
                 "Select Colors:",
@@ -219,6 +218,13 @@ def create_selection(
                 persistence=True,
                 persistence_type="local"
             ),
+            html.Span(
+                [
+                    dbc.Label(className="bi bi-moon", html_for="color-mode-switch-plotly"),
+                    dbc.Switch( id="color-mode-switch-plotly", value=False, className="d-inline-block ms-1", persistence=True),
+                    dbc.Label(className="bi bi-sun", html_for="color-mode-switch-plotly"),
+                ]
+            )
         ], style=BOX_STYLES["classic"]),
 
     ])

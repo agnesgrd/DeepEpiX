@@ -1,1 +1,1 @@
-document.documentElement.setAttribute('data-bs-theme', 'cyborg')
+// document.documentElement.setAttribute('data-bs-theme', 'minty')

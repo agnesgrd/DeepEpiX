@@ -84,7 +84,7 @@ layout = html.Div([
             children=[
                 html.H4([
                     html.I(className="bi bi-1-circle-fill", style={"marginRight": "10px", "fontSize": "1.2em"}),
-                    "Create a new montage"]
+                    "Create new montage"]
                     , style={"margin-bottom": "15px"}),
 
                 # Input for Montage Name

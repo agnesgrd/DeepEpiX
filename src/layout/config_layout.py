@@ -171,10 +171,10 @@ DEFAULT_FIG_LAYOUT = dict(
     dragmode='select',
     selectdirection='h',
     hovermode='closest',
-    template="plotly_dark",
-    font=dict(color='white'),
-    paper_bgcolor='rgba(0,0,0,1)',
-    plot_bgcolor='rgba(0,0,0,1)',
+    # template="plotly_dark",
+    # font=dict(color='white'),
+    # paper_bgcolor='rgba(0,0,0,1)',
+    # plot_bgcolor='rgba(0,0,0,1)',
 )
 
 # Define the region-to-color mapping
