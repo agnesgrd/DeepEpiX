@@ -17,7 +17,8 @@ plugins:
 markdown_extensions:
   - admonition
   - pymdownx.superfences        # nicer code blocks
-  - pymdownx.tabbed
+  - pymdownx.tabbed:
+      alternate_style: true
 nav:
   - Overview: index.md
   - Installation : install.md

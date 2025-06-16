@@ -32,3 +32,6 @@ src/cache-directory/*
 
 # Mkdocs
 */site/
+
+# Apptainer
+*.sif
