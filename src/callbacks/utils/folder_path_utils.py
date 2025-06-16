@@ -114,11 +114,6 @@ def build_table_raw_info(folder_path):
     info = raw.info
 
     table = [
-        html.Span([
-            html.I(className="bi bi-clipboard-data", style={"marginRight": "10px", "fontSize": "1.2em"}),
-            "Raw Data Overview"
-        ], className="card-title"),
-        html.Hr(),
         dbc.ListGroup([
             dbc.ListGroupItem([
                 html.Strong("File: "),
@@ -208,14 +203,13 @@ def build_table_events_statistics(folder_path):
             html.I(className="bi bi-bar-chart-line", style={"marginRight": "10px", "fontSize": "1.2em"}),
             "Event Summary"
         ], className="card-title"),
-        html.Hr(),
         dbc.ListGroup([
             dbc.ListGroupItem(f"Total annotations: {len(annotations)}"),
             dbc.ListGroupItem(f"Unique event types: {len(description_counts)}"),
-            annotation_table,
             dbc.ListGroupItem(f"First event starts at {annotations.onset[0]:.2f} s"),
             dbc.ListGroupItem(f"Last event ends at {(annotations.onset[-1] + annotations.duration[-1]):.2f} s"),
-        ])
+        ], style = {"marginBottom": "15px"}),
+        annotation_table
     ]
 
     return stats_summary

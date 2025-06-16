@@ -91,9 +91,7 @@ def register_update_annotation_graph(
                 showgrid=True,
                 tickmode='array',
                 tickvals=tick_vals,
-                ticktext=tick_labels,
-                tickfont=dict(size=10),  # Smaller font size
-                showticklabels=True,
+                showticklabels=False,
                 gridcolor="red",  # Subtle grid color
                 tickangle=0  # Angle for better readability
             ),
@@ -102,7 +100,7 @@ def register_update_annotation_graph(
                 showgrid=False
             ),
             shapes=shapes,
-            margin=dict(l=10, r=0, t=10, b=100)  # Adjust margins for better spacing
+            margin=dict(l=0, r=0, t=0, b=15)  # Adjust margins for better spacing
         )
 
         return fig_patch

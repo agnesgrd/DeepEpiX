@@ -28,8 +28,6 @@ def create_topomap_from_raw(raw, sfreq, t0, t):
     mean_data = data[:, time_idx]
 
     fig, ax = plt.subplots()
-    fig.patch.set_facecolor('black')   # Set the figure background
-    ax.set_facecolor('black')          # Set the axes background
 
     im, _ = mne.viz.plot_topomap(
         mean_data,
@@ -43,12 +41,11 @@ def create_topomap_from_raw(raw, sfreq, t0, t):
     )
 
     # Customize the plot appearance
-    ax.set_title(f'Time: {t:.3f}s', fontsize=20, color="white")  # Add a title
     ax.axis('off')  # Hide axes for a clean look
 
     # Save the image to a buffer
     buf = BytesIO()
-    fig.savefig(buf, format='png', bbox_inches="tight", pad_inches=0.1,  facecolor=fig.get_facecolor())  # Tight bounding box
+    fig.savefig(buf, format='png', bbox_inches="tight", pad_inches=0.1, transparent=True)  # Tight bounding box
     buf.seek(0)
     
     # Encode the image in Base64

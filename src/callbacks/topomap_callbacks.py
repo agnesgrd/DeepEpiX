@@ -43,7 +43,7 @@ def register_display_topomap_on_click():
                     'margin': '0 5px',  # Horizontal spacing between images
                 })
                 
-                return True, topomap_image, dash.no_update
+                return html.Div(f"Time: {t:.3f} s"), topomap_image, dash.no_update
 
             except Exception as e:
                 print(f"⚠️ Error in plot_topomap: {str(e)}")

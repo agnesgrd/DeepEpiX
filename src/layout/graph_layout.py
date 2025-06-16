@@ -185,7 +185,6 @@ def create_graph_container(
                             "height": "80vh",
                             "borderRadius": "10px",
                             "overflow": "hidden",
-                            "backgroundColor": "#000",
                             "boxShadow": "none"
                         }
                     ),
@@ -201,35 +200,32 @@ def create_graph_container(
                 figure={
                     'data': [],
                     'layout': {
-                        # 'template': 'plotly_dark',
                         'xaxis': {
                             'title': '',
                             'showgrid': False,
                             'zeroline': False,
-                            'color': 'white'
+                            'showticklabels': False
                         },
                         'yaxis': {
                             'title': '',
                             'showgrid': False,
+                            'zeroline': False,
                             'tickvals': [0],
                             'tickfont': {'color': 'rgba(0, 0, 0, 0)'},
-                            'range': [0, 1],
-                            'color': 'white'
+                            'range': [0, 1]
                         },
-                        # 'paper_bgcolor': 'rgba(0,0,0,1)',
-                        # 'plot_bgcolor': 'rgba(0,0,0,1)',
-                        # 'font': {'color': 'white'},
-                        'margin': {'l': 10, 'r': 0, 't': 0, 'b': 20},
+                        'paper_bgcolor': 'rgba(0,0,0,0)',
+                        'margin': {'l': 0, 'r': 0, 't': 0, 'b': 10},
                     },
                 },
                 config={"staticPlot": True},
                 style={
                     "width": "100%",
-                    "height": "8vh",
+                    "height": "2vh",
                     "pointerEvents": "none",
                     "borderRadius": "10px",
                     "overflow": "hidden",
-                    "backgroundColor": "#000",
+                    "backgroundColor": "transparent",
                     "boxShadow": "none"
                 }
             )

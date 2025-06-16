@@ -55,7 +55,8 @@ layout = html.Div([
                                 ]
                             ),
                             dbc.Tab(
-                                label='Raw Info',
+
+                                label= 'Raw Info',
                                 tab_id="raw-info-tab-memory",
                                 children=[
                                     html.Div(

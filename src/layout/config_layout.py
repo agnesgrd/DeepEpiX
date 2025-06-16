@@ -144,9 +144,7 @@ DEFAULT_FIG_LAYOUT = dict(
         fixedrange=False,
         rangeslider=dict(
             visible=True,
-            thickness=0.02,
-            bgcolor='rgba(128, 128, 128, 0.5)',
-            bordercolor='rgba(64, 64, 64, 1)'
+            thickness=0.02
         ),
         showspikes=True,
         spikemode="across+marker",
@@ -171,10 +169,7 @@ DEFAULT_FIG_LAYOUT = dict(
     dragmode='select',
     selectdirection='h',
     hovermode='closest',
-    # template="plotly_dark",
-    # font=dict(color='white'),
-    # paper_bgcolor='rgba(0,0,0,1)',
-    # plot_bgcolor='rgba(0,0,0,1)',
+    paper_bgcolor='rgba(0,0,0,0)'
 )
 
 # Define the region-to-color mapping

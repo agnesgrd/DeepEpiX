@@ -175,7 +175,7 @@ def get_ica_dataframe_dask(folder_path, start_time, end_time, ica_result_path, r
 
 ################################## POWER SPECTRUM DECOMPOSITION ######################################################
 
-def compute_power_spectrum_decomposition(folder_path, freq_data):
+def compute_power_spectrum_decomposition(folder_path, freq_data, theme="light"):
     raw = fpu.read_raw(folder_path, preload=True, verbose=False)
 
     low_pass_freq = freq_data.get("low_pass_freq")
@@ -194,6 +194,9 @@ def compute_power_spectrum_decomposition(folder_path, freq_data):
     # Convert PSD to dB (as MNE does by default)
     psd_dB = 10 * np.log10(psd)
 
+    text_color = "#000" if theme == "light" else "#FFF"
+    grid_color = "rgba(200,200,200,0.3)" if theme == "light" else "rgba(255,255,255,0.1)"
+
     psd_fig = go.Figure()
 
     for ch_idx, ch_name in enumerate(psd_data.ch_names):
@@ -206,18 +209,28 @@ def compute_power_spectrum_decomposition(folder_path, freq_data):
         ))
 
     psd_fig.update_layout(
-        title="Power Spectral Density (PSD)",
+        title=dict(
+            text="Power Spectral Density (PSD)",
+            font=dict(color=text_color)
+        ),
         xaxis=dict(
             title="Frequency (Hz)",
             type="linear",  # MNE uses linear frequency scale
-            showgrid=True
+            showgrid=True,
+            gridcolor=grid_color,
+            color=text_color
         ),
         yaxis=dict(
             title="Power (dB)",  # Log scale power in dB
             type="linear",
-            showgrid=True
+            showgrid=True,
+            gridcolor=grid_color,
+            color=text_color
         ),
-        template="plotly_dark"
+        font=dict(color=text_color),
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        legend=dict(font=dict(color=text_color))
     )
 
     return dcc.Graph(figure = psd_fig)

@@ -35,18 +35,15 @@ def register_populate_memory_tab_contents():
         history_content = dash.no_update
 
         if selected_tab == "subject-tab-memory":
-                subject_content = dbc.Card(
-                    dbc.CardBody([
+                subject_content = html.Div([
                         html.Span([html.I(className="bi bi-person-rolodex", style={"marginRight": "10px", "fontSize": "1.2em"}), "Subject"], className="card-title"),
-                        html.Hr(),
                         dbc.ListGroup([
                             dbc.ListGroupItem([
                                 html.Strong(folder_path)
                             ]),
-                        ]),
+                        ], style = {"marginBottom": "15px"}),
 
                         html.Span([html.I(className="bi bi-sliders", style={"marginRight": "10px", "fontSize": "1.2em"}), "Frequency Parameters"], className="card-title"),
-                        html.Hr(),
                         dbc.ListGroup([
                             dbc.ListGroupItem([
                                 html.Strong("Resample Frequency: "),
@@ -66,7 +63,7 @@ def register_populate_memory_tab_contents():
                             ]),
                         ])
                     ])
-                )
+
 
         if selected_tab == "raw-info-tab-memory":
             raw_info_content = fpu.build_table_raw_info(folder_path)

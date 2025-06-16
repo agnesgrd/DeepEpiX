@@ -95,22 +95,19 @@ def build_table_events_statistics(annotations):
     )
 
     # Summary stats
-    stats_summary = dbc.Card(
-        dbc.CardBody([
-            html.Span([
-                html.I(className="bi bi-bar-chart-line", style={"marginRight": "10px", "fontSize": "1.2em"}),
-                "Event Summary"
-            ], className="card-title"),
-            html.Hr(),
-            dbc.ListGroup([
-                dbc.ListGroupItem(f"Total annotations: {len(annotations)}"),
-                dbc.ListGroupItem(f"Unique event types: {len(description_counts)}"),
-                annotation_table,
-                dbc.ListGroupItem(f"First event starts at {min(onsets):.2f} s"),
-                dbc.ListGroupItem(f"Last event ends at {max([o + d for o, d in zip(onsets, durations)]):.2f} s"),
-            ])
-        ])
-    )
+    stats_summary = html.Div([
+        html.Span([
+            html.I(className="bi bi-bar-chart-line", style={"marginRight": "10px", "fontSize": "1.2em"}),
+            "Event Summary"
+        ], className="card-title"),
+        dbc.ListGroup([
+            dbc.ListGroupItem(f"Total annotations: {len(annotations)}"),
+            dbc.ListGroupItem(f"Unique event types: {len(description_counts)}"),
+            dbc.ListGroupItem(f"First event starts at {min(onsets):.2f} s"),
+            dbc.ListGroupItem(f"Last event ends at {max([o + d for o, d in zip(onsets, durations)]):.2f} s"),
+        ], style = {"marginBottom": "15px"}),
+        annotation_table
+    ])
 
     return stats_summary
 
