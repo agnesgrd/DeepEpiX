@@ -38,3 +38,80 @@
     line-height: 1.6;
     font-family: sans-serif;
 }
+
+/* Sidebar collapse animation and width control */
+.sidebar-collapse {
+    transition: width 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    overflow: hidden;
+    width: 260px; /* Default open width - adjust as needed */
+    opacity: 1;
+}
+
+/* When collapsed */
+.sidebar-collapse.collapse:not(.show) {
+    width: 0px;
+    opacity: 0;
+    padding: 0;
+    margin: 0;
+}
+
+/* Alternative approach using max-width for smoother animation */
+.sidebar-collapse {
+    max-width: 300px; /* Set your desired sidebar width */
+    transition: max-width 0.3s ease-in-out, opacity 0.2s ease-in-out;
+    overflow: hidden;
+}
+
+.sidebar-collapse.collapse:not(.show) {
+    max-width: 0px;
+    opacity: 0;
+}
+
+/* Toggle button positioning and styling */
+#toggle-sidebar {
+    position: relative;
+    z-index: 1001;
+    margin-left: 0px; /* Space between sidebar and button */
+    transition: margin-left 0.3s ease-in-out;
+}
+
+/* When sidebar is collapsed, reduce button margin */
+.sidebar-collapse.collapse:not(.show) ~ #toggle-sidebar {
+    margin-left: 0px;
+}
+
+/* Optional: Smooth transition for the main content area */
+.main-content {
+    transition: margin-left 0.3s ease-in-out;
+    flex: 1;
+}
+
+/* Icon rotation animation for the toggle button */
+#toggle-sidebar i {
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Rotate icon when sidebar is collapsed */
+.sidebar-collapsed #toggle-sidebar i {
+    transform: rotate(180deg);
+}
+
+/* Ensure sidebar content doesn't overflow during animation */
+.sidebar-collapse .card,
+.sidebar-collapse .card-body {
+    min-width: 280px; /* Slightly less than sidebar width */
+    transition: none; /* Prevent content from animating separately */
+}
+
+/* Optional: Add backdrop blur effect when sidebar is open on mobile */
+@media (max-width: 768px) {
+    .sidebar-collapse.show {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 1050;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(5px);
+    }
+}

@@ -187,7 +187,7 @@ def create_sidebar():
     return html.Div([
         dbc.Tabs(
                 [
-                dbc.Tab(create_compute(), label='Compute', tab_id='ica-compute-tab'),
+                dbc.Tab(create_compute(), labelClassName='bi bi-noise-reduction', tab_id='ica-compute-tab'),
                 dbc.Tab(create_selection(
                     check_all_annotations_btn_id="check-all-annotations-btn-ica", 
                     clear_all_annotations_btn_id="clear-all-annotations-btn-ica", 
@@ -202,11 +202,12 @@ def create_sidebar():
                     offset_increment_id="offset-increment-ica", 
                     colors_radio_id="colors-radio-ica",
                     ica_result_radio_id="ica-result-radio"
-                ), label='Select', tab_id='ica-selection-tab'),
+                ), labelClassName='bi bi-hand-index-thumb', tab_id='ica-selection-tab'),
             ],
             id="ica-sidebar-tabs",
             persistence = True,
-            persistence_type = "local"
+            persistence_type = "local",
+            className="custom-sidebar"
         ),
     ], style={
         "padding": "0 20px",

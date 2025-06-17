@@ -26,24 +26,26 @@ def create_sidebar():
                     check_all_button_id="check-all-channels-btn", 
                     clear_all_button_id="clear-all-channels-btn",
                     channel_region_checkboxes_id="channel-region-checkboxes", 
-                ), label='Select', tab_id='selection-tab'),
-                dbc.Tab(create_analyze(), label='Analyze', tab_id='analyzing-tab'),
-                dbc.Tab(create_predict(), label='SpikePred', tab_id='prediction-tab'),
-                dbc.Tab(create_save(), label='Save', tab_id='saving-tab'),
+                ), labelClassName="bi bi-hand-index-thumb", tab_id='selection-tab'),
+                dbc.Tab(create_analyze(), labelClassName='bi bi-activity', tab_id='analyzing-tab'),
+                dbc.Tab(create_predict(), labelClassName='bi bi-stars', tab_id='prediction-tab'),
+                dbc.Tab(create_save(), labelClassName='bi bi-floppy', tab_id='saving-tab'),
             ],
             id="sidebar-tabs",
             persistence = True,
-            persistence_type = "local"
+            persistence_type = "local",
+            className="custom-sidebar"
         ),
 
     ], style={
-        "padding": "0 20px",
+        "padding": "10px 0",
         "height": "100%",
         "display": "flex",
         "flexDirection": "column",
-        "justifyContent": "flex-start",  # Align content at the top
+        "justifyContent": "center",
+        # "justifyContent": "flex-start",  # Align content at the top
         "gap": "20px",  # Space between elements
-        "width": "275px",  # Sidebar width is now fixed
+        "width": "250px",  # Sidebar width is now fixed
         "boxSizing": "border-box",
         "fontSize": "12px",
         "borderRadius": "10px",  # Rounded corners for the sidebar itself

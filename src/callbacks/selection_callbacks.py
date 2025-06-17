@@ -2,11 +2,54 @@ import os
 import dash
 from dash import html, Input, Output, State, callback
 import dash_bootstrap_components as dbc
-from dash_extensions import EventListener
 from dash.exceptions import PreventUpdate
 
 # Local import
 import callbacks.utils.annotation_utils as au
+
+# ─────────────────────────────
+# 📄 Sidebar Callbacks
+# ─────────────────────────────
+
+def register_toggle_sidebar(collapse_id, icon_id, toggle_id):
+    @callback(
+        Output(collapse_id, "is_open"),
+        Output(icon_id, "className"),
+        Input(toggle_id, "n_clicks"),
+        State(collapse_id, "is_open"),
+        prevent_initial_call=True
+    )
+    def _toggle_sidebar(n_clicks, is_open):
+        if is_open:
+            return False, "bi bi-layout-sidebar-inset"  # icon for closed state
+        else:
+            return True, "bi bi-x-lg"  # icon for open state
+
+def register_navigate_tabs_raw(collapse_id, sidebar_tabs_id, icon_id):
+    @callback(
+        Output(collapse_id, "is_open", allow_duplicate=True),    
+        Output(sidebar_tabs_id, "active_tab", allow_duplicate=True),
+        Output(icon_id, "className", allow_duplicate=True),
+        Input("nav-select", "n_clicks"),
+        Input("nav-analyze", "n_clicks"),
+        Input("nav-predict", "n_clicks"),
+        Input("nav-save", "n_clicks"),
+        prevent_initial_call=True
+    )
+    def navigate_tabs(n1, n2, n3, n4):
+        ctx = dash.callback_context
+        if not ctx.triggered:
+            raise dash.exceptions.PreventUpdate
+        btn_id = ctx.triggered_id
+
+        if btn_id == "nav-select":
+            return True, "selection-tab", "bi bi-x-lg"
+        elif btn_id == "nav-analyze":
+            return True, "analyzing-tab", "bi bi-x-lg"
+        elif btn_id == "nav-predict":
+            return True, "prediction-tab", "bi bi-x-lg"
+        elif btn_id == "nav-save":
+            return True, "saving-tab", "bi bi-x-lg"
 
 # ─────────────────────────────
 # 📄 Page Navigation Callbacks

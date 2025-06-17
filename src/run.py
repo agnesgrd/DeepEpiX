@@ -54,7 +54,6 @@ app.layout = html.Div(
                                 toggle_class_name="bi bi-list",
                                 toggle_style={
                                     "fontSize": "50px",
-                                    # "color": "white",
                                     "cursor": "pointer",
                                 },
                                 direction="down",
@@ -142,7 +141,7 @@ app.layout = html.Div(
                     "display": "flex",
                     "justifyContent": "space-between",
                     "alignItems": "center",
-                    # "backgroundColor": "#1c1c1c",
+                    "zIndex": "1200"
                 },
             ),
 

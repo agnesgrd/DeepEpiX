@@ -5,11 +5,14 @@ from dash_extensions import Keyboard
 # Layout imports
 import layout.graph_layout as gl
 from layout.sidebar_layout import create_sidebar
+import dash_bootstrap_components as dbc
 
 # Callback imports
 
 # --- Selection ---
 from callbacks.selection_callbacks import (
+    register_toggle_sidebar,
+    register_navigate_tabs_raw,
     register_update_channels_checklist_options,
     register_cancel_or_confirm_annotation_suppression,
     register_annotation_checkboxes_options,
@@ -81,9 +84,42 @@ layout = html.Div([
 
     dcc.Location(id='url', refresh=False),
 
-    html.Div(
-        [
-        create_sidebar(),
+
+    # Main container
+    html.Div([
+        # Sidebar container
+        html.Div([
+
+            # Collapsible sidebar
+            dbc.Collapse(
+                create_sidebar(),
+                id="sidebar-collapse",
+                is_open=True,
+                dimension="width",
+                className="sidebar-collapse"
+            ),
+
+            # Button stack on the left
+            html.Div([
+                dbc.Button(html.I(id="sidebar-toggle-icon", className="bi bi-x-lg"), id="toggle-sidebar", color="danger", size="sm", className="mb-2 shadow-sm"),
+
+                dbc.Button(html.I(className="bi bi-hand-index-thumb"), id="nav-select", color="primary", size="sm", className="mb-2", title="Select"),
+                dbc.Button(html.I(className="bi bi-activity"), id="nav-analyze", color="success", size="sm", className="mb-2", title="Analyze"),
+                dbc.Button(html.I(className="bi bi-stars"), id="nav-predict", color="warning", size="sm", className="mb-2", title="Spike Prediction"),
+                dbc.Button(html.I(className="bi bi-floppy"), id="nav-save", color="secondary", size="sm", className="mb-2", title="Save"),
+            ], style={
+                "display": "flex",
+                "flexDirection": "column",
+                "alignItems": "center",
+                "marginTop": "10px"
+            }),
+        ], style={
+            "display": "flex",
+            "flexDirection": "row",  # button -> collapse (left to right)
+            "alignItems": "flex-start",
+            "zIndex": 1000,
+        }),
+
         gl.create_graph_container(
             update_button_id="update-button",
             update_container_id="update-container",
@@ -109,6 +145,19 @@ layout = html.Div([
     html.Div(id="python-error")
 
 ])
+
+# --- Siderbar dynamic ---
+register_toggle_sidebar(
+    collapse_id="sidebar-collapse",
+    icon_id="sidebar-toggle-icon",
+    toggle_id="toggle-sidebar"
+)
+
+register_navigate_tabs_raw(
+    collapse_id="sidebar-collapse", 
+    sidebar_tabs_id="sidebar-tabs", 
+    icon_id="sidebar-toggle-icon"
+)
 
 # --- Page Navigation ---
 register_page_buttons_display(

@@ -28,7 +28,7 @@ def create_graph_container(
                     "backgroundColor": "transparent",
                     "border": "none",
                     "boxShadow": "none",
-                    "z-index": "1000",
+                    "z-index": "500",
                     "opacity": 0.8
                 },
                 children=[
@@ -60,7 +60,7 @@ def create_graph_container(
                     "background-color": "transparent",
                     "border": "none",
                     "boxShadow": "none",
-                    "z-index": "1000",
+                    "z-index": "500",
                     "opacity": 0.8
                 },
                 children=[
@@ -84,7 +84,7 @@ def create_graph_container(
                     "position": "absolute",
                     "top": "0px",
                     "left": "500px",
-                    "z-index": "1000",
+                    "z-index": "500",
                     "opacity": 0.8, 
                     "display":"flex"
                 },
@@ -142,7 +142,7 @@ def create_graph_container(
                     "position": "absolute",
                     "top": "10px",
                     "left": "50%",
-                    "z-index": "1000",
+                    "z-index": "500",
                     "opacity": 0.8, 
                     "display":"flex"
                 },
@@ -182,7 +182,7 @@ def create_graph_container(
                         },
                         style={
                             "width": "100%",
-                            "height": "80vh",
+                            "height": "82vh",
                             "borderRadius": "10px",
                             "overflow": "hidden",
                             "boxShadow": "none"
@@ -235,6 +235,6 @@ def create_graph_container(
             "display": "flex",
             "flexDirection": "column",
             "width": "100%",
-            "height": "100vh"
+            "height": "100%"
         }
     )

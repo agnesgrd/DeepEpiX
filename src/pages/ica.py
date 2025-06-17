@@ -3,6 +3,8 @@ import dash
 from dash import html
 from dash_extensions import Keyboard
 
+import dash_bootstrap_components as dbc
+
 from callbacks.selection_callbacks import (
     register_cancel_or_confirm_annotation_suppression,
     register_annotation_checkboxes_options,
@@ -46,9 +48,37 @@ layout = html.Div([
         captureKeys = ["ArrowRight", "ArrowLeft", "+", "-"]
     ),
 
-    html.Div(
-        [
-        create_sidebar(),
+    html.Div([
+        # Sidebar container
+        html.Div([
+
+            # Collapsible sidebar
+            dbc.Collapse(
+                create_sidebar(),
+                id="sidebar-collapse-ica",
+                is_open=True,
+                dimension="width",
+                className="sidebar-collapse"
+            ),
+
+            # Button stack on the left
+            html.Div([
+                dbc.Button(html.I(id="sidebar-toggle-icon-ica", className="bi bi-x-lg"), id="toggle-sidebar", color="danger", size="sm", className="mb-2 shadow-sm"),
+
+                dbc.Button(html.I(className="bi bi-noise-reduction"), id="nav-compute-ica", color="warning", size="sm", className="mb-2", title="Compute ICA"),
+                dbc.Button(html.I(className="bi bi-hand-index-thumb"), id="nav-select-ica", color="primary", size="sm", className="mb-2", title="Select")
+            ], style={
+                "display": "flex",
+                "flexDirection": "column",
+                "alignItems": "center",
+                "marginTop": "10px"
+            }),
+        ], style={
+            "display": "flex",
+            "flexDirection": "row",  # button -> collapse (left to right)
+            "alignItems": "flex-start",
+            "zIndex": 1000
+        }),
         gl.create_graph_container(
             update_button_id="update-button-ica",
             update_container_id="update-container-ica",
@@ -68,7 +98,8 @@ layout = html.Div([
         "height": "85vh",  # Use the full height of the viewport
         "width": "95vw",  # Use the full width of the viewport
         "overflow": "hidden",  # Prevent overflow in case of resizing
-        "boxSizing": "border-box"
+        "boxSizing": "border-box",
+        "gap": "20px",
     }),
 
     html.Div(id="python-error-ica")
