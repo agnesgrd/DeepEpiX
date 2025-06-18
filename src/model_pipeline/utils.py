@@ -106,7 +106,7 @@ def save_data_matrices(subject_path, path_output, bad_channels):
 
 	subject_path = Path(subject_path)
 
-	with open("model_pipeline/good_channels_dict.pkl", "rb") as f:
+	with open("good_channels_dict.pkl", "rb") as f:
 		good_channels = pickle.load(f)
 
 	# Load raw file based on format

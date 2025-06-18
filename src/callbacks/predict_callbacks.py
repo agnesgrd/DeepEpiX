@@ -102,13 +102,13 @@ def register_execute_predict_script():
             str(channel_store.get('bad', []))
         ]
     
-        working_dir = Path.cwd()
+        working_dir = str(APP_ROOT)
         env = os.environ.copy()
         env["PYTHONPATH"] = str(working_dir)
 
         try: 
             start_time = time.time()
-            subprocess.run(command, env=env, text=True, cwd=str(APP_ROOT)) #stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(command, env=env, text=True, cwd=str(MODEL_PIPELINE_DIR)) #stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             model_probabilities_store = [str(predictions_csv_path)]
             print(f"Model testing executed in {time.time()-start_time:.2f} seconds")
 
@@ -118,7 +118,7 @@ def register_execute_predict_script():
         if sensitivity_analysis:
             command = [
                 ACTIVATE_ENV,
-                "model_pipeline/run_smoothgrad.py",
+                str(MODEL_PIPELINE_DIR / "run_smoothgrad.py"),
                 str(model_path),
                 str(venv),
                 str(cache_dir),
@@ -129,7 +129,7 @@ def register_execute_predict_script():
             try: 
                 # Start timing for the second subprocess
                 start_time = time.time()
-                subprocess.run(command, env=env, text = True) # stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                subprocess.run(command, env=env, text = True, cwd=str(MODEL_PIPELINE_DIR)) # stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 print(f"Smoothgrad executed in {time.time()-start_time:.2f} seconds")
 
             except Exception as e:
