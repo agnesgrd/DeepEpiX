@@ -32,7 +32,7 @@ def register_clean_annotation_history():
 def register_update_ica_history():
     @callback(
         Output("history-log-ica", "children"),
-        Input("ica-sidebar-tabs", "active_tab"),
+        Input("sidebar-tabs-ica", "active_tab"),
         Input("history-store", "data"),
         prevent_initial_call=False
     )

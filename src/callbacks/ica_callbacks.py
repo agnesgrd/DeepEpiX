@@ -81,7 +81,7 @@ def register_compute_ica():
 def register_fill_ica_results(ica_result_radio_id):
     @callback(
         Output(ica_result_radio_id, "options"),
-        Input("ica-sidebar-tabs", "active_tab"),
+        Input("sidebar-tabs-ica", "active_tab"),
         Input("ica-store", "data"),
         prevent_initial_call=False
     )
