@@ -59,7 +59,6 @@
 .sidebar-collapse {
     max-width: 300px; /* Set your desired sidebar width */
     transition: max-width 0.3s ease-in-out, opacity 0.2s ease-in-out;
-    overflow: hidden;
 }
 
 .sidebar-collapse.collapse:not(.show) {

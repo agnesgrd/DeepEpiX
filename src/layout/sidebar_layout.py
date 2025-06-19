@@ -39,11 +39,11 @@ def create_sidebar():
 
     ], style={
         "padding": "10px 0",
-        "height": "100%",
+        "height": "90vh",
         "display": "flex",
         "flexDirection": "column",
-        "justifyContent": "center",
-        # "justifyContent": "flex-start",  # Align content at the top
+        "overflowY": "auto",
+        "justifyContent": "flex-start",  # Align content at the top
         "gap": "20px",  # Space between elements
         "width": "250px",  # Sidebar width is now fixed
         "boxSizing": "border-box",

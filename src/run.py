@@ -141,10 +141,11 @@ app.layout = html.Div(
                     "display": "flex",
                     "justifyContent": "space-between",
                     "alignItems": "center",
-                    "zIndex": "1200"
+                    "zIndex": "1200",
+                    "background": "linear-gradient(90deg, rgba(13, 110, 253, 0.7), rgba(255, 105, 180, 0.7))",
                 },
             ),
-
+            
             # Main content container
             html.Div(
                 children=[

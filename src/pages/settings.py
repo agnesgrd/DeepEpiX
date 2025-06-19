@@ -71,8 +71,12 @@ layout = html.Div([
                     ]
                 )
             ]),
-            className="mb-3",  # Adds margin below the card
-            style={"width": "100%"}
+            className="mb-5",  # Adds margin below the card
+            style={
+                "width": "100%",
+                "boxShadow": "0px 4px 12px rgba(13, 110, 253, 0.3)",  # soft blue shadow
+                "borderRadius": "12px",                        # smooth corners
+            }
         ),
     ]),
 

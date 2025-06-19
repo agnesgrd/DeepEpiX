@@ -51,6 +51,26 @@ def register_navigate_tabs_raw(collapse_id, sidebar_tabs_id, icon_id):
         elif btn_id == "nav-save":
             return True, "saving-tab", "bi bi-x-lg"
 
+def register_navigate_tabs_ica(collapse_id, sidebar_tabs_id, icon_id):
+    @callback(
+        Output(collapse_id, "is_open", allow_duplicate=True),    
+        Output(sidebar_tabs_id, "active_tab", allow_duplicate=True),
+        Output(icon_id, "className", allow_duplicate=True),
+        Input("nav-compute-ica", "n_clicks"),
+        Input("nav-select-ica", "n_clicks"),
+        prevent_initial_call=True
+    )
+    def navigate_tabs(n1, n2):
+        ctx = dash.callback_context
+        if not ctx.triggered:
+            raise dash.exceptions.PreventUpdate
+        btn_id = ctx.triggered_id
+
+        if btn_id == "nav-compute-ica":
+            return True, "compute-tab-ica", "bi bi-x-lg"
+        elif btn_id == "nav-select-ica":
+            return True, "select-tab-ica", "bi bi-x-lg"
+
 # ─────────────────────────────
 # 📄 Page Navigation Callbacks
 # ─────────────────────────────

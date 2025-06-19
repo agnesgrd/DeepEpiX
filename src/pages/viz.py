@@ -5,6 +5,7 @@ from dash_extensions import Keyboard
 # Layout imports
 import layout.graph_layout as gl
 from layout.sidebar_layout import create_sidebar
+from layout.config_layout import ERROR
 import dash_bootstrap_components as dbc
 
 # Callback imports
@@ -120,29 +121,36 @@ layout = html.Div([
             "zIndex": 1000,
         }),
 
-        gl.create_graph_container(
-            update_button_id="update-button",
-            update_container_id="update-container",
-            page_buttons_container_id="page-buttons-container",
-            page_selector_id="page-selector",
-            next_spike_buttons_container_id="next-spike-buttons-container",
-            prev_spike_id="prev-spike",
-            next_spike_id="next-spike",
-            loading_id="loading-graph",
-            signal_graph_id="meg-signal-graph",
-            annotation_graph_id="annotation-graph"
-        )
+        html.Div([
+            # Error message overlaying the graph
+            html.Div(["Please make a ",  html.I(className="bi bi-arrow-left-square-fill", style={"color": "#0d6efd"}), " selection and click on ", html.I(className="bi bi-arrow-clockwise", style={"color": "orange"}), " Refresh button."], id="python-error", style=ERROR),
+
+            # Graph container
+            gl.create_graph_container(
+                update_button_id="update-button",
+                update_container_id="update-container",
+                page_buttons_container_id="page-buttons-container",
+                page_selector_id="page-selector",
+                next_spike_buttons_container_id="next-spike-buttons-container",
+                prev_spike_id="prev-spike",
+                next_spike_id="next-spike",
+                loading_id="loading-graph",
+                signal_graph_id="meg-signal-graph",
+                annotation_graph_id="annotation-graph"
+            )
+        ], style={
+            "position": "relative",  # <-- key to overlay positioning
+            "flex": 1
+        })
     ], style={
         "display": "flex",  # Horizontal layout
         "flexDirection": "row",
-        "height": "85vh",  # Use the full height of the viewport
+        "height": "90vh",  # Use the full height of the viewport
         "width": "95vw",  # Use the full width of the viewport
         "overflow": "hidden",  # Prevent overflow in case of resizing
         "boxSizing": "border-box",
         "gap": "20px",
     }),
-    
-    html.Div(id="python-error")
 
 ])
 

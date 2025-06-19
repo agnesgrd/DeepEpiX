@@ -6,6 +6,8 @@ from dash_extensions import Keyboard
 import dash_bootstrap_components as dbc
 
 from callbacks.selection_callbacks import (
+    register_toggle_sidebar,
+    register_navigate_tabs_ica,
     register_cancel_or_confirm_annotation_suppression,
     register_annotation_checkboxes_options,
     register_annotation_dropdown_options,
@@ -63,7 +65,7 @@ layout = html.Div([
 
             # Button stack on the left
             html.Div([
-                dbc.Button(html.I(id="sidebar-toggle-icon-ica", className="bi bi-x-lg"), id="toggle-sidebar", color="danger", size="sm", className="mb-2 shadow-sm"),
+                dbc.Button(html.I(id="sidebar-toggle-icon-ica", className="bi bi-x-lg"), id="toggle-sidebar-ica", color="danger", size="sm", className="mb-2 shadow-sm"),
 
                 dbc.Button(html.I(className="bi bi-noise-reduction"), id="nav-compute-ica", color="warning", size="sm", className="mb-2", title="Compute ICA"),
                 dbc.Button(html.I(className="bi bi-hand-index-thumb"), id="nav-select-ica", color="primary", size="sm", className="mb-2", title="Select")
@@ -105,6 +107,19 @@ layout = html.Div([
     html.Div(id="python-error-ica")
 
 ])
+
+# --- Siderbar dynamic ---
+register_toggle_sidebar(
+    collapse_id="sidebar-collapse-ica",
+    icon_id="sidebar-toggle-icon-ica",
+    toggle_id="toggle-sidebar-ica"
+)
+
+register_navigate_tabs_ica(
+    collapse_id="sidebar-collapse-ica", 
+    sidebar_tabs_id="sidebar-tabs-ica", 
+    icon_id="sidebar-toggle-icon-ica"
+)
 
 
 # Callback to update the ICA graph

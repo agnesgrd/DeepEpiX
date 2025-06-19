@@ -95,7 +95,12 @@ layout = html.Div([
             )
         ]),
         className="mb-5",  # Adds margin below the card
-        style={"width": "100%"}
+        style={
+        "width": "100%",
+        "border": "none",
+        "boxShadow": "0px 4px 12px rgba(13, 110, 253, 0.3)",  # soft blue shadow
+        "borderRadius": "12px",                        # smooth corners
+        }
     ),
 
     html.Div([
@@ -169,7 +174,7 @@ layout = html.Div([
                         "Set Frequency Parameters for Signal Preprocessing"
                     ], className="card-title"),
 
-                    html.Hr(),
+                    html.Hr(style={"width": "50%"}),
 
                     html.Div([
                         html.Label("Resampling Frequency (Hz): "),
@@ -196,7 +201,7 @@ layout = html.Div([
                         "Give Hint on Channel for ECG Peak Detection"
                     ] ,className="card-title"),
 
-                    html.Hr(),
+                    html.Hr(style={"width": "50%"}),
 
                     html.Div([
                         html.Label("Channel Name:"),
@@ -220,7 +225,7 @@ layout = html.Div([
                         "Drop New Bad Channels"
                     ] ,className="card-title"),
 
-                    html.Hr(),
+                    html.Hr(style={"width": "50%"}),
 
                     html.Div([
                         html.Label("Bad Channels:"),
@@ -241,30 +246,41 @@ layout = html.Div([
             ),
 
             html.Div(
+                dbc.Card(
+                    dbc.CardBody([
+                        dbc.Tabs(
+                            id="tabs",
+                            active_tab='raw-info-tab',
+                            children=[
+                                dbc.Tab(label='Raw Info', tab_id="raw-info-tab", children=[
+                                    html.Div(id="raw-info-container", style={"padding": "10px"}),
+                                ]),
 
-            dbc.Tabs(
-                id="tabs",
-                active_tab='raw-info-tab',
-                children=[
-                    dbc.Tab(label='Raw Info', tab_id="raw-info-tab", children=[
-                        html.Div(id="raw-info-container", style={"padding": "10px"}),
-                    ]),
+                                dbc.Tab(label='Event Statistics', tab_id="events-tab", children=[
+                                    html.Div(id="event-stats-container", style={"padding": "10px"}),
+                                ]),
 
-                    dbc.Tab(label='Event Statistics', tab_id="events-tab", children=[
-                        html.Div(id="event-stats-container", style={"padding": "10px"}),
+                                dbc.Tab(label='Power Spectral Density', tab_id="psd-tab", children=[
+                                    html.Div(id="psd-container", children=[
+                                        dbc.Button("Compute & Display", id="compute-display-psd-button", color="secondary", n_clicks=0, style={"marginTop": "15px"}),
+                                        dcc.Loading(id="loading", type="default", children=[
+                                            html.Div(id="psd-status")
+                                        ])
+                                    ], style={"padding": "10px"})
+                                ]),
+                            ], style = {**FLEXDIRECTION["row-tabs"]}
+                        ),
                     ]),
-
-                    dbc.Tab(label='Power Spectral Density', tab_id="psd-tab", children=[
-                        html.Div(id="psd-container", children=[
-                            dbc.Button("Compute & Display", id="compute-display-psd-button", color="secondary", n_clicks=0, style={"marginTop": "15px"}),
-                            dcc.Loading(id="loading", type="default", children=[
-                                html.Div(id="psd-status")
-                            ])
-                        ], style={"padding": "10px"})
-                    ]),
-                ], style = {**FLEXDIRECTION["row-tabs"]}),
-            style = {"width": "50%"}),
-        ], style={"display": "none"})
+                    className="mb-5",  # Adds margin below the card
+                    style={
+                        "width": "100%",
+                        "border": "none",
+                        "boxShadow": "0px 4px 12px rgba(255, 105, 180, 0.3)",  # soft blue shadow
+                        "borderRadius": "12px",                        # smooth corners
+                    }
+                ), style = {"width": "50%"}
+            )], style={"display": "none"}
+        )
     ])
 
 register_populate_memory_tab_contents()

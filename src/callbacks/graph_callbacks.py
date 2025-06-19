@@ -2,12 +2,15 @@ import pickle
 import traceback
 import dash
 from dash import Input, Output, State, callback
+
 from callbacks.utils import graph_utils as gu
+from layout.config_layout import ERROR
    
 def register_update_graph_raw_signal(): 
     @callback(
         Output("meg-signal-graph", "figure"),
         Output("python-error", "children"),
+        Output("python-error", "style"),
         Input("update-button", "n_clicks"),
         Input("page-selector", "value"),
         State("meg-signal-graph", "figure"),
@@ -28,16 +31,16 @@ def register_update_graph_raw_signal():
         """Update MEG signal visualization based on time and channel selection."""
 
         if n_clicks == 0:
-            return dash.no_update, dash.no_update
+            return dash.no_update, dash.no_update, dash.no_update
         
         if not folder_path:
-            return dash.no_update, "Please choose a subject to display on Home page."
+            return dash.no_update, "Please choose a subject to display on Home page.", ERROR
         
         if None in (page_selection, offset_selection, color_selection, freq_data, channel_store) or not chunk_limits:
-            return dash.no_update, "You have a subject in memory but its recording has not been preprocessed yet. Please go back on Home page to reprocess the signal."
+            return dash.no_update, "You have a subject in memory but its recording has not been preprocessed yet. Please go back on Home page to reprocess the signal.", ERROR
         
         if (montage_selection == "channel selection" and not channel_selection):  # Check if data is missing
-                return dash.no_update, "Missing channel selection for graph rendering."
+                return dash.no_update, "Missing channel selection for graph rendering.", ERROR
         
         # Get the selected channels based on region
         if montage_selection == "channel selection":
@@ -49,14 +52,14 @@ def register_update_graph_raw_signal():
             ]
 
             if not selected_channels:
-                return dash.no_update, "No channels selected from the given regions"
+                return dash.no_update, "No channels selected from the given regions", ERROR
             
         # If montage selection is not "channel selection", use montage's corresponding channels
         elif montage_selection != "montage selection":
             selected_channels = montage_store.get(montage_selection, [])
 
             if not selected_channels:
-                return dash.no_update, f"No channels available for the selected montage: {montage_selection}"
+                return dash.no_update, f"No channels available for the selected montage: {montage_selection}", ERROR
 
         time_range = chunk_limits[int(page_selection)]
 
@@ -72,19 +75,19 @@ def register_update_graph_raw_signal():
                 with open(sensitivity_analysis_store[0], 'rb') as f:
                     filter = pickle.load(f)
             except KeyError:
-                return dash.no_update, "No color selected for graph traces."
+                return dash.no_update, "No color selected for graph traces.", ERROR
 
         try:                  
-            fig, error = gu.generate_graph_time_channel(selected_channels, float(offset_selection), time_range, folder_path, freq_data, color_selection, xaxis_range, channel_store, filter)
+            fig, error, error_style = gu.generate_graph_time_channel(selected_channels, float(offset_selection), time_range, folder_path, freq_data, color_selection, xaxis_range, channel_store, filter)
 
-            return fig, error
+            return fig, error, error_style
         
         except FileNotFoundError:
-            return dash.no_update, "⚠️ Error: Folder not found."
+            return dash.no_update, "⚠️ Error: Folder not found.", ERROR
         except ValueError as ve:
-            return dash.no_update, f"⚠️ Error: {str(ve)}.\n Details: {traceback.format_exc()}"
+            return dash.no_update, f"⚠️ Error: {str(ve)}.\n Details: {traceback.format_exc()}", ERROR
         except Exception as e:
-            return dash.no_update, f"⚠️ Error: Unexpected error {str(e)}.\n Details: {traceback.format_exc()}"
+            return dash.no_update, f"⚠️ Error: Unexpected error {str(e)}.\n Details: {traceback.format_exc()}", ERROR
 
 def register_update_graph_ica(ica_result_radio_id):     
     @callback(

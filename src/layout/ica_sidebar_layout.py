@@ -187,7 +187,7 @@ def create_sidebar():
     return html.Div([
         dbc.Tabs(
                 [
-                dbc.Tab(create_compute(), labelClassName='bi bi-noise-reduction', tab_id='ica-compute-tab'),
+                dbc.Tab(create_compute(), labelClassName='bi bi-noise-reduction', tab_id='compute-tab-ica'),
                 dbc.Tab(create_selection(
                     check_all_annotations_btn_id="check-all-annotations-btn-ica", 
                     clear_all_annotations_btn_id="clear-all-annotations-btn-ica", 
@@ -202,23 +202,22 @@ def create_sidebar():
                     offset_increment_id="offset-increment-ica", 
                     colors_radio_id="colors-radio-ica",
                     ica_result_radio_id="ica-result-radio"
-                ), labelClassName='bi bi-hand-index-thumb', tab_id='ica-selection-tab'),
+                ), labelClassName='bi bi-hand-index-thumb', tab_id='select-tab-ica'),
             ],
-            id="ica-sidebar-tabs",
+            id="sidebar-tabs-ica",
             persistence = True,
             persistence_type = "local",
             className="custom-sidebar"
         ),
     ], style={
-        "padding": "0 20px",
-        "height": "100%",
+        "padding": "0px",
+        "height": "90vh",
         "display": "flex",
         "flexDirection": "column",
+        "overflowY": "auto",
         "justifyContent": "flex-start",  # Align content at the top
-        "gap": "20px",  # Space between elements
         "width": "250px",  # Sidebar width is now fixed
         "boxSizing": "border-box",
         "fontSize": "12px",
         "borderRadius": "10px",  # Rounded corners for the sidebar itself
-        "overflowY": "auto",  # Enable scrolling if content exceeds height
     })

@@ -4,6 +4,7 @@ import dash
 from dash import html, dcc, callback
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
+from dash.exceptions import PreventUpdate
 
 from layout.config_layout import INPUT_STYLES, BOX_STYLES, FLEXDIRECTION
 from callbacks.utils import annotation_utils as au
@@ -47,70 +48,96 @@ layout = html.Div([
 
 			mu.render_pretrained_models_table()
 		]),
-		className="mb-3",
-		style={"width": "100%"}
+		className="mb-5",
+		style={
+			"width": "100%",
+			"border": "none",
+			"boxShadow": "0px 4px 12px rgba(13, 110, 253, 0.3)",  # soft blue shadow
+			"borderRadius": "12px",                        # smooth corners
+		}
 	),
 
 	html.Div(id="model-playground", children=[
 		html.Div([
-			dbc.Tabs([
-				dbc.Tab(label="Model Prediction", children=[
-					dbc.RadioItems(
-						id="model-prediction-radio",
-						value="Yes",
-						inline=False,
-						persistence=True,
-						persistence_type="memory",
-						style={"margin": "10px 0", "fontSize": "14px"}
-					)
-				], style={"padding": "10px"}),
-
-				dbc.Tab(label="Ground Truth", children=[
-					dbc.Checklist(
-						id="ground-truth-checkboxes",
-						inline=False,
-						persistence=True,
-						persistence_type="memory",
-						style={"margin": "10px 0", "fontSize": "14px"}
-					)
-				], style={"padding": "10px"}),
-
-				dbc.Tab(label="Performance Settings", children=[
-					html.Label("Tolerance (ms):", style={"fontWeight": "bold", "fontSize": "14px"}),
-					dbc.Input(id="performance-tolerance", type="number", value=200, step=10, min=0, max=1000, style=INPUT_STYLES["number"]),
-
-					html.Label("Threshold:", style={"fontWeight": "bold", "fontSize": "14px"}),
-					dbc.Input(id="performance-threshold", type="number", value=0.5, step=0.01, min=0, max=1, style=INPUT_STYLES["number"])
-				], style={"padding": "10px"})
-			], style=FLEXDIRECTION['row-tabs']),
-
-			html.Hr(),
-
 			html.Div([
-				html.Div(
-					children=[
-						dbc.RadioItems(
-							id="panel-selector-id",
-							options=[
-								{"label": "Panel 1", "value": 0},
-								{"label": "Panel 2", "value": 1},
-								{"label": "Panel 3", "value": 2}
-							],
-							value=0,
-							inline=True,
-							labelStyle={"marginRight": "10px"},
-							style={"fontSize": "0.9rem"}
-						)
-					]
+				dbc.Button(
+					html.I(className="bi bi-arrow-clockwise", style={"fontSize": "0.9rem"}),
+					id="refresh-performances",
+					className="p-0 border-0",
+					color="link",
+					n_clicks=0,
+					style={"marginRight": "12px"}
+				),
+				dbc.Progress([
+					dbc.Progress(value=34, color="primary", bar=True, striped=True, label="1. Model Prediction", id="step-1-bar", className="progress-step"),
+					dbc.Progress(value=0, color="info", bar=True, striped=True, label="2. Ground Truth", id="step-2-bar", className="progress-step"),
+					dbc.Progress(value=0, color="warning", bar=True, striped=True, label="3. Settings", id="step-3-bar", className="progress-step")
+				],
+				style={"height": "30px", "flexGrow": 1, "borderRadius": "8px"},
+				className="d-flex w-100")
+			],
+			style={"display": "flex", "alignItems": "center", "marginBottom": "20px"}),
+
+			# Conditionally displayed panels
+			html.Div(id="model-prediction", children = [
+				dbc.RadioItems(
+					id="model-prediction-radio",
+					inline=False,
+					style={"margin": "10px 0", "fontSize": "14px"}
+				)],
+			),
+
+			html.Div(id="ground-truth", children=[
+				dbc.Checklist(
+					id="ground-truth-checkboxes",
+					inline=False,
+					style={"margin": "10px 0", "fontSize": "14px"}
 				),
 				dbc.Button(
-					"Compute performances",
-					id="compute-performances-button",
-					color="success",
-					disabled=True,
-					n_clicks=0
-				)
-			], style={"display": "flex", "alignItems": "center", "marginBottom": "20px"})
+                    html.I(className="bi bi-chevron-double-right"),
+                    id="ok-ground-truth-button",  # Unique ID for each button
+                    color="info",
+                    outline=True,
+                    size="sm",
+                    n_clicks=0,
+                    disabled=False,
+					style={"border": "none"}
+                )], style = {"display": "none"}
+			),
+			
+			html.Div(
+				id="settings", children=[
+				html.Div([
+						html.Div([
+							html.Label("Tolerance (ms):", style={"fontWeight": "bold", "fontSize": "14px", "marginRight": "10px", "width": "150px"}),
+							dbc.Input(
+								id="performance-tolerance",
+								type="number",
+								value=200,
+								step=10,
+								min=0,
+								max=1000,
+								style={**INPUT_STYLES["number"], "width": "200px"}
+							)
+						], style={"display": "flex", "alignItems": "center", "marginBottom": "10px"}),
+
+						html.Div([
+							html.Label("Threshold:", style={"fontWeight": "bold", "fontSize": "14px", "marginRight": "10px", "width": "150px"}),
+							dbc.Input(
+								id="performance-threshold",
+								type="number",
+								value=0.5,
+								step=0.01,
+								min=0,
+								max=1,
+								style={**INPUT_STYLES["number"], "width": "200px", "marginBottom": "30px"}
+							)
+						], style={"display": "flex", "alignItems": "center"}),
+
+					],
+					style={"display": "block"}
+				),
+			], style = {"display": "none"}),
 
 		], style={"width": "40%"}),
 				
@@ -119,18 +146,21 @@ layout = html.Div([
 			children=[
 				dbc.Card(
 					dbc.CardBody([
-						html.Div(id=f"performance-results-title-panel-{i}", children=[html.Small(f"Panel {i+1}")], style={"marginBottom": "10px"}),
+						html.Div(id="performance-results-title-panel", children=[
+							html.Small("Performance Results")
+						], style={"marginBottom": "10px"}),
+
 						dbc.Tabs([
-							dbc.Tab(label="Performance Metrics", tab_id=f"metrics-panel-{i}", children=[
-								html.Div(id=f"performance-metrics-table-panel-{i}")
+							dbc.Tab(label="Performance Metrics", tab_id="metrics-tab", children=[
+								html.Div(id="performance-metrics-table")
 							]),
-							dbc.Tab(label="Confusion Matrix", tab_id=f"confusion-panel-{i}", children=[
-								html.Div(id=f"confusion-matrix-table-panel-{i}")
+							dbc.Tab(label="Confusion Matrix", tab_id="confusion-tab", children=[
+								html.Div(id="confusion-matrix-table")
 							]),
-							dbc.Tab(label="Distance Statistics", tab_id=f"stats-panel-{i}", children=[
+							dbc.Tab(label="Distance Statistics", tab_id="stats-tab", children=[
 								html.I(
 									className="bi bi-info-circle-fill",
-									id=f"distance-help-icon-{i}",  # make unique per panel
+									id="distance-help-icon",
 									style={
 										"fontSize": "0.8em",
 										"cursor": "pointer",
@@ -143,27 +173,85 @@ layout = html.Div([
 									"• TP: Time between matched prediction and true event. Smaller values mean more accurate predictions. "
 									"• FP: Time to nearest true event (unmatched prediction). Useful for spotting near-misses or totally spurious predictions. "
 									"• FN: Time to nearest prediction (missed true event). A small distance means the model nearly detected the event.",
-									target=f"distance-help-icon-{i}",
+									target="distance-help-icon",
 									placement="top",
 									style={"maxWidth": "600px"}
 								),
-								html.Div(id=f"distance-statistics-table-panel-{i}")				 
-							])
+								html.Div(id="distance-statistics-table")
+							]),
+							dbc.Tab(label="F1 vs Tolerance", tab_id="f1-tolerance", children=[
+								dcc.Graph(id="f1-vs-tolerance-graph")
+							]),
+							dbc.Tab(label="F1 vs Threshold", tab_id="f1-threshold", children=[
+								dcc.Graph(id="f1-vs-threshold-graph")
+							]),
 						],
-						id=f"performance-tabs-panel-{i}",
-						active_tab=f"metrics-panel-{i}",
-						style={**FLEXDIRECTION['row-tabs']}
-						)
+						id="performance-tabs",
+						active_tab="metrics-tab",
+						style={"marginTop": "10px"})
 					]),
-					id=f"performance-panel-{i}",
-					style={"marginBottom": "30px", "boxShadow": "0 2px 8px rgba(0, 0, 0, 0.1)", "borderRadius": "1rem"}
+					id="performance-panel",
+					style={
+						"marginBottom": "30px",
+						"boxShadow": "0 2px 8px rgba(0, 0, 0, 0.1)",
+						"borderRadius": "1rem"
+					}
 				)
-				for i in range(3)
 			],
 			style={"width": "60%"}
 		)
 	], style={**FLEXDIRECTION['row-flex'], "display": "flex"})
 ])
+
+@callback(
+	Output("model-prediction", "style"),
+	Output("ground-truth", "style"),
+	Output("step-2-bar", "value"),
+	Input("model-prediction-radio", "value"),
+	prevent_initial_call=True
+)
+def progress_bar_step_1(mp_val):
+	if mp_val is not None:
+		return {"display": "none"}, {"display": "flex", "justifyContent": "center"}, 33
+	raise PreventUpdate
+
+@callback(
+	Output("ground-truth", "style", allow_duplicate=True),
+	Output("settings", "style"),
+	Output("step-3-bar", "value"),
+	Input("ok-ground-truth-button", "n_clicks"),
+	State("ground-truth-checkboxes", "value"),
+	prevent_initial_call=True
+)
+def progress_bar_step_2(n_clicks, gt_val):
+	if n_clicks and gt_val is not None:
+		return {"display": "none"}, {"display": "flex", "justifyContent": "flex-end"}, 33, #{"display": "flex", "justifyContent": "center", "gap": "30px", "marginBottom": "20px"}
+	raise PreventUpdate
+
+@callback(
+	Output("model-prediction-radio", "value", allow_duplicate=True),
+	Output("model-prediction", "style", allow_duplicate=True),
+	Output("ground-truth-checkboxes", "value", allow_duplicate=True),
+	Output("ground-truth", "style", allow_duplicate=True),
+	Output("settings", "style", allow_duplicate=True),
+	Output("step-2-bar", "value", allow_duplicate=True),
+	Output("step-3-bar", "value", allow_duplicate=True),
+	Input("refresh-performances", "n_clicks"),
+	prevent_initial_call=True
+)
+def reset_progress_bar(n_clicks):
+	if n_clicks is None:
+		raise PreventUpdate
+
+	return (
+		None,
+		{"display": "block"},  # model-prediction visible
+		None,
+		{"display": "none"},                              # ground-truth hidden
+		{"display": "none"},                              # settings hidden
+		0,  # reset step-2 bar
+		0,  # reset step-3 bar
+	)
 
 @callback(
 	Output("model-prediction-radio", "options"),
@@ -177,79 +265,45 @@ def display_model_names_checklist(annotations_store):
 	return options, options #dash.no_update  # Set all annotations as default selected
 
 @callback(
-	Output("compute-performances-button", "disabled"),
-	[
-		Input("model-prediction-radio", "value"),
-		Input("ground-truth-checkboxes", "value"),
-	]
-)
-def toggle_compute_button(model_prediction, ground_truth):
-	if not model_prediction or not ground_truth:
-		return True
-	if isinstance(ground_truth, list) and model_prediction not in ground_truth:
-		return False  # Enable button
-	return True  # Otherwise, keep it disabled
-
-@callback(
-	Output("panel-selector-id", "value"),
-	*[
-		Output(component_id, "children")
-		for i in range(3)
-		for component_id in [
-			f"performance-results-title-panel-{i}",
-			f"confusion-matrix-table-panel-{i}",
-			f"performance-metrics-table-panel-{i}",
-			f"distance-statistics-table-panel-{i}"
-		]
-	],
-	Input("compute-performances-button", "n_clicks"),  # Trigger when button is clicked
-	State("model-prediction-radio", "value"),  # Selected model prediction
-	State("ground-truth-checkboxes", "value"),  # Selected ground truth(s)
-	State("performance-tolerance", "value"),  # User-defined delta threshold
-	State("performance-threshold", "value"),  # User-defined delta threshold
-	State("panel-selector-id", "value"),
+	Output("performance-results-title-panel", "children"),
+	Output("confusion-matrix-table", "children"),
+	Output("performance-metrics-table", "children"),
+	Output("distance-statistics-table", "children"),
+	Output("f1-vs-tolerance-graph", "figure"),
+	Output("f1-vs-threshold-graph", "figure"),
+	Input("performance-tolerance", "value"),
+	Input("performance-threshold", "value"),
+	Input("ground-truth-checkboxes", "value"),
+	State("model-prediction-radio", "value"),
 	State("annotation-store", "data"),
-	prevent_initial_call=True  # Don't trigger on page load
+	prevent_initial_call=True
 )
-def compute_performance(n_clicks, model_prediction, ground_truth, tolerance, threshold, panel_index, annotations):
+def compute_performance(tolerance, threshold, ground_truth, model_prediction, annotations):
 	if not model_prediction or not ground_truth or tolerance is None:
-		return dash.no_update, "⚠️ Error: Missing inputs. Please select model predictions, ground truth, and delta.", dash.no_update, dash.no_update
-	
-	if model_prediction == "run prediction":
-		return "/viz/raw-signal", dash.no_update, dash.no_update, dash.no_update
+		error = "⚠️ Error: Missing inputs. Please select model predictions, ground truth, tolerance and threshold."
+		return dash.no_update, error, error, error, None, None
 	
 	# Convert annotations to DataFrame
-	annotations_df = pd.DataFrame(annotations).set_index("onset")  # Ensure onset is the index
+	annotations_df = pd.DataFrame(annotations).set_index("onset")
 
-	# Filter annotations for selected model prediction and ground truth
-	model_onsets = au.get_annotations(model_prediction, annotations_df)  # Example: [0.5, 1.2, 2.3, ...]
-	gt_onsets = au.get_annotations(ground_truth, annotations_df)  # Example: [0.6, 1.1, 2.5, ...]
+	# Get annotation onsets
+	model_onsets = au.get_annotations(model_prediction, annotations_df)
+	gt_onsets = au.get_annotations(ground_truth, annotations_df)
 
-	delta = tolerance/1000
+	# Compute matches
+	delta = tolerance / 1000
+	tp, fp, fn, tp_dists, fp_dists, fn_dists = pu.compute_matches(model_onsets, gt_onsets, delta)
 
-	true_positive, false_positive, false_negative, tp_dists, fp_dists, fn_dists = pu.compute_matches(model_onsets, gt_onsets, delta)
+	# Compute metrics
+	precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+	recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+	f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
 
-	# Compute Precision, Recall, F1-score
-	precision = true_positive / (true_positive + false_positive) if (true_positive + false_positive) > 0 else 0
-	recall = true_positive / (true_positive + false_negative) if (true_positive + false_negative) > 0 else 0
-	f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
-
-	# Confusion Matrix Data
-	conf_matrix_data = {
-		"Metric": ["True Positive", "False Positive", "False Negative", "True Negative"],
-		"Count": [true_positive, false_positive, false_negative, "nan"]
-	}
+	# Confusion matrix table
 	conf_matrix_data = [
-		{"": "Actual Negative", "Predicted Negative": "nan", "Predicted Positive": false_positive},
-		{"": "Actual Positive", "Predicted Negative": false_negative, "Predicted Positive": true_positive}
+		{"": "Actual Negative", "Predicted Negative": "–", "Predicted Positive": fp},
+		{"": "Actual Positive", "Predicted Negative": fn, "Predicted Positive": tp}
 	]
-
-	# Performance Metrics Data
-	perf_metrics_data = {
-		"Metric": ["Precision", "Recall", "F1 Score"],
-		"Value": [f"{precision:.3f}", f"{recall:.3f}", f"{f1:.3f}"]
-	}
-
 	conf_matrix = dbc.Table(
 		[
 			html.Thead(html.Tr([html.Th(""), html.Th("Predicted Negative"), html.Th("Predicted Positive")])),
@@ -258,76 +312,112 @@ def compute_performance(n_clicks, model_prediction, ground_truth, tolerance, thr
 				for row in conf_matrix_data
 			])
 		],
-		bordered=True,
-		hover=True,
-		responsive=True,
-		striped=True,
+		bordered=True, hover=True, responsive=True, striped=True
 	)
 
-	# Convert performance metrics data to dbc.Table
+	# Performance metrics
 	perf_metrics = dbc.Table(
 		[
 			html.Thead(html.Tr([html.Th("Metric"), html.Th("Value")])),
 			html.Tbody([
-				html.Tr([html.Td(perf_metrics_data["Metric"][i]), html.Td(perf_metrics_data["Value"][i])])
-				for i in range(len(perf_metrics_data["Metric"]))
+				html.Tr([html.Td("Precision"), html.Td(f"{precision:.3f}")]),
+				html.Tr([html.Td("Recall"), html.Td(f"{recall:.3f}")]),
+				html.Tr([html.Td("F1 Score"), html.Td(f"{f1:.3f}")]),
 			])
 		],
-		bordered=True,
-		hover=True,
-		responsive=True,
-		striped=True,
+		bordered=True, hover=True, responsive=True, striped=True
 	)
-	  
-	# Distance Statistics Data
-	tp_stats = pu.get_distance_stats(tp_dists)
-	fp_stats = pu.get_distance_stats(fp_dists)
-	fn_stats = pu.get_distance_stats(fn_dists)
 
-	distance_stats_data = [
-		{"Type": "TP", "Mean": tp_stats["mean"], "Std": tp_stats["std"], "Min": tp_stats["min"], "Max": tp_stats["max"]},
-		{"Type": "FP", "Mean": fp_stats["mean"], "Std": fp_stats["std"], "Min": fp_stats["min"], "Max": fp_stats["max"]},
-		{"Type": "FN", "Mean": fn_stats["mean"], "Std": fn_stats["std"], "Min": fn_stats["min"], "Max": fn_stats["max"]},
+	# Distance stats
+	stats_data = [
+		{"Type": "TP", **pu.get_distance_stats(tp_dists)},
+		{"Type": "FP", **pu.get_distance_stats(fp_dists)},
+		{"Type": "FN", **pu.get_distance_stats(fn_dists)},
 	]
-
-	distance_stats = dbc.Table(
+	dist_stats = dbc.Table(
 		[
 			html.Thead(html.Tr([html.Th("Type"), html.Th("Mean"), html.Th("Std"), html.Th("Min"), html.Th("Max")])),
 			html.Tbody([
-				html.Tr([html.Td(row["Type"]), html.Td(row["Mean"]), html.Td(row["Std"]), html.Td(row["Min"]), html.Td(row["Max"])])
-				for row in distance_stats_data
+				html.Tr([
+					html.Td(row["Type"]),
+					html.Td(row["mean"]),
+					html.Td(row["std"]),
+					html.Td(row["min"]),
+					html.Td(row["max"])
+				]) for row in stats_data
 			])
 		],
-		bordered=True,
-		hover=True,
-		responsive=True,
-		striped=True,
+		bordered=True, hover=True, responsive=True, striped=True
 	)
 
-	title =  html.Div([
-		html.Small([
-			html.I(className="bi bi-flag-fill me-2 text-primary"),  # icon for ground truth
-			"Ground Truth: ",
-			html.Span(ground_truth, className="fw-bold text-dark"),
-			html.I(className="bi bi-stars mx-3 text-success"),   # icon for prediction
-			"Prediction: ",
-			html.Span(model_prediction, className="fw-bold text-dark"),
-			html.I(className="bi bi-sliders2-vertical mx-3 text-warning"),  # icon for parameters
-			"Tolerance: ",
-			html.Span(f"{tolerance} ms", className="fw-bold text-dark"),
-			html.Span(" | ", className="mx-2"),
-			"Threshold: ",
-			html.Span(f"{threshold}", className="fw-bold text-dark"),
-	], className="text-muted")])
-	
-	if panel_index < 2:
-		output_list = [panel_index+1]
-	else:
-		output_list= [0]
-	for i in range(3):
-		if i == panel_index:
-			output_list.extend([title, conf_matrix, perf_metrics, distance_stats])
-		else:
-			output_list.extend([dash.no_update] * 4)
+	# Title panel
+	title = html.Small([
+		html.I(className="bi bi-flag-fill me-2 text-primary"),
+		"Ground Truth: ", html.Span([f"{gt}/" for gt in ground_truth], className="fw-bold text-dark"),
+		html.I(className="bi bi-stars mx-3 text-success"),
+		"Prediction: ", html.Span(model_prediction, className="fw-bold text-dark"),
+		html.I(className="bi bi-sliders2-vertical mx-3 text-warning"),
+		"Tolerance: ", html.Span(f"{tolerance} ms", className="fw-bold text-dark"),
+		html.Span(" | ", className="mx-2"),
+		"Threshold: ", html.Span(f"{threshold}", className="fw-bold text-dark")
+	], className="text-muted")
 
-	return tuple(output_list)
+	# F1 vs. Tolerance
+	tolerances = list(range(10, 300, 10))  # ms
+	f1_by_tol = []
+	for tol in tolerances:
+		delta = tol / 1000
+		tp, fp, fn, *_ = pu.compute_matches(model_onsets, gt_onsets, delta)
+		precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+		recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+		f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
+		f1_by_tol.append(f1)
+
+	f1_tol_fig = {
+		"data": [{
+			"x": tolerances,
+			"y": f1_by_tol,
+			"type": "scatter",
+			"mode": "lines+markers",
+			"line": {"color": "#007BFF"},
+			"name": "F1 Score"
+		}],
+		"layout": {
+			"title": "F1 Score vs. Tolerance",
+			"xaxis": {"title": "Tolerance (ms)"},
+			"yaxis": {"title": "F1 Score", "range": [0, 1]},
+			"height": 300
+		}
+	}
+
+	# F1 vs. Threshold
+	thresholds = [round(x * 0.05, 2) for x in range(1, 21)]
+	f1_by_thresh = []
+	for th in thresholds:
+		# Use threshold only if you apply it to model_onsets filtering
+		# Here it's a dummy example: ignore threshold logic
+		tp, fp, fn, *_ = pu.compute_matches(model_onsets, gt_onsets, delta)  # reuse delta
+		precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+		recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+		f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
+		f1_by_thresh.append(f1)
+
+	f1_thresh_fig = {
+		"data": [{
+			"x": thresholds,
+			"y": f1_by_thresh,
+			"type": "scatter",
+			"mode": "lines+markers",
+			"line": {"color": "#28A745"},
+			"name": "F1 Score"
+		}],
+		"layout": {
+			"title": "F1 Score vs. Threshold",
+			"xaxis": {"title": "Threshold"},
+			"yaxis": {"title": "F1 Score", "range": [0, 1]},
+			"height": 300
+		}
+	}
+
+	# Return all outputs (title, tables, graphs)
+	return title, conf_matrix, perf_metrics, dist_stats, f1_tol_fig, f1_thresh_fig

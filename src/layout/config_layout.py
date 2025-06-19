@@ -63,19 +63,6 @@ BUTTON_STYLES = {
 }
 
 BOX_STYLES = {
-    "panel-tabs": {
-        "padding": "15px",  # More spacious padding
-        "text-decoration": "none", 
-        "font-size": "18px", 
-        "color": "white", 
-        "border-radius": "12px",  # Rounded corners for a modern feel
-        #"margin": "10px",  # Increased margin for better separation
-        "display": "inline-block",
-        "box-shadow": "0px 4px 12px rgba(0, 0, 0, 0.15)",  # Deeper shadow for depth
-        "transition": "all 0.3s ease",  # Smooth transition for hover
-        "background-color": "#6c757d",  # Soft gray background
-        "cursor": "pointer",  # Pointer cursor to indicate interactivity
-    },
     "classic": {
         "padding": "15px",
         "border": "1px solid #ddd",  # Grey border
@@ -189,3 +176,17 @@ REGION_COLOR_PALETTE = [
     "#006400",  # DarkGreen
     "#FF8C00",  # DarkOrange
 ]
+
+ERROR = {       
+    "position": "absolute",
+    "top": "20%",  # or adjust as needed
+    "left": "50%",
+    "transform": "translateX(-50%)",
+    "zIndex": 9999,
+    # "color": "red",
+    "fontWeight": "bold",
+    "backgroundColor": "rgba(255,255,255,0.8)",
+    "padding": "5px 10px",
+    "borderRadius": "5px",
+    "boxShadow": "0 2px 6px rgba(0,0,0,0.2)"
+}
