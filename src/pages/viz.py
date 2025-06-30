@@ -1,12 +1,15 @@
 import dash
-from dash import html, dcc
+from dash import html, dcc, Input, Output, State, clientside_callback
 from dash_extensions import Keyboard
+from dash.exceptions import PreventUpdate
 
 # Layout imports
 import layout.graph_layout as gl
 from layout.sidebar_layout import create_sidebar
 from layout.config_layout import ERROR
 import dash_bootstrap_components as dbc
+
+from callbacks.utils import graph_utils as gu
 
 # Callback imports
 
@@ -25,7 +28,7 @@ from callbacks.selection_callbacks import (
     register_manage_channels_checklist,
     register_offset_display,
     register_page_buttons_display,
-    register_popup_annotation_suppression
+    register_modal_annotation_suppression
 )
 
 # --- Graph ---
@@ -121,6 +124,8 @@ layout = html.Div([
             "zIndex": 1000,
         }),
 
+        html.Div(id='dummy-output', style={'display':'none'}),
+
         html.Div([
             # Error message overlaying the graph
             html.Div(["Please make a ",  html.I(className="bi bi-arrow-left-square-fill", style={"color": "#0d6efd"}), " selection and click on ", html.I(className="bi bi-arrow-clockwise", style={"color": "orange"}), " Refresh button."], id="python-error", style=ERROR),
@@ -146,13 +151,32 @@ layout = html.Div([
         "display": "flex",  # Horizontal layout
         "flexDirection": "row",
         "height": "90vh",  # Use the full height of the viewport
-        "width": "95vw",  # Use the full width of the viewport
+        "width": "96vw",  # Use the full width of the viewport
         "overflow": "hidden",  # Prevent overflow in case of resizing
         "boxSizing": "border-box",
         "gap": "20px",
     }),
 
 ])
+
+clientside_callback(
+    """
+    function(relayoutData) {
+        // This function runs after relayout (zoom/pan/plotly_afterplot) events
+        console.log("clientside callback triggered");
+        // Get container and scroll it to bottom
+        var container = document.getElementById('graph-container');
+        if(container){
+            container.scrollTop = container.scrollHeight;
+        }
+        console.log("clientside callback triggered");
+        return '';
+    }
+    """,
+    Output('dummy-output', 'children'),
+    Input("meg-signal-graph", "figure"),
+    prevent_initial_call=False
+)
 
 # --- Siderbar dynamic ---
 register_toggle_sidebar(
@@ -169,7 +193,7 @@ register_navigate_tabs_raw(
 
 # --- Page Navigation ---
 register_page_buttons_display(
-    page_buttons_container_id="page-buttons-container",
+    # page_buttons_container_id="page-buttons-container",
     page_selector_id="page-selector"
 )
 
@@ -221,7 +245,7 @@ register_clear_check_all_annotation_checkboxes(
     checkboxes_id="annotations-to-save-checkboxes"
 )
 
-register_popup_annotation_suppression(
+register_modal_annotation_suppression(
         btn_id="delete-annotations-btn",
         checkboxes_id="annotation-checkboxes",
         modal_id="delete-confirmation-modal",

@@ -66,7 +66,7 @@ def register_update_graph_raw_signal():
         # Get the current x-axis center
         xaxis_range = graph["layout"]["xaxis"].get("range", [])
         if xaxis_range[1] <= time_range[0] or xaxis_range[0] >= time_range[1]:
-            xaxis_range = [time_range[0], time_range[0]+10]
+            xaxis_range = [time_range[0], time_range[0]+20]
 
         filter={}
 
@@ -126,7 +126,7 @@ def register_update_graph_ica(ica_result_radio_id):
         # Get the current x-axis center
         xaxis_range = graph["layout"]["xaxis"].get("range", [])
         if xaxis_range[1] < time_range[0] or xaxis_range[0] > time_range[1]:
-            xaxis_range = [time_range[0], time_range[0]+10]
+            xaxis_range = [time_range[0], time_range[0]+20]
 
         try:                  
             fig, error = gu.generate_graph_time_ica(offset_selection, time_range, folder_path, ica_result_path, color_selection, xaxis_range)

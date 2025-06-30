@@ -14,7 +14,7 @@ from callbacks.selection_callbacks import (
     register_clear_check_all_annotation_checkboxes,
     register_offset_display,
     register_page_buttons_display,
-    register_popup_annotation_suppression
+    register_modal_annotation_suppression
 )
 
 from callbacks.annotation_callbacks import (
@@ -154,10 +154,9 @@ register_offset_display(
     keyboard_id="keyboard-ica"
 )
 register_page_buttons_display(
-    page_buttons_container_id="page-buttons-container-ica",
     page_selector_id="page-selector-ica"
 )
-register_popup_annotation_suppression(
+register_modal_annotation_suppression(
     btn_id="delete-annotations-btn-ica",
     checkboxes_id="annotation-checkboxes-ica",
     modal_id="delete-confirmation-modal-ica",

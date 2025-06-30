@@ -6,7 +6,7 @@ from layout.config_layout import INPUT_STYLES, BOX_STYLES, BUTTON_STYLES
 def create_analyze():
     return html.Div([
     
-    # Plot topomap on a interval timepoint
+    # Plot topomap on a single timepoint
         html.Div([
             html.Div([
                 html.H6([html.I(className="bi bi-crosshair"), " Topomap"], style={"fontWeight": "bold", "marginBottom": "10px"}),

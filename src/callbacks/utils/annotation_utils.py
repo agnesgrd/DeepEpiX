@@ -111,11 +111,7 @@ def build_table_events_statistics(annotations):
 
     return stats_summary
 
-def build_table_prediction_statistics(df, threshold):
-    df['probas'] = df['probas'].round(2)
-    df_spike = df[df["probas"] > threshold]
-
-    total_windows = len(df)
+def build_table_prediction_statistics(df_spike, total_windows):
     spike_count = len(df_spike)
     spike_ratio = (spike_count / total_windows) * 100 if total_windows else 0
 

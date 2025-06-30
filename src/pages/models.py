@@ -6,7 +6,7 @@ from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 from dash.exceptions import PreventUpdate
 
-from layout.config_layout import INPUT_STYLES, BOX_STYLES, FLEXDIRECTION
+from layout.config_layout import INPUT_STYLES, FLEXDIRECTION
 from callbacks.utils import annotation_utils as au
 from callbacks.utils import performance_utils as pu
 import callbacks.utils.model_utils as mu
@@ -83,7 +83,7 @@ layout = html.Div([
 				dbc.RadioItems(
 					id="model-prediction-radio",
 					inline=False,
-					style={"margin": "10px 0", "fontSize": "14px"}
+					style={"marginLeft": "60px", "fontSize": "14px"}
 				)],
 			),
 
@@ -96,12 +96,12 @@ layout = html.Div([
 				dbc.Button(
                     html.I(className="bi bi-chevron-double-right"),
                     id="ok-ground-truth-button",  # Unique ID for each button
-                    color="info",
+                    color="warning",
                     outline=True,
                     size="sm",
                     n_clicks=0,
                     disabled=False,
-					style={"border": "none"}
+					style={"border": "none", "margin": "20px"}
                 )], style = {"display": "none"}
 			),
 			
@@ -198,7 +198,7 @@ layout = html.Div([
 					}
 				)
 			],
-			style={"width": "60%"}
+			style={"width": "60%", "marginLeft": "60px"}
 		)
 	], style={**FLEXDIRECTION['row-flex'], "display": "flex"})
 ])
@@ -212,7 +212,7 @@ layout = html.Div([
 )
 def progress_bar_step_1(mp_val):
 	if mp_val is not None:
-		return {"display": "none"}, {"display": "flex", "justifyContent": "center"}, 33
+		return {"display": "none"}, {"display": "flex", "justifyContent": "center", "marginLeft": "60px"}, 33
 	raise PreventUpdate
 
 @callback(
@@ -225,33 +225,17 @@ def progress_bar_step_1(mp_val):
 )
 def progress_bar_step_2(n_clicks, gt_val):
 	if n_clicks and gt_val is not None:
-		return {"display": "none"}, {"display": "flex", "justifyContent": "flex-end"}, 33, #{"display": "flex", "justifyContent": "center", "gap": "30px", "marginBottom": "20px"}
+		return {"display": "none"}, {"display": "flex", "justifyContent": "flex-end", "marginLeft": "60px"}, 33
 	raise PreventUpdate
 
-@callback(
-	Output("model-prediction-radio", "value", allow_duplicate=True),
-	Output("model-prediction", "style", allow_duplicate=True),
-	Output("ground-truth-checkboxes", "value", allow_duplicate=True),
-	Output("ground-truth", "style", allow_duplicate=True),
-	Output("settings", "style", allow_duplicate=True),
-	Output("step-2-bar", "value", allow_duplicate=True),
-	Output("step-3-bar", "value", allow_duplicate=True),
-	Input("refresh-performances", "n_clicks"),
-	prevent_initial_call=True
-)
-def reset_progress_bar(n_clicks):
-	if n_clicks is None:
-		raise PreventUpdate
 
-	return (
-		None,
-		{"display": "block"},  # model-prediction visible
-		None,
-		{"display": "none"},                              # ground-truth hidden
-		{"display": "none"},                              # settings hidden
-		0,  # reset step-2 bar
-		0,  # reset step-3 bar
-	)
+@callback(
+    Output("url", "href", allow_duplicate=True),
+    Input("refresh-performances", "n_clicks"),
+    prevent_initial_call=True
+)
+def refresh_page(n_clicks):
+    return "/model/performance"  # or ctx.triggered_id or url.pathname to simulate refresh
 
 @callback(
 	Output("model-prediction-radio", "options"),

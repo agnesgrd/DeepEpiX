@@ -41,9 +41,9 @@
 
 /* Sidebar collapse animation and width control */
 .sidebar-collapse {
-    transition: width 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    transition: max-width 0.3s ease-in-out, opacity 0.3s ease-in-out;
     overflow: hidden;
-    width: 260px; /* Default open width - adjust as needed */
+    max-width: 270px; /* Default open width - adjust as needed */
     opacity: 1;
 }
 
@@ -53,17 +53,6 @@
     opacity: 0;
     padding: 0;
     margin: 0;
-}
-
-/* Alternative approach using max-width for smoother animation */
-.sidebar-collapse {
-    max-width: 300px; /* Set your desired sidebar width */
-    transition: max-width 0.3s ease-in-out, opacity 0.2s ease-in-out;
-}
-
-.sidebar-collapse.collapse:not(.show) {
-    max-width: 0px;
-    opacity: 0;
 }
 
 /* Toggle button positioning and styling */
@@ -114,3 +103,69 @@
         backdrop-filter: blur(5px);
     }
 }
+
+.main-content {
+    flex: 1;
+    transition: margin-left 0.3s ease-in-out;
+    overflow-y: auto;
+}
+
+.modebar-container {
+    position: fixed !important;
+    top: 90px !important;
+    right: 150px !important;
+    left: auto !important;
+    bottom: auto !important;
+    z-index: 2000;
+}
+
+/* Example targeting rangeslider */
+.js-plotly-plot .rangeslider {
+    position: fixed !important;
+    bottom: 100px !important;
+    left: 500px !important;
+    right: auto !important;
+    z-index: 1000 !important;
+  }
+
+.page-radio-label {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin: 0 !important;
+    z-index: 3000;
+}
+
+.page-radio-input {
+    margin-right: 0px;
+}
+
+.page-radio-label:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.page-radio-input:checked + .page-radio-label {
+    background-color: rgba(255, 255, 255, 0.3);
+    font-weight: bold;
+}
+
+.page-radio-input {
+    /* Hide the default radio circle */
+    position: absolute;  /* take it out of flow */
+    opacity: 0;          /* make invisible */
+    width: 0 !important;
+    height: 0 !important;
+    margin: 0;
+    padding: 0;
+    pointer-events: none; /* optional: disable mouse events */
+  }
+
+  .custom-dropdown .Select-menu {
+    background-color: white;
+    color: black;
+}
+

@@ -161,21 +161,27 @@ def update_prediction_table(style, threshold, prediction_csv_path):
         return dash.no_update, dash.no_update, dash.no_update
     try:
         df = pd.read_csv(prediction_csv_path[0])
-        df_filtered = df[df["probas"] > threshold].copy()
-        if len(df_filtered) == 0:
+        df_filtered = df[df["probas"] > threshold]
+        df_filtered['probas'] = df_filtered['probas'].round(2)
+
+        if df_filtered.empty:
             msg = html.P("No events found in this recording.")
             return msg, msg, msg
-        
-        df_filtered.loc[:,'probas'] = df_filtered['probas'].round(2)
+
         table = dbc.Table.from_dataframe(
-            df_filtered,  # The DataFrame
-            striped=True,  # Alternate row shading
-            bordered=True,  # Border the table
-            hover=True,  # Highlight row on hover
-            responsive=True,  # Make the table responsive
-            dark=False,  # Light mode (set to True for dark mode)
+            df_filtered.copy(),
+            striped=True,
+            bordered=True,
+            hover=True,
+            responsive=True,
+            dark=False,
         )
-        return au.build_table_prediction_statistics(df, threshold), au.build_prediction_distribution_statistics(df, threshold), table
+
+        return (
+            au.build_table_prediction_statistics(df_filtered, len(df)),
+            au.build_prediction_distribution_statistics(df, threshold),
+            table,
+        )
     except Exception as e:
         error_msg = html.P(f"⚠️ Error loading predictions: {e}")
         return error_msg, error_msg, error_msg

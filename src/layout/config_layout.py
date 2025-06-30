@@ -123,7 +123,7 @@ COLOR_PALETTE = [
     ]
 
 DEFAULT_FIG_LAYOUT = dict(
-    autosize=True,
+    # autosize=True,
     xaxis=dict(
         title=None,
         minallowed=None,  # Will be overridden dynamically
@@ -140,8 +140,7 @@ DEFAULT_FIG_LAYOUT = dict(
     yaxis=dict(
         title=None,
         showticklabels=False,
-        autorange=True,
-        showgrid=True,
+        showgrid=False,
         spikethickness=0,
     ),
     title=dict(
@@ -156,7 +155,8 @@ DEFAULT_FIG_LAYOUT = dict(
     dragmode='select',
     selectdirection='h',
     hovermode='closest',
-    paper_bgcolor='rgba(0,0,0,0)'
+    paper_bgcolor='rgba(0,0,0,0)',
+    autosize=True
 )
 
 # Define the region-to-color mapping
@@ -183,7 +183,6 @@ ERROR = {
     "left": "50%",
     "transform": "translateX(-50%)",
     "zIndex": 9999,
-    # "color": "red",
     "fontWeight": "bold",
     "backgroundColor": "rgba(255,255,255,0.8)",
     "padding": "5px 10px",

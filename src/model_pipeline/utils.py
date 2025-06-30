@@ -136,7 +136,7 @@ def save_data_matrices(subject_path, path_output, bad_channels):
 	# Drop bad channels
 	if ast.literal_eval(bad_channels):
 		raw.drop_channels(ast.literal_eval(bad_channels))
-
+	
 	#Resample the data
 	raw.resample(params.sfreq).pick(['mag'])
 	raw.filter(0.5,50, n_jobs=8)
@@ -195,7 +195,7 @@ def create_windows(path_output, window_size_ms, stand=False):
 				nb_block.append(block)
 				total_nb_windows = total_nb_windows+1
 
-		X_block = np.stack(X_block,axis=0)       
+		X_block = np.stack(X_block,axis=0)
 		X_all = np.append(X_all,X_block,axis=0)
 
 	if stand:

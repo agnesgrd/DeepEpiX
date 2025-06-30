@@ -75,36 +75,51 @@ def register_navigate_tabs_ica(collapse_id, sidebar_tabs_id, icon_id):
 # 📄 Page Navigation Callbacks
 # ─────────────────────────────
 
-def register_page_buttons_display(page_buttons_container_id, page_selector_id):
+# def register_page_buttons_display(page_buttons_container_id, page_selector_id):
+#     @callback(
+#         Output(page_buttons_container_id, "children"),
+#         Input("chunk-limits-store", "data"),
+#         prevent_initial_call=False
+#     )
+#     def _display_page_buttons(chunk_limits):
+#         """Display number of page depending on chunks length."""
+#         if not chunk_limits:
+#             return dash.no_update
+
+#         return html.Div(
+#             dbc.RadioItems(
+#                 id=page_selector_id,
+#                 options=[
+#                     {
+#                         "label": None,
+#                         "value": i
+#                     } for i in range(len(chunk_limits))
+#                 ],
+#                 value=0,
+#                 inline=True,
+#                 style={
+#                     "minWidth": "24px",
+#                     "height": "24px",
+#                     "lineHeight": "1",
+#                     "fontSize": "0.8rem"
+#                 }
+#             )
+#         )
+
+def register_page_buttons_display(page_selector_id):
     @callback(
-        Output(page_buttons_container_id, "children"),
+        Output(page_selector_id, "options"),
         Input("chunk-limits-store", "data"),
         prevent_initial_call=False
     )
     def _display_page_buttons(chunk_limits):
-        """Display number of page depending on chunks length."""
         if not chunk_limits:
             return dash.no_update
 
-        return html.Div(
-            dbc.RadioItems(
-                id=page_selector_id,
-                options=[
-                    {
-                        "label": None,
-                        "value": i
-                    } for i in range(len(chunk_limits))
-                ],
-                value=0,
-                inline=True,
-                style={
-                    "minWidth": "24px",
-                    "height": "24px",
-                    "lineHeight": "1",
-                    "fontSize": "0.8rem"
-                }
-            )
-        )
+        return [
+            {"label": str(i+1), "value": i}
+            for i in range(len(chunk_limits))
+        ]
 
 # ─────────────────────────────
 # 📦 Channel & Annotation Management
@@ -186,7 +201,7 @@ def register_clear_check_all_annotation_checkboxes(check_all_btn_id, clear_all_b
 
 def register_offset_display(offset_decrement_id, offset_increment_id, offset_display_id, keyboard_id):
     @callback(
-        Output(offset_display_id, "value", allow_duplicate=True),
+        Output(offset_display_id, "value"),
         Input(offset_decrement_id, "n_clicks"),
         Input(offset_increment_id, "n_clicks"),
         Input(keyboard_id, "n_keydowns"),
@@ -222,7 +237,7 @@ def register_offset_display(offset_decrement_id, offset_increment_id, offset_dis
 # ❌ Annotation Suppression Popup
 # ─────────────────────────────
 
-def register_popup_annotation_suppression(btn_id, checkboxes_id, modal_id, modal_body_id):
+def register_modal_annotation_suppression(btn_id, checkboxes_id, modal_id, modal_body_id):
     @callback(
         Output(modal_id, "is_open"),
         Output(modal_body_id, "children"),
