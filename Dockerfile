@@ -49,4 +49,4 @@ WORKDIR /DeepEpiX/src
 EXPOSE 8050
 
 # Use exec form for better signal handling
-CMD ["/DeepEpiX/.dashenv/bin/gunicorn", "-w", "25", "-b", "0.0.0.0:8050", "--timeout", "600", "run:server"]
+CMD exec /DeepEpiX/.dashenv/bin/gunicorn -w $(python3 -c "import multiprocessing; print(multiprocessing.cpu_count() * 2 + 1)") -b 0.0.0.0:8050 --timeout 600 run:server
