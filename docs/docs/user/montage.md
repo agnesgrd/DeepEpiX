@@ -4,6 +4,8 @@
 
 For clinicians, creating custom sensor montages is essential for efficient analysis. Rather than viewing all available channels, a montage allows you to focus on specific brain regions of interest, making it easier to identify and analyze neural activity patterns relevant to your clinical assessment.
 
+![My New Montage](/images/my-new-montage.png)
+
 ## 1️⃣ Choose a Name
 
 Click on the **➕ Create** button to begin.

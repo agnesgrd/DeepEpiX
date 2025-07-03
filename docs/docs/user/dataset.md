@@ -21,10 +21,8 @@ You can open the following types of files:
 
 ## 3️⃣ Load and Access Metadata
 
-When you click on **📥 Load**, the previous database memory will be cleared.
-
-After loading, **⚙️ preprocessing parameters** become accessible.  
-You can adjust these settings while exploring:
+When you click on **📥 Load**, the previous database memory is cleared and **⚙️ preprocessing parameters** become accessible.  
+You can adjust these parameters while exploring:
 
 - Metadata (`raw.info`)
 - Past annotations 
