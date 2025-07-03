@@ -43,14 +43,14 @@ def register_update_annotation_graph(
         Output(annotation_graph_id, "figure"),
         Input(update_button_id, "n_clicks"),
         Input(page_selector_id, "value"),
-        State(checkboxes_id, "options"),
-        State(checkboxes_id, "value"),
+        Input(checkboxes_id, "value"),
+        # State(checkboxes_id, "options"),
         State("annotation-store", "data"),
         State(annotation_graph_id, "figure"),
         State("chunk-limits-store", "data"),
         prevent_initial_call=True
     )
-    def update_annotation_graph(n_clicks, page_selection, annotation_options, annotations_to_show, annotations_data, annotation_fig, chunk_limits):
+    def update_annotation_graph(n_clicks, page_selection, annotations_to_show, annotations_data, annotation_fig, chunk_limits):
 
         if not n_clicks or not annotations_data or not isinstance(annotations_data, list) or not annotations_to_show or not isinstance(annotations_to_show, list):
             return dash.no_update

@@ -5,9 +5,9 @@ import plotly.graph_objects as go
 import dash
 from dash import Patch
 import time
-from plotly_resampler import FigureResampler
-from plotly_resampler.aggregation import MinMaxLTTB
-from plotly_resampler.aggregation.aggregators import DataAggregator
+# from plotly_resampler import FigureResampler
+# from plotly_resampler.aggregation import MinMaxLTTB
+# from plotly_resampler.aggregation.aggregators import DataAggregator
 
 from layout.config_layout import DEFAULT_FIG_LAYOUT, REGION_COLOR_PALETTE, COLOR_PALETTE, ERROR
 from callbacks.utils import preprocessing_utils as pu
@@ -76,23 +76,6 @@ def apply_default_layout(fig, xaxis_range, time_range, selected_channels, y_axis
     fig.update_layout(layout)
     return fig
 
-
-
-class MeanAggregator(DataAggregator):
-    def _aggregate(self, x: np.ndarray, y: np.ndarray, n_out: int):
-        if len(x) <= n_out:
-            return x, y, None
-
-        # Create bins over the x range
-        bins = np.linspace(x[0], x[-1], n_out + 1)
-        df = pd.DataFrame({'x': x, 'y': y})
-        df['bin'] = np.digitize(x, bins) - 1  # bin indices
-
-        # Group by bins and compute means
-        grouped = df.groupby('bin').agg({'x': 'mean', 'y': 'mean'}).dropna()
-
-        return grouped['x'].to_numpy(), grouped['y'].to_numpy(), None
-
 def generate_graph_time_channel(selected_channels, offset_selection, time_range, folder_path, freq_data, color_selection, xaxis_range, channels_region, filter = {}):
     """Handles the preprocessing and figure generation for the MEG signal visualization."""
     import time  # For logging execution times
@@ -154,19 +137,17 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
     fig_start_time = time.time()
     shifted_filtered_raw_df["Time"] = shifted_times  # Add time as a column for Plotly Express
 
-    fig = FigureResampler(go.Figure(), default_downsampler=MinMaxLTTB(parallel=True), show_mean_aggregation_size=False)
-
+    # fig = FigureResampler(go.Figure(), default_downsampler=MinMaxLTTB(parallel=True), show_mean_aggregation_size=False)
+    fig = go.Figure()
+    
     for col in shifted_filtered_raw_df.columns[:-1]:  # Exclude Time
-        fig.add_trace(
-            go.Scattergl(
-                name=col,
-                line=dict(color=color_map.get(col, None), width=1),
-                mode="lines"
-            ),
-            hf_x=shifted_filtered_raw_df["Time"],
-            hf_y=shifted_filtered_raw_df[col],
-            max_n_samples = np.inf
-        )
+        fig.add_trace(go.Scattergl(
+            x=shifted_filtered_raw_df["Time"],
+            y=shifted_filtered_raw_df[col],
+            mode="lines",
+            name=col,
+            line=dict(color=color_map.get(col, None), width=1)
+        ))
 
     if 'smoothGrad' in color_selection:
         fig = su.add_smoothgrad_scatter(
