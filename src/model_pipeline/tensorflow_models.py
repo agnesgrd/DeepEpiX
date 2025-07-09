@@ -10,8 +10,8 @@ import os.path as op
 import model_pipeline.params as params
 import pandas as pd
 import gc
-from model_pipeline.utils import load_obj
-from model_pipeline.utils import compute_window_ppa, compute_window_upslope, compute_window_std, compute_window_average_slope, compute_window_downslope, compute_window_sharpness, compute_gfp, find_peak_gfp
+from model_pipeline.utils import load_obj, compute_window_ppa, compute_window_upslope, compute_window_std, compute_window_average_slope, compute_window_downslope, compute_window_sharpness, compute_gfp, find_peak_gfp
+
 
 def get_win_data_feat(sample_norm, compute_features = {"ppa" : compute_window_ppa, "std": compute_window_std, "upslope" : compute_window_upslope, "downslope": compute_window_downslope, "average_slope": compute_window_average_slope, "sharpness" : compute_window_sharpness}):
 
@@ -21,7 +21,6 @@ def get_win_data_feat(sample_norm, compute_features = {"ppa" : compute_window_pp
         features_sample[0,list(compute_features).index(feat)] = func(sample_norm)
 
     return features_sample
-
 
 def get_win_data_signal(f,win,sub,dim):
 
@@ -107,3 +106,19 @@ def test_model_dash(model_name, X_test_ids, output_path, threshold=0.5, adjust_o
 
     # Save DataFrame as CSV
     df.to_csv(f'{output_path}/{os.path.basename(model_name)}_predictions.csv', index=False)
+
+    ### === Generate final summary row for global evaluation CSV === ###
+    
+    # Select predicted spikes above threshold
+    pred_spike_times = [onset for onset, prob in zip(adjusted_onsets, y_pred_probas) if prob > threshold]
+    pred_spike_probs = [round(prob, 3) for prob in y_pred_probas if prob > threshold]
+
+    # Create DataFrame for predictions
+    pred_df = pd.DataFrame({
+        "Patient": [os.path.basename(subject)] * len(pred_spike_times),
+        "Model": [os.path.basename(model_name)] * len(pred_spike_times),
+        "SpikeTime_s": pred_spike_times,
+        "Probability": pred_spike_probs
+    })
+
+    pred_df.to_csv(os.path.join(output_path, "predictions.csv"), mode='a', index=False, header=not os.path.exists(os.path.join(output_path, "predictions.csv")))

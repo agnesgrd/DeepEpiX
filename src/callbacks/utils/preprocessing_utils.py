@@ -29,9 +29,12 @@ cache = Cache(app.server, config={
 
 ################################# RAW DATA PREPROCESSING (FILTERING, SUBSAMPLING) #################################################################
 
-def filter_resample(folder_path, freq_data):
+def sort_filter_resample(folder_path, freq_data, channels_dict):
       
     raw = fpu.read_raw(folder_path, preload=True, verbose=False)
+
+    channels_order = [ch for group in channels_dict.values() for ch in group]
+    raw.reorder_channels(channels_order)
     
     resample_freq = freq_data.get("resample_freq")
     low_pass_freq = freq_data.get("low_pass_freq")
@@ -67,7 +70,7 @@ def get_cache_filename(folder_path, freq_data, start_time, end_time, cache_dir=f
     hash_key = hashlib.md5(hash_input.encode()).hexdigest()
     return os.path.join(cache_dir, f"{hash_key}.parquet")
 
-def get_preprocessed_dataframe_dask(folder_path, freq_data, start_time, end_time, prep_raw=None, cache_dir=f"{config.CACHE_DIR}"):
+def get_preprocessed_dataframe_dask(folder_path, freq_data, start_time, end_time, channels_dict, prep_raw=None,  cache_dir=f"{config.CACHE_DIR}"):
     os.makedirs(cache_dir, exist_ok=True)
     cu.clear_old_cache_files(cache_dir)
     cache_file = get_cache_filename(folder_path, freq_data, start_time, end_time, cache_dir)
@@ -78,8 +81,8 @@ def get_preprocessed_dataframe_dask(folder_path, freq_data, start_time, end_time
 
     # Otherwise, compute and save
     @delayed
-    def load_and_filter():
-        return filter_resample(folder_path, freq_data)
+    def load_sort_filter():
+        return sort_filter_resample(folder_path, freq_data, channels_dict)
 
     @delayed
     def crop_and_to_df(prep_raw):
@@ -92,7 +95,7 @@ def get_preprocessed_dataframe_dask(folder_path, freq_data, start_time, end_time
     
     # Chain and compute
     if prep_raw is None:
-        prep_raw = load_and_filter()
+        prep_raw = load_sort_filter()
     raw_df = crop_and_to_df(prep_raw)
     raw_df_std = standardize(raw_df)
 
@@ -118,7 +121,7 @@ def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw
     def process_data_in_chunks(folder_path, freq_data, start_time, end_time, prep_raw=None):
         try:
             if prep_raw is None:
-                prep_raw = filter_resample(folder_path, freq_data)
+                prep_raw = sort_filter_resample(folder_path, freq_data)
 
             raw_chunk = prep_raw.copy().crop(tmin=start_time, tmax=end_time)
             raw_df = raw_chunk.to_data_frame(picks="meg", index="time")  # Get numerical data (channels × time)

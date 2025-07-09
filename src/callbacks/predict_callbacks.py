@@ -99,7 +99,7 @@ def register_execute_predict_script():
             str(cache_dir),
             str(threshold),  # Ensure threshold is passed as a string 
             str(adjust_onset),
-            str(channel_store.get('bad', []))
+            str(channel_store)
         ]
     
         working_dir = str(APP_ROOT)

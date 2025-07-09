@@ -81,7 +81,7 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
     import time  # For logging execution times
 
     start_time = time.time()
-    raw_ddf = pu.get_preprocessed_dataframe_dask(folder_path, freq_data, time_range[0], time_range[1])
+    raw_ddf = pu.get_preprocessed_dataframe_dask(folder_path, freq_data, time_range[0], time_range[1], channels_region)
     print(f"Step 1: Preprocessing completed in {time.time() - start_time:.2f} seconds.")
 
     # Filter time range

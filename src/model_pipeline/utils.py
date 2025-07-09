@@ -7,7 +7,6 @@ import pandas as pd
 import model_pipeline.params as params
 from scipy.ndimage import gaussian_filter1d
 from pathlib import Path
-import ast
 
 #####################################################################Preparing the data
 
@@ -31,6 +30,43 @@ def standardize(X,mean=False,std=False):
 	for i in range(0,nb_data,1):
 		X_stand[i,:,:] = (X[i,:,:] - mean[i]) / std[i]
 	return X_stand
+
+def read_raw(folder_path, preload, verbose, bad_channels=None):
+	folder_path = Path(folder_path)
+	print(folder_path)
+
+	if folder_path.suffix == ".ds":
+		raw = mne.io.read_raw_ctf(str(folder_path), preload=preload, verbose=verbose)
+
+	elif folder_path.suffix == ".fif":
+		raw = mne.io.read_raw_fif(str(folder_path), preload=preload, verbose=verbose)
+
+	elif folder_path.is_dir():
+		# Assume BTi/4D format: folder must contain 3 specific files
+		files = list(folder_path.glob("*"))
+		# Try to identify the correct files by names
+		raw_fname = next((f for f in files if "rfDC" in f.name and f.suffix==""), None)
+		config_fname = next((f for f in files if "config" in f.name.lower()), None)
+		hs_fname = next((f for f in files if "hs" in f.name.lower()), None)
+
+		if not all([raw_fname, config_fname, hs_fname]):
+			raise ValueError("Could not identify raw, config, or hs file in BTi folder.")
+
+		raw = mne.io.read_raw_bti(
+			pdf_fname=str(raw_fname),
+			config_fname=str(config_fname),
+			head_shape_fname=str(hs_fname),
+			preload=preload,
+			verbose=verbose,
+		)
+	
+	else:
+		raise ValueError("Unrecognized file or folder type for MEG data.")
+
+	if bad_channels:
+		raw.drop_channels(bad_channels)
+	
+	return raw
 
 # tentative function to interpolate missing channels using mne 
 def interpolate_missing_channels(raw, good_channels):
@@ -102,53 +138,30 @@ def fill_missing_channels(raw, target_channel_count):
 	return full_data
 
 #Applies preprocessing, extracts and saves the data in pickle
-def save_data_matrices(subject_path, path_output, bad_channels):
+def save_data_matrices(subject_path, path_output, channel_groups):
 
-	subject_path = Path(subject_path)
+	raw = read_raw(subject_path, preload=True, verbose=False, bad_channels=channel_groups.get('bad', []))
 
 	with open("good_channels_dict.pkl", "rb") as f:
 		good_channels = pickle.load(f)
 
-	# Load raw file based on format
-	if subject_path.suffix == ".ds":
-		raw = mne.io.read_raw_ctf(str(subject_path), preload=True, verbose=False)
-	elif subject_path.suffix == ".fif":
-		raw = mne.io.read_raw_fif(str(subject_path), preload=True, verbose=False)
-	elif subject_path.is_dir():
-		files = list(subject_path.glob("*"))
-		raw_fname = next((f for f in files if "rfDC" in f.name and f.suffix == ""), None)
-		config_fname = next((f for f in files if "config" in f.name.lower()), None)
-		hs_fname = next((f for f in files if "hs" in f.name.lower()), None)
-
-		if not all([raw_fname, config_fname, hs_fname]):
-			raise ValueError("Missing BTi raw/config/hs files.")
-
-		raw = mne.io.read_raw_bti(
-			pdf_fname=str(raw_fname),
-			config_fname=str(config_fname),
-			head_shape_fname=str(hs_fname),
-			preload=True,
-			verbose=False,
-		)
-	else:
-		raise ValueError("Unsupported file type for subject path.")
-	
-	# Drop bad channels
-	if ast.literal_eval(bad_channels):
-		raw.drop_channels(ast.literal_eval(bad_channels))
-	
 	#Resample the data
 	raw.resample(params.sfreq).pick(['mag'])
 	raw.filter(0.5,50, n_jobs=8)
 
-	if subject_path.suffix == ".ds":
+	if Path(subject_path).suffix == ".ds":
 		raw = interpolate_missing_channels(raw, good_channels)
+		# channels_dict = get_grouped_channels_by_prefix(raw, bad_channels=None)
+		# channels_order = [ch for group in channel_groups.values() for ch in group]
+		# raw.reorder_channels(channels_order)
 		data = {
 			'meg': [raw.get_data()],
 			'file': [subject_path]
 		}
 	
-	elif subject_path.suffix == ".fif" or subject_path.is_dir():
+	elif Path(subject_path).suffix == ".fif" or Path(subject_path).is_dir():
+		channels_order = [ch for group in channel_groups.values() for ch in group if group != "bad"]
+		raw.reorder_channels(channels_order)
 		meg_data = fill_missing_channels(raw, len(good_channels))
 		data = {
 			'meg': [meg_data],

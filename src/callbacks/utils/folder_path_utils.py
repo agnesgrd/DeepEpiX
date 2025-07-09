@@ -75,11 +75,9 @@ def read_raw(folder_path, preload, verbose, bad_channels=None):
     if folder_path.suffix == ".ds":
         raw = mne.io.read_raw_ctf(str(folder_path), preload=preload, verbose=verbose)
 
-
     elif folder_path.suffix == ".fif":
         raw = mne.io.read_raw_fif(str(folder_path), preload=preload, verbose=verbose)
 
-    
     elif folder_path.is_dir():
         # Assume BTi/4D format: folder must contain 3 specific files
         files = list(folder_path.glob("*"))

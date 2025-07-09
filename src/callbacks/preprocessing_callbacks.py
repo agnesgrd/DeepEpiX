@@ -72,11 +72,11 @@ def register_preprocess_meg_data():
                     "notch_freq": notch_freq
                 }
 
-                prep_raw = pu.filter_resample(folder_path, freq_data)
+                prep_raw = pu.sort_filter_resample(folder_path, freq_data, channels_dict)
 
                 for chunk_idx in chunk_limits:
                     start_time, end_time = chunk_idx
-                    pu.get_preprocessed_dataframe_dask(folder_path, freq_data, start_time, end_time, prep_raw)
+                    pu.get_preprocessed_dataframe_dask(folder_path, freq_data, start_time, end_time, channels_dict, prep_raw)
 
                 return "Preprocessed and saved data", freq_data, annotations_dict, channels_dict, chunk_limits, "/viz/raw-signal"
             
