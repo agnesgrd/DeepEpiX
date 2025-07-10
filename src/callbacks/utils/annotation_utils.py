@@ -94,6 +94,7 @@ def get_mrk_annotations_dataframe(folder_path, annotations_dict):
     # --- If .mrk file found, extract MEG timepoints and add to annotations ---
     if mrk_file_path and os.path.exists(mrk_file_path):
         meg_timepoints = extract_meg_timepoints_from_mrk(mrk_file_path)
+        print(meg_timepoints)
 
         # Add MEG markers as new annotations
         meg_annotations = [
@@ -102,6 +103,7 @@ def get_mrk_annotations_dataframe(folder_path, annotations_dict):
         ]
 
         annotations_dict = annotations_dict + meg_annotations  # Extend list of annotations
+        return annotations_dict
 
 def get_annotations(prediction_or_truth, annotations_df):
     """
