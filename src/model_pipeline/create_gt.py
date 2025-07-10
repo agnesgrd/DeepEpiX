@@ -2,14 +2,14 @@ import pandas as pd
 import os
 from pathlib import Path
 import mne
+import config
 
-output_path = "src/cache-directory"
-gt_names = ['jj_valid', 'jj_add']
-data_dir = Path("data/testData")
+output_path = "src/results"
+gt_names = ['MEG']
+data_dir = config.DATA_DIR
 
 def read_raw(folder_path, preload, verbose, bad_channels=None):
 	folder_path = Path(folder_path)
-	print(folder_path)
 
 	if folder_path.suffix == ".ds":
 		raw = mne.io.read_raw_ctf(str(folder_path), preload=preload, verbose=verbose)
@@ -44,31 +44,57 @@ def read_raw(folder_path, preload, verbose, bad_channels=None):
 	
 	return raw
 
-def load_gt(subject_path, gt_names):
-	raw = read_raw(subject_path, preload=False, verbose=False, bad_channels=None)
-	
-	# Convert annotations to DataFrame
-	annotations_df = raw.annotations.to_data_frame()
-	
-	# Convert 'onset' column to UTC-aware timestamps
-	annotations_df['onset'] = pd.to_datetime(annotations_df['onset']).dt.tz_localize('UTC')
-	
-	# Calculate seconds relative to raw.annotations.orig_time
-	origin_time = pd.Timestamp(raw.annotations.orig_time)
-	annotations_df['onset'] = (annotations_df['onset'] - origin_time).dt.total_seconds()
+def extract_meg_timepoints_from_mrk(file_path):
+    """
+    Extracts timepoints labeled 'MEG' from a .mrk file (AnyWave marker file).
+    
+    Args:
+        file_path (str): Path to the .mrk file.
+    
+    Returns:
+        List[float]: List of MEG timepoints.
+    """
+    meg_timepoints = []
 
-	# Filter annotations with description in ['spike', 'spikes']
-	spike_onsets = annotations_df[
-		annotations_df['description'].str.lower().isin(gt_names)
-	]['onset'].tolist()
-	
-	return spike_onsets
+    with open(file_path, 'r') as f:
+        for line in f:
+            if line.strip().startswith("//") or not line.strip():
+                continue
+            parts = line.strip().split()
+            if len(parts) >= 4 and parts[0] == "MEG":
+                try:
+                    timepoint = float(parts[2])
+                    meg_timepoints.append(timepoint)
+                except ValueError:
+                    continue
+    return meg_timepoints
+
+def get_mrk_annotations_dataframe(folder_path):
+    mrk_file_path = None
+    if os.path.isdir(folder_path):
+        for file in os.listdir(folder_path):
+            if file.lower().endswith(".mrk"):
+                mrk_file_path = os.path.join(folder_path, file)
+                break
+
+    # --- If .mrk file found, extract MEG timepoints and add to annotations ---
+    if mrk_file_path and os.path.exists(mrk_file_path):
+        meg_timepoints = extract_meg_timepoints_from_mrk(mrk_file_path)
+        print(meg_timepoints)
+
+        # Add MEG markers as new annotations
+        meg_annotations = [
+            {"onset": tp, "duration": 0, "description": "MEG"}
+            for tp in meg_timepoints
+        ]
+
+        return meg_annotations
 
 for subject in data_dir.rglob("*.ds"):
 	print(subject)
 	if os.path.basename(subject) != "hz.ds":
 		# Load ground truth spike times
-		gt_spike_times = load_gt(subject, gt_names) 
+		gt_spike_times = get_mrk_annotations_dataframe(subject)
 
 		gt_df = pd.DataFrame({
 			"Patient": [os.path.basename(subject)] * len(gt_spike_times),
