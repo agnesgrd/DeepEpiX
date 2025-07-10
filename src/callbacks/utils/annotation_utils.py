@@ -4,6 +4,7 @@ from dash import dcc, html
 import mne
 import pandas as pd
 import plotly.graph_objects as go
+import os
 
 def get_annotation_descriptions(annotations_store):
         """
@@ -56,6 +57,51 @@ def get_annotations_dataframe(raw, heartbeat_ch_name):
     annotations_dict = df_combined.to_dict(orient="records")
 
     return annotations_dict
+
+def extract_meg_timepoints_from_mrk(file_path):
+    """
+    Extracts timepoints labeled 'MEG' from a .mrk file (AnyWave marker file).
+    
+    Args:
+        file_path (str): Path to the .mrk file.
+    
+    Returns:
+        List[float]: List of MEG timepoints.
+    """
+    meg_timepoints = []
+
+    with open(file_path, 'r') as f:
+        for line in f:
+            if line.strip().startswith("//") or not line.strip():
+                continue
+            parts = line.strip().split()
+            if len(parts) >= 4 and parts[0] == "MEG":
+                try:
+                    timepoint = float(parts[2])
+                    meg_timepoints.append(timepoint)
+                except ValueError:
+                    continue
+    return meg_timepoints
+
+def get_mrk_annotations_dataframe(folder_path, annotations_dict):
+    mrk_file_path = None
+    if os.path.isdir(folder_path):
+        for file in os.listdir(folder_path):
+            if file.lower().endswith(".mrk"):
+                mrk_file_path = os.path.join(folder_path, file)
+                break
+
+    # --- If .mrk file found, extract MEG timepoints and add to annotations ---
+    if mrk_file_path and os.path.exists(mrk_file_path):
+        meg_timepoints = extract_meg_timepoints_from_mrk(mrk_file_path)
+
+        # Add MEG markers as new annotations
+        meg_annotations = [
+            {"onset": tp, "duration": 0, "description": "MEG"}
+            for tp in meg_timepoints
+        ]
+
+        annotations_dict = annotations_dict + meg_annotations  # Extend list of annotations
 
 def get_annotations(prediction_or_truth, annotations_df):
     """

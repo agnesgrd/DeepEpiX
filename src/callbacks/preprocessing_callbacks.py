@@ -60,6 +60,11 @@ def register_preprocess_meg_data():
                 if all_bad_channels:
                     raw.drop_channels(all_bad_channels)
                 annotations_dict = au.get_annotations_dataframe(raw, heartbeat_ch_name)
+
+                # --- Find .mrk file if folder_path is a directory ---
+                annotations_dict = au.get_mrk_annotations_dataframe(folder_path, annotations_dict)
+
+
                 channels_dict = chu.get_grouped_channels_by_prefix(raw, bad_channels=all_bad_channels)
                 max_length = pu.get_max_length(raw, resample_freq)
                 chunk_limits = pu.update_chunk_limits(max_length)
