@@ -7,6 +7,7 @@ import pandas as pd
 import model_pipeline.params as params
 from scipy.ndimage import gaussian_filter1d
 from pathlib import Path
+import os
 
 #####################################################################Preparing the data
 
@@ -137,10 +138,30 @@ def fill_missing_channels(raw, target_channel_count):
 	full_data = np.stack(new_data, axis=0)
 	return full_data
 
+def find_bad_channels_from_excel(excel_path, raw_path):
+
+    sub_id = os.path.basename(raw_path)[:4]
+
+    df = pd.read_excel(excel_path)
+
+    # Find row matching the subject
+    match = df[df['bids simulatenous'] == sub_id]
+
+    if match.empty:
+        print(f"⚠️ No entry for {sub_id} in Excel.")
+        return []
+
+    bad_channels_str = str(match.iloc[0]['bad_channels'])
+    bad_channels = [ch.strip() for ch in bad_channels_str.split(',') if ch.strip()]
+
+    return bad_channels
+
+
 #Applies preprocessing, extracts and saves the data in pickle
 def save_data_matrices(subject_path, path_output, channel_groups):
 
-	raw = read_raw(subject_path, preload=True, verbose=False, bad_channels=channel_groups.get('bad', []))
+	bad_channels = find_bad_channels_from_excel("src/model_pipeline/bad_channels.xlsx", subject_path)
+	raw = read_raw(subject_path, preload=True, verbose=False, bad_channels=bad_channels)
 
 	with open("good_channels_dict.pkl", "rb") as f:
 		good_channels = pickle.load(f)
@@ -162,6 +183,7 @@ def save_data_matrices(subject_path, path_output, channel_groups):
 	elif Path(subject_path).suffix == ".fif" or Path(subject_path).is_dir():
 		channels_order = [ch for group in channel_groups.values() for ch in group if group != "bad"]
 		raw.reorder_channels(channels_order)
+		
 		meg_data = fill_missing_channels(raw, len(good_channels))
 		data = {
 			'meg': [meg_data],
