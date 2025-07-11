@@ -46,7 +46,8 @@ def read_raw(folder_path, preload, verbose, bad_channels=None):
 
 def extract_meg_timepoints_from_mrk(file_path):
     """
-    Extracts timepoints labeled 'MEG' from a .mrk file (AnyWave marker file).
+    Extracts timepoints labeled 'MEG', 'meg left', or 'meg right' from a .mrk file (AnyWave marker file),
+    accounting for cases where -1 indicates the actual timepoint follows.
     
     Args:
         file_path (str): Path to the .mrk file.
@@ -55,18 +56,28 @@ def extract_meg_timepoints_from_mrk(file_path):
         List[float]: List of MEG timepoints.
     """
     meg_timepoints = []
+    meg_labels = {"meg", "meg left", "meg right"}
 
     with open(file_path, 'r') as f:
         for line in f:
-            if line.strip().startswith("//") or not line.strip():
+            stripped = line.strip()
+            if stripped.startswith("//") or not stripped:
                 continue
-            parts = line.strip().split()
-            if len(parts) >= 4 and parts[0] == "MEG":
+
+            parts = stripped.split()
+            label = parts[0].lower()
+
+            if label in meg_labels and len(parts) >= 4:
                 try:
-                    timepoint = float(parts[2])
-                    meg_timepoints.append(timepoint)
+                    time_val = float(parts[2])
+                    if time_val == -1 and len(parts) > 3:
+                        # Try the next part after -1
+                        time_val = float(parts[3])
+                    if time_val != -1:
+                        meg_timepoints.append(time_val)
                 except ValueError:
                     continue
+
     return meg_timepoints
 
 def get_mrk_annotations_dataframe(folder_path):
@@ -80,15 +91,9 @@ def get_mrk_annotations_dataframe(folder_path):
     # --- If .mrk file found, extract MEG timepoints and add to annotations ---
     if mrk_file_path and os.path.exists(mrk_file_path):
         meg_timepoints = extract_meg_timepoints_from_mrk(mrk_file_path)
-        print(meg_timepoints)
 
-        # Add MEG markers as new annotations
-        meg_annotations = [
-            {"onset": tp, "duration": 0, "description": "MEG"}
-            for tp in meg_timepoints
-        ]
+    return meg_timepoints
 
-        return meg_annotations
 
 for subject in data_dir.rglob("*.ds"):
 	print(subject)
