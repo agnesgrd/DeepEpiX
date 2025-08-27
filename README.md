@@ -11,10 +11,7 @@
   <p align="center">
     Software for annotation and automatic spike detection in MEG recordings
     <br />
-    <a href="https://github.com/agnes_grd/DeepEpiX"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/agnesgrd/DeepEpiX">View Demo</a>
+    <a href="https://github.com/agnesgrd/DeepEpiX">Explore the docs</a>
     &middot;
     <a href="https://github.com/agnesgrd/DeepEpiX/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     &middot;
@@ -243,6 +240,10 @@ Then, open the app in your web browser at:
 </details>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## License
+This project is licensed under the GNU General Public License v3.0 (GPLv3).  
+See the COPYING file for details.
 
 [Python-url]: https://www.python.org
 [Python-shield]: https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54
