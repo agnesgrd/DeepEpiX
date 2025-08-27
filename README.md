@@ -59,7 +59,11 @@ This software is designed for clinicians to annotate raw MEG data and run predic
 * [![Python][Python-shield]][Python-url]
 * [![Dash][Dash-shield]][Dash-url]
 * [![Plotly][Plotly-shield]][Plotly-url]
-* [![MNE-Python][MNE-shield]][MNE-url]
+* <a href="https://mne.tools/stable/index.html">
+  <img src="https://raw.githubusercontent.com/mne-tools/mne-python/refs/heads/main/logo/logo_hex.svg" width="50"/>
+</a>
+* [![TensorFlow][Tensorflow-shield]][Tensorflow-url]
+* [![PyTorch][Pytorch-shield]][Pytorch-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -98,7 +102,7 @@ docker run -p 8050:8050 -v //c/Users/pauli/Documents/MEGBase/data/exampleData:/D
 
 Follow these steps to install and set up **DeepEpiX**.
 
-#### 1. Clone the Repository in Your Working Directory  
+#### 1. Clone the repository in your working directory  
 ```bash
 git clone https://github.com/agnesgrd/DeepEpiX.git
 ```
@@ -245,5 +249,7 @@ Then, open the app in your web browser at:
 [Dash-shield]: https://img.shields.io/badge/Dash-red?style=for-the-badge&logo=Dash
 [Plotly-url]: https://plotly.com/python
 [Plotly-shield]: https://img.shields.io/badge/Plotly-black?style=for-the-badge&logo=Plotly
-[MNE-shield]: https://raw.githubusercontent.com/mne-tools/mne-python/refs/heads/main/logo/logo_hex.svg
-[MNE-url]: https://mne.tools/stable/index.html
+[Tensorflow-url]: https://www.tensorflow.org/?hl=fr
+[Tensorflow-shield]: https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white
+[Pytorch-url]: https://pytorch.org/
+[Pytorch-shield]: https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white
