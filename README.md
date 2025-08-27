@@ -59,11 +59,12 @@ This software is designed for clinicians to annotate raw MEG data and run predic
 * [![Python][Python-shield]][Python-url]
 * [![Dash][Dash-shield]][Dash-url]
 * [![Plotly][Plotly-shield]][Plotly-url]
+* [![TensorFlow][Tensorflow-shield]][Tensorflow-url]
+* [![PyTorch][Pytorch-shield]][Pytorch-url]
 * <a href="https://mne.tools/stable/index.html">
   <img src="https://raw.githubusercontent.com/mne-tools/mne-python/refs/heads/main/logo/logo_hex.svg" width="50"/>
 </a>
-* [![TensorFlow][Tensorflow-shield]][Tensorflow-url]
-* [![PyTorch][Pytorch-shield]][Pytorch-url]
+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
