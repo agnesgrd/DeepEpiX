@@ -59,6 +59,7 @@ This software is designed for clinicians to annotate raw MEG data and run predic
 * [![Python][Python-shield]][Python-url]
 * [![Dash][Dash-shield]][Dash-url]
 * [![Plotly][Plotly-shield]][Plotly-url]
+* [![MNE-Python][MNE-shield]][MNE-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -243,4 +244,5 @@ Then, open the app in your web browser at:
 [Dash-url]: https://dash.plotly.com
 [Dash-shield]: https://img.shields.io/badge/Dash-red?style=for-the-badge&logo=Dash
 [Plotly-url]: https://plotly.com/python
-[Plotly-shield]: https://img.shields.io/badge/Plotly-black?style=for-the-badge&logo=Plotly
+[MNE-shield]: https://raw.githubusercontent.com/mne-tools/mne-python/refs/heads/main/logo/logo_hex.svg
+[MNE-url]: https://mne.tools/stable/index.html
