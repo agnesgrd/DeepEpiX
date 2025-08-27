@@ -40,7 +40,7 @@ def create_analyze():
                 placeholder="Enter a name ...",
                 size="sm",
                 persistence=True,
-                persistence_type="local",
+                persistence_type="session",
                 style={**INPUT_STYLES["small-number"]}
             ),
             dbc.Input(
@@ -52,7 +52,7 @@ def create_analyze():
                 max=180,
                 size="sm",
                 persistence=True,
-                persistence_type="local",
+                persistence_type="memory",
                 style={**INPUT_STYLES["small-number"]}
             ),
             dbc.Tooltip("Click or select it on the graph, or enter it manually.", target="event-onset", placement="left"),
@@ -65,7 +65,7 @@ def create_analyze():
                 max=180,
                 size="sm",
                 persistence=True,
-                persistence_type="local",
+                persistence_type="memory",
                 style={**INPUT_STYLES["small-number"]}
             ),
             dbc.Tooltip("Equals 0 for a ponctual event.", target="event-duration", placement="left"),

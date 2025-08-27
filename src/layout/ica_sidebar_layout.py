@@ -15,7 +15,7 @@ def create_compute():
                 placeholder="n-components ...",
                 size="sm",
                 persistence=True,
-                persistence_type="local",
+                persistence_type="session",
                 style={**INPUT_STYLES["small-number"]}
             ),
             dbc.Tooltip(
@@ -47,7 +47,7 @@ def create_compute():
                 ],
                 placeholder="Select...",
                 persistence=True,
-                persistence_type="local",
+                persistence_type="session",
             ),
 
             dbc.Tooltip(
@@ -83,7 +83,7 @@ def create_compute():
                 max=2000,
                 size="sm",
                 persistence=True,
-                persistence_type="local",
+                persistence_type="session",
                 style={**INPUT_STYLES["small-number"]}
             ),
             dbc.Tooltip(
@@ -115,7 +115,7 @@ def create_compute():
                 max=50,
                 size="sm",
                 persistence=True,
-                persistence_type="local",
+                persistence_type="session",
                 style={**INPUT_STYLES["small-number"]}
             ),
 
@@ -197,6 +197,12 @@ def create_sidebar():
                     delete_modal_body_id="delete-modal-body-ica",
                     cancel_delete_btn_id="cancel-delete-btn-ica",
                     confirm_delete_btn_id="confirm-delete-btn-ica",
+                    create_intersection_btn_id="create-intersection-btn-ica",
+                    create_intersection_modal_id="create-intersection-modal-ica",
+                    create_intersection_modal_body_id="create-intersection-modal-body-ica",
+                    intersection_tolerance_id="intersection-tolerance-ica",
+                    cancel_intersection_btn_id="cancel-intersection-btn-ica",
+                    confirm_intersection_btn_id="confirm-intersection-btn-ica",
                     offset_decrement_id="offset-decrement-ica", 
                     offset_display_id="offset-display-ica", 
                     offset_increment_id="offset-increment-ica", 
@@ -206,7 +212,7 @@ def create_sidebar():
             ],
             id="sidebar-tabs-ica",
             persistence = True,
-            persistence_type = "local",
+            persistence_type = "memory",
             className="custom-sidebar"
         ),
     ], style={

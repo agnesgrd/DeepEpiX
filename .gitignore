@@ -28,7 +28,7 @@ src/cache-directory/*
 !src/cache-directory/.gitkeep
 
 # Jupyter Notebook test
-# *.ipynb
+*.ipynb
 
 # Mkdocs
 */site/

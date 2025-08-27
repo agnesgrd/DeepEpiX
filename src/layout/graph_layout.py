@@ -99,7 +99,7 @@ def create_graph_container(
 								id=annotation_dropdown_id,
 								value="__ALL__",
 								persistence=True,
-								persistence_type="local",
+								persistence_type="session",
 								clearable=False,
 								className="custom-dropdown",
 								style={

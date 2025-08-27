@@ -18,6 +18,12 @@ def create_sidebar():
                     delete_modal_body_id="delete-modal-body",
                     cancel_delete_btn_id="cancel-delete-btn",
                     confirm_delete_btn_id="confirm-delete-btn",
+                    create_intersection_btn_id="create-intersection-btn",
+                    create_intersection_modal_id="create-intersection-modal",
+                    create_intersection_modal_body_id="create-intersection-modal-body",
+                    intersection_tolerance_id="intersection-tolerance",
+                    cancel_intersection_btn_id="cancel-intersection-btn",
+                    confirm_intersection_btn_id="confirm-intersection-btn",
                     offset_decrement_id="offset-decrement", 
                     offset_display_id="offset-display", 
                     offset_increment_id="offset-increment", 
@@ -33,7 +39,7 @@ def create_sidebar():
             ],
             id="sidebar-tabs",
             persistence = True,
-            persistence_type = "local",
+            persistence_type = "session",
             className="custom-sidebar"
         ),
 

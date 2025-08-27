@@ -121,4 +121,4 @@ def test_model_dash(model_name, X_test_ids, output_path, threshold=0.5, adjust_o
         "Probability": pred_spike_probs
     })
 
-    pred_df.to_csv(os.path.join(output_path, "predictions.csv"), mode='a', index=False, header=not os.path.exists(os.path.join(output_path, "predictions.csv")))
+    pred_df.to_csv(os.path.join(output_path, f"predictions_{os.path.basename(subject)}_{os.path.basename(model_name)}.csv"), mode='a', index=False, header=not os.path.exists(os.path.join(output_path, "predictions.csv")))

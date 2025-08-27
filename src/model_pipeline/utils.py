@@ -138,37 +138,36 @@ def fill_missing_channels(raw, target_channel_count):
 	full_data = np.stack(new_data, axis=0)
 	return full_data
 
-def find_bad_channels_from_excel(excel_path, raw_path):
+# def find_bad_channels_from_excel(excel_path, raw_path):
 
-    sub_id = os.path.basename(raw_path)[:4]
+#     sub_id = os.path.basename(raw_path)[:4]
 
-    df = pd.read_excel(excel_path)
+#     df = pd.read_excel(excel_path)
 
-    # Find row matching the subject
-    match = df[df['bids simulatenous'] == sub_id]
+#     # Find row matching the subject
+#     match = df[df['bids simulatenous'] == sub_id]
 
-    if match.empty:
-        print(f"⚠️ No entry for {sub_id} in Excel.")
-        return []
+#     if match.empty:
+#         print(f"⚠️ No entry for {sub_id} in Excel.")
+#         return []
 
-    bad_channels_str = str(match.iloc[0]['bad_channels'])
-    bad_channels = [ch.strip() for ch in bad_channels_str.split(',') if ch.strip()]
+#     bad_channels_str = str(match.iloc[0]['bad_channels'])
+#     bad_channels = [ch.strip() for ch in bad_channels_str.split(',') if ch.strip()]
 
-    return bad_channels
+#     return bad_channels
 
 
 #Applies preprocessing, extracts and saves the data in pickle
 def save_data_matrices(subject_path, path_output, channel_groups):
 
-	bad_channels = find_bad_channels_from_excel("src/model_pipeline/bad_channels.xlsx", subject_path)
-	raw = read_raw(subject_path, preload=True, verbose=False, bad_channels=bad_channels)
+	raw = read_raw(subject_path, preload=True, verbose=False, bad_channels=channel_groups.get('bad', []))
 
 	with open("good_channels_dict.pkl", "rb") as f:
 		good_channels = pickle.load(f)
 
 	#Resample the data
-	raw.resample(params.sfreq).pick(['mag'])
 	raw.filter(0.5,50, n_jobs=8)
+	raw.resample(params.sfreq).pick(['mag'])
 
 	if Path(subject_path).suffix == ".ds":
 		raw = interpolate_missing_channels(raw, good_channels)

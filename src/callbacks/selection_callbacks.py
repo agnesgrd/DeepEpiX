@@ -278,6 +278,56 @@ def register_cancel_or_confirm_annotation_suppression(confirm_btn_id, cancel_btn
             return False, dash.no_update
         return is_open, dash.no_update
 
+# ─────────────────────────────
+# ❌ Intersection Creation Popup
+# ─────────────────────────────
+    
+def register_toggle_intersection_modal(btn_id, checkboxes_id, modal_id, modal_body_id):    
+    @callback(
+        Output(modal_id, "is_open"),
+        Output(modal_body_id, "children"),
+        Input(btn_id, "n_clicks"),
+        State(checkboxes_id, "value"),
+        State(modal_id, "is_open"),
+        prevent_initial_call = True
+    )
+    def toggle_intersection_modal(n_click, selected_annotations, is_open):
+        if n_click and selected_annotations:
+            selected_text = "∩".join(selected_annotations)
+            return True, f"Are you sure you want to create new annotations from intersection: {selected_text}?"
+        return is_open, dash.no_update
+    
+def register_create_intersection(confirm_btn_id, cancel_btn_id, checkboxes_id, tolerance_id, modal_id):
+    @callback(
+        Output(modal_id, "is_open", allow_duplicate=True),
+        Output("annotation-store", "data", allow_duplicate=True),
+        Input(confirm_btn_id, "n_clicks"),
+        Input(cancel_btn_id, "n_clicks"),
+        State(checkboxes_id, "value"),
+        State(tolerance_id, "value"),
+        State("annotation-store", "data"),
+        State(modal_id, "is_open"),
+        prevent_initial_call=True
+    )
+    def handle_delete_confirmation(confirm_click, cancel_click, selected_annotations, tolerance, annotations_dict, is_open):
+        ctx = dash.callback_context
+        if not ctx.triggered:
+            return is_open, dash.no_update
+
+        trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
+
+        if trigger_id == confirm_btn_id:
+            if tolerance is not None and selected_annotations and len(selected_annotations) >= 2:
+                # 1. Get the selected annotations
+                selected = [a for a in annotations_dict if a["description"] in selected_annotations]
+                intersections = au.compute_multiway_intersections(selected, tolerance)
+                annotations_dict+=intersections
+                return False, annotations_dict
+
+        if trigger_id == cancel_btn_id:
+            return False, dash.no_update
+        return is_open, dash.no_update
+
 
 # ─────────────────────────────
 # 🏷 Annotation Name Callbacks

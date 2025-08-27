@@ -14,7 +14,9 @@ from callbacks.selection_callbacks import (
     register_clear_check_all_annotation_checkboxes,
     register_offset_display,
     register_page_buttons_display,
-    register_modal_annotation_suppression
+    register_modal_annotation_suppression,
+    register_toggle_intersection_modal,
+    register_create_intersection
 )
 
 from callbacks.annotation_callbacks import (
@@ -161,6 +163,20 @@ register_modal_annotation_suppression(
     checkboxes_id="annotation-checkboxes-ica",
     modal_id="delete-confirmation-modal-ica",
     modal_body_id="delete-modal-body-ica")
+
+register_toggle_intersection_modal(
+    btn_id="create-intersection-btn-ica",
+    checkboxes_id="annotation-checkboxes-ica",
+    modal_id="create-intersection-modal-ica",
+    modal_body_id="create-intersection-modal-body-ica")
+
+register_create_intersection(
+    confirm_btn_id="confirm-intersection-btn-ica", 
+    cancel_btn_id="cancel-intersection-btn-ica", 
+    checkboxes_id="annotation-checkboxes-ica",
+    tolerance_id="intersection-tolerance-ica", 
+    modal_id="create-intersection-modal-ica")
+
 
 register_move_to_next_annotation(
     prev_spike_id="prev-spike-ica",

@@ -28,7 +28,9 @@ from callbacks.selection_callbacks import (
     register_manage_channels_checklist,
     register_offset_display,
     register_page_buttons_display,
-    register_modal_annotation_suppression
+    register_modal_annotation_suppression,
+    register_toggle_intersection_modal,
+    register_create_intersection
 )
 
 # --- Graph ---
@@ -246,16 +248,29 @@ register_clear_check_all_annotation_checkboxes(
 )
 
 register_modal_annotation_suppression(
-        btn_id="delete-annotations-btn",
-        checkboxes_id="annotation-checkboxes",
-        modal_id="delete-confirmation-modal",
-        modal_body_id="delete-modal-body")
+    btn_id="delete-annotations-btn",
+    checkboxes_id="annotation-checkboxes",
+    modal_id="delete-confirmation-modal",
+    modal_body_id="delete-modal-body")
 
 register_cancel_or_confirm_annotation_suppression(
     confirm_btn_id="confirm-delete-btn", 
     cancel_btn_id="cancel-delete-btn", 
     checkboxes_id="annotation-checkboxes", 
     modal_id="delete-confirmation-modal")
+
+register_toggle_intersection_modal(
+    btn_id="create-intersection-btn",
+    checkboxes_id="annotation-checkboxes",
+    modal_id="create-intersection-modal",
+    modal_body_id="create-intersection-modal-body")
+
+register_create_intersection(
+    confirm_btn_id="confirm-intersection-btn", 
+    cancel_btn_id="cancel-intersection-btn", 
+    checkboxes_id="annotation-checkboxes",
+    tolerance_id="intersection-tolerance", 
+    modal_id="create-intersection-modal")
 
 # --- Graph & Channel Handling ---
 register_update_graph_raw_signal()

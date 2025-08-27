@@ -553,9 +553,9 @@ def update_meg_layout(checked_values, pick_values, channel_groups, folder_path, 
         kind="topomap",
         ch_groups=highlighted,
         show_names=False,
-        pointsize=100,
-        linewidth=0.5,
-        show=False
+        pointsize=200,
+        linewidth=0,
+        show=True
     )
 
     buf = io.BytesIO()

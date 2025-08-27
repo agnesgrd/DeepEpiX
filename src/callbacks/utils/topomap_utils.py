@@ -82,9 +82,8 @@ def create_topomap_from_preprocessed(original_raw, raw_ddf, sfreq, t0, t, bad_ch
         info['bads'] = bad_channels
     
     # Optional: filter only MEG channels if needed
-    picks = mne.pick_types(info, meg=True, exclude='bads')
+    picks = mne.pick_types(info, meg=True, ref_meg=False, exclude='bads')
     picked_info = mne.pick_info(info, picks)
-    
     raw_processed = mne.io.RawArray(data, picked_info).pick('mag')
     
     # Step 4: Use your existing topomap function

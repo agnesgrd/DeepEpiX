@@ -3,6 +3,7 @@ import dash_bootstrap_components as dbc
 from dash import dcc, html
 import mne
 import pandas as pd
+import numpy as np
 import plotly.graph_objects as go
 import os
 
@@ -212,9 +213,9 @@ def build_prediction_distribution_statistics(df, threshold):
         bargap=0.2,
         xaxis_title='Probability',
         yaxis_title='Count',
-        plot_bgcolor='black',
-        paper_bgcolor='black',
-        font=dict(color='white', size=10),
+        # plot_bgcolor='black',
+        # paper_bgcolor='black',
+        # font=dict(color='white', size=10),
         xaxis=dict(title_font=dict(size=10), tickfont=dict(size=9)),
         yaxis=dict(title_font=dict(size=10), tickfont=dict(size=9)),
         margin=dict(t=0, b=0, l=0, r=0)
@@ -229,3 +230,66 @@ def build_prediction_distribution_statistics(df, threshold):
         },
         style={'height': '300px'}
     )
+
+def compute_multiway_intersections(selected, tolerance):
+    """
+    Compute intersections across N annotation descriptions.
+
+    Parameters
+    ----------
+    selected : list of dicts with {"description", "onset", "duration"}
+    tolerance : float, max time diff in seconds
+
+    Returns
+    -------
+    list of dicts (intersection annotations)
+    """
+    if not selected:
+        return []
+
+    # Group by description (to know how many types we need to cover)
+    descs = {a["description"] for a in selected}
+    n_groups = len(descs)
+
+    # Flatten into (onset, duration, description) and sort
+    events = sorted(
+        [(a["onset"], a["duration"], a["description"]) for a in selected],
+        key=lambda x: x[0]
+    )
+
+    results = []
+    cluster = []
+
+    def finalize_cluster(cluster):
+        """Check cluster and return intersection annotation if valid."""
+        descs_in_cluster = {d for _, _, d in cluster}
+        if len(descs_in_cluster) == n_groups:
+            return {
+                "description": f"{'∩'.join(sorted(descs))}",
+                "onset": float(np.mean([c[0] for c in cluster])),
+                "duration": float(np.min([c[1] for c in cluster]))
+            }
+        return None
+
+    for onset, duration, desc in events:
+        if not cluster:
+            cluster = [(onset, duration, desc)]
+            continue
+
+        cluster_onsets = [c[0] for c in cluster]
+        if abs(onset - np.mean(cluster_onsets)) <= tolerance:
+            cluster.append((onset, duration, desc))
+        else:
+            # finalize old cluster
+            ann = finalize_cluster(cluster)
+            if ann:
+                results.append(ann)
+            cluster = [(onset, duration, desc)]
+
+    # Final cluster check
+    ann = finalize_cluster(cluster)
+    if ann:
+        results.append(ann)
+
+    return results
+
