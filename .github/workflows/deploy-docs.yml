@@ -20,7 +20,7 @@ jobs:
 
       - name: Install MkDocs
         run: |
-          pip install mkdocs mkdocs-material
+          pip install mkdocs mkdocs-material mkdocstrings
 
       - name: Build docs
         run: mkdocs build --clean --config-file docs/mkdocs.yml
