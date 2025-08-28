@@ -16,7 +16,7 @@ from callbacks.selection_callbacks import (
     register_page_buttons_display,
     register_modal_annotation_suppression,
     register_toggle_intersection_modal,
-    register_create_intersection
+    register_create_intersection,
 )
 
 from callbacks.annotation_callbacks import (
@@ -25,158 +25,179 @@ from callbacks.annotation_callbacks import (
     register_update_annotations_on_graph,
 )
 
-from callbacks.history_callbacks import (
-    register_update_ica_history
-)
+from callbacks.history_callbacks import register_update_ica_history
 
-from callbacks.ica_callbacks import (
-    register_compute_ica,
-    register_fill_ica_results
-)
+from callbacks.ica_callbacks import register_compute_ica, register_fill_ica_results
 
-from callbacks.graph_callbacks import (
-    register_update_graph_ica
-)
+from callbacks.graph_callbacks import register_update_graph_ica
 
 # Layout imports
 import layout.graph_layout as gl
 from layout.ica_sidebar_layout import create_sidebar
 
-dash.register_page(__name__, name="ICA", path='/viz/ica')
+dash.register_page(__name__, name="ICA", path="/viz/ica")
 
 
-layout = html.Div([
-
-    Keyboard(
-        id="keyboard-ica",
-        captureKeys = ["ArrowRight", "ArrowLeft", "+", "-"]
-    ),
-
-    html.Div([
-        # Sidebar container
-        html.Div([
-
-            # Collapsible sidebar
-            dbc.Collapse(
-                create_sidebar(),
-                id="sidebar-collapse-ica",
-                is_open=True,
-                dimension="width",
-                className="sidebar-collapse"
-            ),
-
-            # Button stack on the left
-            html.Div([
-                dbc.Button(html.I(id="sidebar-toggle-icon-ica", className="bi bi-x-lg"), id="toggle-sidebar-ica", color="danger", size="sm", className="mb-2 shadow-sm"),
-
-                dbc.Button(html.I(className="bi bi-noise-reduction"), id="nav-compute-ica", color="warning", size="sm", className="mb-2", title="Compute ICA"),
-                dbc.Button(html.I(className="bi bi-hand-index-thumb"), id="nav-select-ica", color="primary", size="sm", className="mb-2", title="Select")
-            ], style={
-                "display": "flex",
-                "flexDirection": "column",
-                "alignItems": "center",
-                "marginTop": "10px"
-            }),
-        ], style={
-            "display": "flex",
-            "flexDirection": "row",  # button -> collapse (left to right)
-            "alignItems": "flex-start",
-            "zIndex": 1000
-        }),
-        gl.create_graph_container(
-            update_button_id="update-button-ica",
-            update_container_id="update-container-ica",
-            page_buttons_container_id="page-buttons-container-ica",
-            page_selector_id="page-selector-ica",
-            next_spike_buttons_container_id="next-spike-buttons-container-ica",
-            prev_spike_id="prev-spike-ica",
-            next_spike_id="next-spike-ica",
-            annotation_dropdown_id="annotation-dropdown-ica",
-            loading_id="loading-graph-ica",
-            signal_graph_id="graph-ica",
-            annotation_graph_id="annotation-graph-ica"
-        )
-    ], style={
-        "display": "flex",  # Horizontal layout
-        "flexDirection": "row",
-        "height": "85vh",  # Use the full height of the viewport
-        "width": "95vw",  # Use the full width of the viewport
-        "overflow": "hidden",  # Prevent overflow in case of resizing
-        "boxSizing": "border-box",
-        "gap": "20px",
-    }),
-
-    html.Div(id="python-error-ica")
-
-])
+layout = html.Div(
+    [
+        Keyboard(id="keyboard-ica", captureKeys=["ArrowRight", "ArrowLeft", "+", "-"]),
+        html.Div(
+            [
+                # Sidebar container
+                html.Div(
+                    [
+                        # Collapsible sidebar
+                        dbc.Collapse(
+                            create_sidebar(),
+                            id="sidebar-collapse-ica",
+                            is_open=True,
+                            dimension="width",
+                            className="sidebar-collapse",
+                        ),
+                        # Button stack on the left
+                        html.Div(
+                            [
+                                dbc.Button(
+                                    html.I(
+                                        id="sidebar-toggle-icon-ica",
+                                        className="bi bi-x-lg",
+                                    ),
+                                    id="toggle-sidebar-ica",
+                                    color="danger",
+                                    size="sm",
+                                    className="mb-2 shadow-sm",
+                                ),
+                                dbc.Button(
+                                    html.I(className="bi bi-noise-reduction"),
+                                    id="nav-compute-ica",
+                                    color="warning",
+                                    size="sm",
+                                    className="mb-2",
+                                    title="Compute ICA",
+                                ),
+                                dbc.Button(
+                                    html.I(className="bi bi-hand-index-thumb"),
+                                    id="nav-select-ica",
+                                    color="primary",
+                                    size="sm",
+                                    className="mb-2",
+                                    title="Select",
+                                ),
+                            ],
+                            style={
+                                "display": "flex",
+                                "flexDirection": "column",
+                                "alignItems": "center",
+                                "marginTop": "10px",
+                            },
+                        ),
+                    ],
+                    style={
+                        "display": "flex",
+                        "flexDirection": "row",  # button -> collapse (left to right)
+                        "alignItems": "flex-start",
+                        "zIndex": 1000,
+                    },
+                ),
+                gl.create_graph_container(
+                    update_button_id="update-button-ica",
+                    update_container_id="update-container-ica",
+                    page_buttons_container_id="page-buttons-container-ica",
+                    page_selector_id="page-selector-ica",
+                    next_spike_buttons_container_id="next-spike-buttons-container-ica",
+                    prev_spike_id="prev-spike-ica",
+                    next_spike_id="next-spike-ica",
+                    annotation_dropdown_id="annotation-dropdown-ica",
+                    loading_id="loading-graph-ica",
+                    signal_graph_id="graph-ica",
+                    annotation_graph_id="annotation-graph-ica",
+                ),
+            ],
+            style={
+                "display": "flex",  # Horizontal layout
+                "flexDirection": "row",
+                "height": "85vh",  # Use the full height of the viewport
+                "width": "95vw",  # Use the full width of the viewport
+                "overflow": "hidden",  # Prevent overflow in case of resizing
+                "boxSizing": "border-box",
+                "gap": "20px",
+            },
+        ),
+        html.Div(id="python-error-ica"),
+    ]
+)
 
 # --- Siderbar dynamic ---
 register_toggle_sidebar(
     collapse_id="sidebar-collapse-ica",
     icon_id="sidebar-toggle-icon-ica",
-    toggle_id="toggle-sidebar-ica"
+    toggle_id="toggle-sidebar-ica",
 )
 
 register_navigate_tabs_ica(
-    collapse_id="sidebar-collapse-ica", 
-    sidebar_tabs_id="sidebar-tabs-ica", 
-    icon_id="sidebar-toggle-icon-ica"
+    collapse_id="sidebar-collapse-ica",
+    sidebar_tabs_id="sidebar-tabs-ica",
+    icon_id="sidebar-toggle-icon-ica",
 )
 
 
-# Callback to update the ICA graph
+# specific to ica.py
 register_compute_ica()
-register_update_graph_ica(
-    ica_result_radio_id="ica-result-radio"
-)
 
-# --- Same as RAW VIZ
+register_update_graph_ica(ica_result_radio_id="ica-result-radio")
+
+register_update_ica_history()
+
+register_fill_ica_results(ica_result_radio_id="ica-result-radio")
+
+# same as (raw) viz.py
 register_cancel_or_confirm_annotation_suppression(
-    confirm_btn_id="confirm-delete-btn-ica", 
-    cancel_btn_id="cancel-delete-btn-ica", 
-    checkboxes_id="annotation-checkboxes-ica", 
-    modal_id="delete-confirmation-modal-ica")
+    confirm_btn_id="confirm-delete-btn-ica",
+    cancel_btn_id="cancel-delete-btn-ica",
+    checkboxes_id="annotation-checkboxes-ica",
+    modal_id="delete-confirmation-modal-ica",
+)
 
 register_annotation_checkboxes_options(
     checkboxes_id="annotation-checkboxes-ica",
 )
 register_annotation_dropdown_options(
-    dropdown_id="annotation-dropdown-ica",
-    checkboxes_id="annotation-checkboxes-ica"
+    dropdown_id="annotation-dropdown-ica", checkboxes_id="annotation-checkboxes-ica"
 )
 register_clear_check_all_annotation_checkboxes(
     check_all_btn_id="check-all-annotations-btn-ica",
     clear_all_btn_id="clear-all-annotations-btn-ica",
-    checkboxes_id="annotation-checkboxes-ica"
+    checkboxes_id="annotation-checkboxes-ica",
 )
 register_offset_display(
-    offset_decrement_id="offset-decrement-ica", 
-    offset_increment_id="offset-increment-ica", 
+    offset_decrement_id="offset-decrement-ica",
+    offset_increment_id="offset-increment-ica",
     offset_display_id="offset-display-ica",
-    keyboard_id="keyboard-ica"
+    keyboard_id="keyboard-ica",
 )
-register_page_buttons_display(
-    page_selector_id="page-selector-ica"
-)
+register_page_buttons_display(page_selector_id="page-selector-ica")
+
 register_modal_annotation_suppression(
     btn_id="delete-annotations-btn-ica",
     checkboxes_id="annotation-checkboxes-ica",
     modal_id="delete-confirmation-modal-ica",
-    modal_body_id="delete-modal-body-ica")
+    modal_body_id="delete-modal-body-ica",
+)
 
 register_toggle_intersection_modal(
     btn_id="create-intersection-btn-ica",
     checkboxes_id="annotation-checkboxes-ica",
     modal_id="create-intersection-modal-ica",
-    modal_body_id="create-intersection-modal-body-ica")
+    modal_body_id="create-intersection-modal-body-ica",
+)
 
 register_create_intersection(
-    confirm_btn_id="confirm-intersection-btn-ica", 
-    cancel_btn_id="cancel-intersection-btn-ica", 
+    confirm_btn_id="confirm-intersection-btn-ica",
+    cancel_btn_id="cancel-intersection-btn-ica",
     checkboxes_id="annotation-checkboxes-ica",
-    tolerance_id="intersection-tolerance-ica", 
-    modal_id="create-intersection-modal-ica")
-
+    tolerance_id="intersection-tolerance-ica",
+    modal_id="create-intersection-modal-ica",
+)
 
 register_move_to_next_annotation(
     prev_spike_id="prev-spike-ica",
@@ -184,24 +205,18 @@ register_move_to_next_annotation(
     graph_id="graph-ica",
     dropdown_id="annotation-dropdown-ica",
     checkboxes_id="annotation-checkboxes-ica",
-    page_selector_id="page-selector-ica"
+    page_selector_id="page-selector-ica",
 )
 
 register_update_annotation_graph(
     update_button_id="update-button-ica",
     page_selector_id="page-selector-ica",
     checkboxes_id="annotation-checkboxes-ica",
-    annotation_graph_id="annotation-graph-ica"
+    annotation_graph_id="annotation-graph-ica",
 )
 
 register_update_annotations_on_graph(
     graph_id="graph-ica",
     checkboxes_id="annotation-checkboxes-ica",
-    page_selector_id="page-selector-ica"
-)
-
-register_update_ica_history()
-
-register_fill_ica_results(
-    ica_result_radio_id="ica-result-radio"
+    page_selector_id="page-selector-ica",
 )

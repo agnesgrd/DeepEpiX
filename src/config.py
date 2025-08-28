@@ -1,4 +1,3 @@
-# config.py
 from pathlib import Path
 
 ##### App settings ##########
@@ -8,8 +7,8 @@ HOST = "127.0.0.1"
 ENV = "development"
 
 ##### Cache settings ##########
-CACHE_TYPE = 'FileSystemCache'
-CACHE_DEFAULT_TIMEOUT = 84000 # seconds
+CACHE_TYPE = "FileSystemCache"
+CACHE_DEFAULT_TIMEOUT = 84000  # seconds
 
 ##### Useful path ##########
 # Root directory of the app (thanks to PYTHONPATH)
@@ -27,4 +26,4 @@ TORCH_ENV = APP_ROOT.parent.parent / ".torchenv"
 ##### Default plotting variables #####
 DEFAULT_Y_AXIS_OFFSET = 40
 DEFAULT_SEGMENT_SIZE = 10
-CHUNK_RECORDING_DURATION = 120 # 2 minutes per chunk (120 seconds)
+CHUNK_RECORDING_DURATION = 120  # 2 minutes per chunk (120 seconds)
