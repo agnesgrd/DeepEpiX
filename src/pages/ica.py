@@ -101,8 +101,6 @@ layout = html.Div(
                 ),
                 gl.create_graph_container(
                     update_button_id="update-button-ica",
-                    update_container_id="update-container-ica",
-                    page_buttons_container_id="page-buttons-container-ica",
                     page_selector_id="page-selector-ica",
                     next_spike_buttons_container_id="next-spike-buttons-container-ica",
                     prev_spike_id="prev-spike-ica",

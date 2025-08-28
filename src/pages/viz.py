@@ -180,8 +180,6 @@ layout = html.Div(
                         # Graph container
                         gl.create_graph_container(
                             update_button_id="update-button",
-                            update_container_id="update-container",
-                            page_buttons_container_id="page-buttons-container",
                             page_selector_id="page-selector",
                             next_spike_buttons_container_id="next-spike-buttons-container",
                             prev_spike_id="prev-spike",
