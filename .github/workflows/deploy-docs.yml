@@ -23,7 +23,7 @@ jobs:
           pip install mkdocs mkdocs-material
 
       - name: Build docs
-        run: mkdocs build --clean
+        run: mkdocs build --clean --config-file docs/mkdocs.yml
 
       - name: Deploy to public repo
         run: |
