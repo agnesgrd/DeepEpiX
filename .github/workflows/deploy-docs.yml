@@ -1,0 +1,38 @@
+name: Deploy MkDocs to Public Repo
+
+on:
+  push:
+    branches:
+      - main # or your default branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout private repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Install MkDocs
+        run: |
+          pip install mkdocs mkdocs-material
+
+      - name: Build docs
+        run: mkdocs build --clean
+
+      - name: Deploy to public repo
+        run: |
+          cd site
+          git init
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add .
+          git commit -m "Deploy docs"
+          git branch -M main
+          git remote add origin https://x-access-token:${{ secrets.DOCS_DEPLOY_KEY }}@github.com/agnesgrd/deepepix-docs.git
+          git push -f origin main
