@@ -1,6 +1,6 @@
 # Tuto 1 : Load & Preprocess Data
 
-![Preprocessing Steps](/images/preprocessing.png)
+![Preprocessing Steps](images/preprocessing.png)
 
 ## 1️⃣ Go to Home Page
 
@@ -66,4 +66,4 @@ Clicking **⚡ Preprocess** will:
 
 To view metadata again, return to the **🏠 Home Page** and check the **📚 Database** table.
 
-![Database Memory](/images/database.png)
+![Database Memory](images/database.png)
