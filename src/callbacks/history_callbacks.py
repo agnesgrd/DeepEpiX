@@ -1,46 +1,68 @@
 from dash import Input, Output, callback, html
-from callbacks.utils import history_utils as hu
 import dash_bootstrap_components as dbc
+from callbacks.utils import history_utils as hu
+
 
 def register_update_annotation_history():
     @callback(
         Output("history-log", "children"),
         Input("url", "pathname"),
         Input("history-store", "data"),
-        prevent_initial_call=False
+        prevent_initial_call=False,
     )
     def update_history(pathname, history_data):
-        category='annotations'
-        return html.Div([
-            dbc.ListGroup([
-                dbc.ListGroupItem(entry) for entry in hu.read_history_data_by_category(history_data, category)]) 
-                if hu.read_history_data_by_category(history_data, category) 
-                else html.P("No entries yet.")
-        ])
-    
+        category = "annotations"
+        return html.Div(
+            [
+                (
+                    dbc.ListGroup(
+                        [
+                            dbc.ListGroupItem(entry)
+                            for entry in hu.read_history_data_by_category(
+                                history_data, category
+                            )
+                        ]
+                    )
+                    if hu.read_history_data_by_category(history_data, category)
+                    else html.P("No entries yet.")
+                )
+            ]
+        )
+
+
 def register_clean_annotation_history():
     @callback(
-        Output("history-store", "clear_data", allow_duplicate=True),   # Clears the stored history data
-        Input("clean-history-button", "n_clicks"),  # Triggered by button clicks
-        prevent_initial_call=True  # Avoid triggering the callback on initial load
+        Output("history-store", "clear_data", allow_duplicate=True),
+        Input("clean-history-button", "n_clicks"),
+        prevent_initial_call=True,
     )
     def clean_history(n_clicks):
-        # Return empty values for both the log and the store
         if n_clicks > 0:
             return True
-        
+
+
 def register_update_ica_history():
     @callback(
         Output("history-log-ica", "children"),
         Input("sidebar-tabs-ica", "active_tab"),
         Input("history-store", "data"),
-        prevent_initial_call=False
+        prevent_initial_call=False,
     )
     def update_history(pathname, history_data):
-        category='ICA'
-        return html.Div([
-            dbc.ListGroup([
-                dbc.ListGroupItem(entry) for entry in hu.read_history_data_by_category(history_data, category)]) 
-                if hu.read_history_data_by_category(history_data, category) 
-                else html.P("No entries yet.")
-        ])
+        category = "ICA"
+        return html.Div(
+            [
+                (
+                    dbc.ListGroup(
+                        [
+                            dbc.ListGroupItem(entry)
+                            for entry in hu.read_history_data_by_category(
+                                history_data, category
+                            )
+                        ]
+                    )
+                    if hu.read_history_data_by_category(history_data, category)
+                    else html.P("No entries yet.")
+                )
+            ]
+        )

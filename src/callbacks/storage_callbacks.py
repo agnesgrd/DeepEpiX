@@ -9,6 +9,7 @@ from callbacks.utils import annotation_utils as au
 from callbacks.utils import history_utils as hu
 from layout.config_layout import ICON
 
+
 def register_populate_memory_tab_contents():
     @callback(
         Output("subject-container-memory", "children"),
@@ -22,9 +23,17 @@ def register_populate_memory_tab_contents():
         State("frequency-store", "data"),
         State("annotation-store", "data"),
         State("history-store", "data"),
-        prevent_initial_call=False
+        prevent_initial_call=False,
     )
-    def populate_memory_tab_contents(pathname, selected_tab, folder_path, chunk_limits, freq_data, annotations_data, history_data):
+    def populate_memory_tab_contents(
+        pathname,
+        selected_tab,
+        folder_path,
+        chunk_limits,
+        freq_data,
+        annotations_data,
+        history_data,
+    ):
         """Populate memory tab content based on selected tab and stored folder path."""
         if not folder_path or not chunk_limits or not freq_data:
             return dash.no_update, dash.no_update, dash.no_update, dash.no_update
@@ -35,35 +44,72 @@ def register_populate_memory_tab_contents():
         history_content = dash.no_update
 
         if selected_tab == "subject-tab-memory":
-                subject_content = html.Div([
-                        html.Span([html.I(className="bi bi-person-rolodex", style={"marginRight": "10px", "fontSize": "1.2em"}), "Subject"], className="card-title"),
-                        dbc.ListGroup([
-                            dbc.ListGroupItem([
-                                html.Strong(folder_path)
-                            ]),
-                        ], style = {"marginBottom": "15px"}),
-
-                        html.Span([html.I(className="bi bi-sliders", style={"marginRight": "10px", "fontSize": "1.2em"}), "Frequency Parameters"], className="card-title"),
-                        dbc.ListGroup([
-                            dbc.ListGroupItem([
-                                html.Strong("Resample Frequency: "),
-                                html.Span(f"{freq_data.get('resample_freq', 'N/A')} Hz")
-                            ]),
-                            dbc.ListGroupItem([
-                                html.Strong("Low-pass Filter: "),
-                                html.Span(f"{freq_data.get('low_pass_freq', 'N/A')} Hz")
-                            ]),
-                            dbc.ListGroupItem([
-                                html.Strong("High-pass Filter: "),
-                                html.Span(f"{freq_data.get('high_pass_freq', 'N/A')} Hz")
-                            ]),
-                            dbc.ListGroupItem([
-                                html.Strong("Notch Filter: "),
-                                html.Span(f"{freq_data.get('notch_freq', 'N/A')} Hz")
-                            ]),
-                        ])
-                    ])
-
+            subject_content = html.Div(
+                [
+                    html.Span(
+                        [
+                            html.I(
+                                className="bi bi-person-rolodex",
+                                style={"marginRight": "10px", "fontSize": "1.2em"},
+                            ),
+                            "Subject",
+                        ],
+                        className="card-title",
+                    ),
+                    dbc.ListGroup(
+                        [
+                            dbc.ListGroupItem([html.Strong(folder_path)]),
+                        ],
+                        style={"marginBottom": "15px"},
+                    ),
+                    html.Span(
+                        [
+                            html.I(
+                                className="bi bi-sliders",
+                                style={"marginRight": "10px", "fontSize": "1.2em"},
+                            ),
+                            "Frequency Parameters",
+                        ],
+                        className="card-title",
+                    ),
+                    dbc.ListGroup(
+                        [
+                            dbc.ListGroupItem(
+                                [
+                                    html.Strong("Resample Frequency: "),
+                                    html.Span(
+                                        f"{freq_data.get('resample_freq', 'N/A')} Hz"
+                                    ),
+                                ]
+                            ),
+                            dbc.ListGroupItem(
+                                [
+                                    html.Strong("Low-pass Filter: "),
+                                    html.Span(
+                                        f"{freq_data.get('low_pass_freq', 'N/A')} Hz"
+                                    ),
+                                ]
+                            ),
+                            dbc.ListGroupItem(
+                                [
+                                    html.Strong("High-pass Filter: "),
+                                    html.Span(
+                                        f"{freq_data.get('high_pass_freq', 'N/A')} Hz"
+                                    ),
+                                ]
+                            ),
+                            dbc.ListGroupItem(
+                                [
+                                    html.Strong("Notch Filter: "),
+                                    html.Span(
+                                        f"{freq_data.get('notch_freq', 'N/A')} Hz"
+                                    ),
+                                ]
+                            ),
+                        ]
+                    ),
+                ]
+            )
 
         if selected_tab == "raw-info-tab-memory":
             raw_info_content = fpu.build_table_raw_info(folder_path)
@@ -74,23 +120,46 @@ def register_populate_memory_tab_contents():
         if selected_tab == "history-tab-memory":
 
             history_content = dbc.Card(
-                    dbc.CardBody([
-                        html.Div([
-                            html.Span([
-                                html.I(className=f"bi {ICON[category]}", style={"marginRight": "10px", "fontSize": "1.2em"}),
-                                category.capitalize()
-                            ], className="card-title"),
-                            html.Hr(),
-                            dbc.ListGroup([
-                                dbc.ListGroupItem(entry)
-                                for entry in hu.read_history_data_by_category(history_data, category)
-                            ]) if hu.read_history_data_by_category(history_data, category) else
-                            html.P("No entries yet.", className="text-muted")
-                        ], style={"marginBottom": "10px"})
-
-                        for category in ['annotations', 'models', 'ICA']
-                        ]
-                    )
+                dbc.CardBody(
+                    [
+                        html.Div(
+                            [
+                                html.Span(
+                                    [
+                                        html.I(
+                                            className=f"bi {ICON[category]}",
+                                            style={
+                                                "marginRight": "10px",
+                                                "fontSize": "1.2em",
+                                            },
+                                        ),
+                                        category.capitalize(),
+                                    ],
+                                    className="card-title",
+                                ),
+                                html.Hr(),
+                                (
+                                    dbc.ListGroup(
+                                        [
+                                            dbc.ListGroupItem(entry)
+                                            for entry in hu.read_history_data_by_category(
+                                                history_data, category
+                                            )
+                                        ]
+                                    )
+                                    if hu.read_history_data_by_category(
+                                        history_data, category
+                                    )
+                                    else html.P(
+                                        "No entries yet.", className="text-muted"
+                                    )
+                                ),
+                            ],
+                            style={"marginBottom": "10px"},
+                        )
+                        for category in ["annotations", "models", "ICA"]
+                    ]
                 )
+            )
 
         return subject_content, raw_info_content, event_stats_content, history_content

@@ -1,9 +1,11 @@
-import matplotlib
-matplotlib.use('Agg')
-import mne
 from io import BytesIO
 import base64
+import matplotlib
 import matplotlib.pyplot as plt
+import mne
+
+matplotlib.use("Agg")
+
 
 def create_topomap_from_raw(raw, sfreq, t0, t):
     """
@@ -15,16 +17,16 @@ def create_topomap_from_raw(raw, sfreq, t0, t):
     Returns:
     - Base64-encoded string of the topomap image
     """
-    
+
     # Extract the sampling frequency and calculate the time index
-    timepoint = float(t-t0)
+    timepoint = float(t - t0)
     time_idx = int(timepoint * sfreq)
 
     # Extract the data at the specified time index
     data = raw.get_data()  # Shape (n_channels, n_times)
     if time_idx < 0 or time_idx >= data.shape[1]:
         raise ValueError("Timepoint is out of range for the provided data.")
-    
+
     mean_data = data[:, time_idx]
 
     fig, ax = plt.subplots()
@@ -34,57 +36,58 @@ def create_topomap_from_raw(raw, sfreq, t0, t):
         raw.info,
         axes=ax,
         show=False,
-        cmap='coolwarm',  # Choose a visually pleasing color map
-        contours=6,  # Add contour lines
-        sensors=True,  # Display the sensor locations on the topomap
-        res=128  # Resolution of the topomap
+        cmap="coolwarm",
+        contours=6,
+        sensors=True,  # Display the sensor locations
+        res=128,
     )
 
-    # Customize the plot appearance
-    ax.axis('off')  # Hide axes for a clean look
+    ax.axis("off")
 
     # Save the image to a buffer
     buf = BytesIO()
-    fig.savefig(buf, format='png', bbox_inches="tight", pad_inches=0.1, transparent=True)  # Tight bounding box
+    fig.savefig(
+        buf, format="png", bbox_inches="tight", pad_inches=0.1, transparent=True
+    )
     buf.seek(0)
-    
+
     # Encode the image in Base64
-    img_str = base64.b64encode(buf.read()).decode('utf-8')
+    img_str = base64.b64encode(buf.read()).decode("utf-8")
     buf.close()
 
-    plt.close('all')
-    
+    plt.close("all")
+
     return img_str
+
 
 def create_topomap_from_preprocessed(original_raw, raw_ddf, sfreq, t0, t, bad_channels):
     """
     Create a topomap using preprocessed Dask data and original Raw metadata.
-    
+
     Parameters:
     - raw_ddf: Dask DataFrame with shape (time, channels)
     - original_raw: MNE Raw object used to get info structure
     - timepoint: time in seconds at which to extract data
-    
+
     Returns:
     - base64-encoded topomap image string
     """
-    # Step 1: Compute Dask DataFrame to NumPy
+    # Compute Dask DataFrame to NumPy
     preprocessed_df = raw_ddf.drop(columns=bad_channels).compute()
-    
-    # Step 2: Make sure data is in shape (n_channels, n_times)
+
     # Dask DFs are usually (n_times, n_channels), so we transpose
     data = preprocessed_df.values.T
-    
-    # Step 3: Create MNE RawArray using original metadata
+
+    # Create MNE RawArray using original metadata
     info = original_raw.info.copy()
 
     if bad_channels:
-        info['bads'] = bad_channels
-    
-    # Optional: filter only MEG channels if needed
-    picks = mne.pick_types(info, meg=True, ref_meg=False, exclude='bads')
+        info["bads"] = bad_channels
+
+    # Filter MEG channels if needed
+    picks = mne.pick_types(info, meg=True, ref_meg=False, exclude="bads")
     picked_info = mne.pick_info(info, picks)
-    raw_processed = mne.io.RawArray(data, picked_info).pick('mag')
-    
-    # Step 4: Use your existing topomap function
+    raw_processed = mne.io.RawArray(data, picked_info).pick("mag")
+
+    # Use your existing topomap function
     return create_topomap_from_raw(raw_processed, sfreq, t0, t)

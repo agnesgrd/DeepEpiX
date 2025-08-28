@@ -4,6 +4,7 @@ from dash import Input, Output, State, callback
 # Local Imports
 from callbacks.utils import preprocessing_utils as pu
 
+
 def register_display_psd():
     @callback(
         Output("psd-status", "children"),
@@ -14,20 +15,35 @@ def register_display_psd():
         State("low-pass-freq", "value"),
         State("notch-freq", "value"),
         State("theme-store", "data"),
-        running=[
-            (Output("compute-display-psd-button", "disabled"), True, False)],
-        prevent_initial_call=True
+        running=[(Output("compute-display-psd-button", "disabled"), True, False)],
+        prevent_initial_call=True,
     )
-    def display_psd(n_clicks, folder_path, resample_freq, high_pass_freq, low_pass_freq, notch_freq, theme):
-        """ Compute and display power spectrum decomposition depending on the frequency parameters stored."""
-        if None in (folder_path, resample_freq, high_pass_freq, low_pass_freq, notch_freq):
+    def display_psd(
+        n_clicks,
+        folder_path,
+        resample_freq,
+        high_pass_freq,
+        low_pass_freq,
+        notch_freq,
+        theme,
+    ):
+        """Compute and display power spectrum decomposition depending on the frequency parameters stored."""
+        if None in (
+            folder_path,
+            resample_freq,
+            high_pass_freq,
+            low_pass_freq,
+            notch_freq,
+        ):
             return "⚠️ Please fill in all frequency parameters."
-        
+
         if n_clicks > 0:
             freq_data = {
                 "resample_freq": resample_freq,
                 "low_pass_freq": low_pass_freq,
                 "high_pass_freq": high_pass_freq,
-                "notch_freq": notch_freq
+                "notch_freq": notch_freq,
             }
-            return pu.compute_power_spectrum_decomposition(folder_path, freq_data, theme)
+            return pu.compute_power_spectrum_decomposition(
+                folder_path, freq_data, theme
+            )

@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def compute_matches(model_onsets, gt_onsets, delta):
     true_positive = 0
     false_positive = 0
@@ -30,11 +31,21 @@ def compute_matches(model_onsets, gt_onsets, delta):
         if g not in matched_gt:
             false_negative += 1
             # Distance to closest model prediction
-            closest_model = min(model_onsets, key=lambda m: abs(m - g)) if model_onsets else None
+            closest_model = (
+                min(model_onsets, key=lambda m: abs(m - g)) if model_onsets else None
+            )
             if closest_model is not None:
                 fn_distances.append(abs(g - closest_model))
 
-    return true_positive, false_positive, false_negative, tp_distances, fp_distances, fn_distances
+    return (
+        true_positive,
+        false_positive,
+        false_negative,
+        tp_distances,
+        fp_distances,
+        fn_distances,
+    )
+
 
 def get_distance_stats(distances):
     if not distances:

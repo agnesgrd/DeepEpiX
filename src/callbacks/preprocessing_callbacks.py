@@ -10,6 +10,7 @@ from callbacks.utils import preprocessing_utils as pu
 from callbacks.utils import annotation_utils as au
 from callbacks.utils import channel_utils as chu
 
+
 def register_handle_frequency_parameters():
     @callback(
         Output("preprocess-status", "children"),
@@ -17,17 +18,20 @@ def register_handle_frequency_parameters():
         Input("high-pass-freq", "value"),
         Input("low-pass-freq", "value"),
         Input("notch-freq", "value"),
-        prevent_initial_call=True
+        prevent_initial_call=True,
     )
-    def handle_frequency_parameters(resample_freq, high_pass_freq, low_pass_freq, notch_freq):
+    def handle_frequency_parameters(
+        resample_freq, high_pass_freq, low_pass_freq, notch_freq
+    ):
         """Retrieve frequency parameters and store them."""
         if not low_pass_freq or not high_pass_freq or not notch_freq:
             return "⚠️ Please fill in all frequency parameters."
-        
+
         elif high_pass_freq >= low_pass_freq:
             return "⚠️ High-pass frequency must be less than low-pass frequency."
 
         return dash.no_update
+
 
 def register_preprocess_meg_data():
     @callback(
@@ -45,48 +49,87 @@ def register_preprocess_meg_data():
         State("notch-freq", "value"),
         State("heartbeat-channel", "value"),
         State("bad-channels", "value"),
-        running=[
-            # (Output("preprocess-display-button", "disabled"), True, False),
-            # (Output("load-button", "disabled"), True, False),
-            (Output("compute-display-psd-button", "disabled"), True, False)],
-        prevent_initial_call=True
+        running=[(Output("compute-display-psd-button", "disabled"), True, False)],
+        prevent_initial_call=True,
     )
-    def preprocess_meg_data(n_clicks, folder_path, resample_freq, high_pass_freq, low_pass_freq, notch_freq, heartbeat_ch_name, bad_channels):
+    def preprocess_meg_data(
+        n_clicks,
+        folder_path,
+        resample_freq,
+        high_pass_freq,
+        low_pass_freq,
+        notch_freq,
+        heartbeat_ch_name,
+        bad_channels,
+    ):
         """Preprocess MEG data and save it, store annotations and chunk limits in memory."""
         if n_clicks > 0:
             try:
-                raw = fpu.read_raw(folder_path, preload=True, verbose=False, bad_channels=None)
+                raw = fpu.read_raw(
+                    folder_path, preload=True, verbose=False, bad_channels=None
+                )
                 all_bad_channels = fpu.get_bad_channels(raw, bad_channels)
                 if all_bad_channels:
                     raw.drop_channels(all_bad_channels)
                 annotations_dict = au.get_annotations_dataframe(raw, heartbeat_ch_name)
-                print(annotations_dict)
 
                 # --- Find .mrk file if folder_path is a directory ---
-                annotations_dict = au.get_mrk_annotations_dataframe(folder_path, annotations_dict)
-                print(annotations_dict)
+                annotations_dict = au.get_mrk_annotations_dataframe(
+                    folder_path, annotations_dict
+                )
 
-                channels_dict = chu.get_grouped_channels_by_prefix(raw, bad_channels=all_bad_channels)
+                channels_dict = chu.get_grouped_channels_by_prefix(
+                    raw, bad_channels=all_bad_channels
+                )
                 max_length = pu.get_max_length(raw, resample_freq)
                 chunk_limits = pu.update_chunk_limits(max_length)
 
-                # Store the frequency values when the folder is valid
                 freq_data = {
                     "resample_freq": resample_freq,
                     "low_pass_freq": low_pass_freq,
                     "high_pass_freq": high_pass_freq,
-                    "notch_freq": notch_freq
+                    "notch_freq": notch_freq,
                 }
 
-                prep_raw = pu.sort_filter_resample(folder_path, freq_data, channels_dict)
+                prep_raw = pu.sort_filter_resample(
+                    folder_path, freq_data, channels_dict
+                )
 
                 for chunk_idx in chunk_limits:
                     start_time, end_time = chunk_idx
-                    pu.get_preprocessed_dataframe_dask(folder_path, freq_data, start_time, end_time, channels_dict, prep_raw)
+                    pu.get_preprocessed_dataframe_dask(
+                        folder_path,
+                        freq_data,
+                        start_time,
+                        end_time,
+                        channels_dict,
+                        prep_raw,
+                    )
 
-                return "Preprocessed and saved data", freq_data, annotations_dict, channels_dict, chunk_limits, "/viz/raw-signal"
-            
+                return (
+                    "Preprocessed and saved data",
+                    freq_data,
+                    annotations_dict,
+                    channels_dict,
+                    chunk_limits,
+                    "/viz/raw-signal",
+                )
+
             except Exception as e:
-                return f"⚠️ Error during preprocessing : {str(e)}", dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+                return (
+                    f"⚠️ Error during preprocessing : {str(e)}",
+                    dash.no_update,
+                    dash.no_update,
+                    dash.no_update,
+                    dash.no_update,
+                    dash.no_update,
+                )
 
-        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+        return (
+            dash.no_update,
+            dash.no_update,
+            dash.no_update,
+            dash.no_update,
+            dash.no_update,
+            dash.no_update,
+        )

@@ -1,24 +1,27 @@
+import time
+import itertools
 import numpy as np
 import pandas as pd
-import itertools
-import plotly.graph_objects as go
 import dash
 from dash import Patch
-import time
-# from plotly_resampler import FigureResampler
-# from plotly_resampler.aggregation import MinMaxLTTB
-# from plotly_resampler.aggregation.aggregators import DataAggregator
-
-from layout.config_layout import DEFAULT_FIG_LAYOUT, REGION_COLOR_PALETTE, COLOR_PALETTE, ERROR
+import plotly.graph_objects as go
+from layout.config_layout import (
+    DEFAULT_FIG_LAYOUT,
+    REGION_COLOR_PALETTE,
+    COLOR_PALETTE,
+    ERROR,
+)
 from callbacks.utils import preprocessing_utils as pu
 from callbacks.utils import dataframe_utils as du
 from callbacks.utils import smoothgrad_utils as su
 
-def calculate_channel_offset_std(signal_df, scale_factor, min_offset = 1, max_offset=10):
+
+def calculate_channel_offset_std(signal_df, scale_factor, min_offset=1, max_offset=10):
     stds = signal_df.std(skipna=True)
-    scale_norm = (max_offset - min_offset)/scale_factor*2
-    mean_std = stds.mean()*scale_norm
+    scale_norm = (max_offset - min_offset) / scale_factor * 2
+    mean_std = stds.mean() * scale_norm
     return mean_std
+
 
 def get_y_axis_ticks_with_gap(channel_names, base_offset, group_gap=2):
     """
@@ -48,7 +51,10 @@ def get_y_axis_ticks_with_gap(channel_names, base_offset, group_gap=2):
 
     return np.array(y_ticks)
 
-def apply_default_layout(fig, xaxis_range, time_range, selected_channels, y_axis_ticks, channel_offset):
+
+def apply_default_layout(
+    fig, xaxis_range, time_range, selected_channels, y_axis_ticks, channel_offset
+):
     """
     Apply default layout to a Plotly figure with dynamic values for axis range, title, etc.
 
@@ -62,49 +68,74 @@ def apply_default_layout(fig, xaxis_range, time_range, selected_channels, y_axis
     - Updated Plotly figure with applied layout.
     """
     layout = DEFAULT_FIG_LAYOUT.copy()
-    layout['xaxis']['range'] = xaxis_range
-    layout['xaxis']['minallowed'] = time_range[0]
-    layout['xaxis']['maxallowed'] = time_range[1]
+    layout["xaxis"]["range"] = xaxis_range
+    layout["xaxis"]["minallowed"] = time_range[0]
+    layout["xaxis"]["maxallowed"] = time_range[1]
 
-    height_per_channel = 25 #if compact_view else 35
-    layout['height'] = max(500,len(selected_channels) * height_per_channel)
+    height_per_channel = 25  # if compact_view else 35
+    layout["height"] = max(500, len(selected_channels) * height_per_channel)
 
-    ymin = min(y_axis_ticks) - 2*channel_offset
-    ymax = max(y_axis_ticks) + 2*channel_offset
-    layout['yaxis']['range'] = [ymin, ymax]
+    ymin = min(y_axis_ticks) - 2 * channel_offset
+    ymax = max(y_axis_ticks) + 2 * channel_offset
+    layout["yaxis"]["range"] = [ymin, ymax]
 
     fig.update_layout(layout)
     return fig
 
-def generate_graph_time_channel(selected_channels, offset_selection, time_range, folder_path, freq_data, color_selection, xaxis_range, channels_region, filter = {}):
-    """Handles the preprocessing and figure generation for the MEG signal visualization."""
-    import time  # For logging execution times
 
+def generate_graph_time_channel(
+    selected_channels,
+    offset_selection,
+    time_range,
+    folder_path,
+    freq_data,
+    color_selection,
+    xaxis_range,
+    channels_region,
+    filter={},
+):
+    """Handles the preprocessing and figure generation for the MEG signal visualization."""
+    import time
+
+    # Get recording from cache
     start_time = time.time()
-    raw_ddf = pu.get_preprocessed_dataframe_dask(folder_path, freq_data, time_range[0], time_range[1], channels_region)
+    raw_ddf = pu.get_preprocessed_dataframe_dask(
+        folder_path, freq_data, time_range[0], time_range[1], channels_region
+    )
     print(f"Step 1: Preprocessing completed in {time.time() - start_time:.2f} seconds.")
 
     # Filter time range
     filter_start_time = time.time()
     shifted_times = du.get_shifted_time_axis_dask(time_range, raw_ddf)
-    print(f"Step 2: Time shifting completed in {time.time() - filter_start_time:.2f} seconds.")
+    print(
+        f"Step 2: Time shifting completed in {time.time() - filter_start_time:.2f} seconds."
+    )
 
     # Filter the dataframe based on the selected channels
     filter_df_start_time = time.time()
     try:
         filtered_raw_df = raw_ddf[selected_channels].compute()
     except Exception:
-        return dash.no_update, "⚠️ Error: Selected channels are invalid. This may be due to choosing a montage that is incompatible with the current data format.", ERROR
+        return (
+            dash.no_update,
+            "⚠️ Error: Selected channels are invalid. This may be due to choosing a montage that is incompatible with the current data format.",
+            ERROR,
+        )
 
-
-    print(f"Step 3: Dataframe filtering completed in {time.time() - filter_df_start_time:.2f} seconds.")
+    print(
+        f"Step 3: Dataframe filtering completed in {time.time() - filter_df_start_time:.2f} seconds."
+    )
 
     # Offset channel traces along the y-axis
     offset_start_time = time.time()
     channel_offset = calculate_channel_offset_std(filtered_raw_df, offset_selection)
     y_axis_ticks = get_y_axis_ticks_with_gap(selected_channels, channel_offset)
-    shifted_filtered_raw_df = filtered_raw_df + np.tile(y_axis_ticks, (len(filtered_raw_df), 1))
-    print(f"Step 4: Channel offset calculation completed in {time.time() - offset_start_time:.2f} seconds.")
+    shifted_filtered_raw_df = filtered_raw_df + np.tile(
+        y_axis_ticks, (len(filtered_raw_df), 1)
+    )
+    print(
+        f"Step 4: Channel offset calculation completed in {time.time() - offset_start_time:.2f} seconds."
+    )
 
     # Create a dictionary mapping channels to their colors
     if color_selection == "rainbow":
@@ -131,137 +162,76 @@ def generate_graph_time_channel(selected_channels, offset_selection, time_range,
     elif color_selection == "white":
         color_map = {channel: "white" for channel in selected_channels}
     elif "smoothGrad" in color_selection:
-        color_map = {channel: "blue" for channel in selected_channels} 
+        color_map = {channel: "blue" for channel in selected_channels}
 
     # Use Plotly Express for efficient figure generation
     fig_start_time = time.time()
-    shifted_filtered_raw_df["Time"] = shifted_times  # Add time as a column for Plotly Express
+    shifted_filtered_raw_df["Time"] = (
+        shifted_times  # Add time as a column for Plotly Express
+    )
 
-    # fig = FigureResampler(go.Figure(), default_downsampler=MinMaxLTTB(parallel=True), show_mean_aggregation_size=False)
     fig = go.Figure()
-    
-    for col in shifted_filtered_raw_df.columns[:-1]:  # Exclude Time
-        fig.add_trace(go.Scattergl(
-            x=shifted_filtered_raw_df["Time"],
-            y=shifted_filtered_raw_df[col],
-            mode="lines",
-            name=col,
-            line=dict(color=color_map.get(col, None), width=1)
-        ))
 
-    if 'smoothGrad' in color_selection:
-        fig = su.add_smoothgrad_scatter(
-            fig, 
-            shifted_filtered_raw_df, 
-            time_range, 
-            selected_channels, 
-            filter=filter,
-            all_channels=sum(channels_region.values(), [])
+    for col in shifted_filtered_raw_df.columns[:-1]:  # Exclude Time
+        fig.add_trace(
+            go.Scattergl(
+                x=shifted_filtered_raw_df["Time"],
+                y=shifted_filtered_raw_df[col],
+                mode="lines",
+                name=col,
+                line=dict(color=color_map.get(col, None), width=1),
+            )
         )
 
-    print(f"Step 5: Figure creation completed in {time.time() - fig_start_time:.2f} seconds.")
+    if "smoothGrad" in color_selection:
+        fig = su.add_smoothgrad_scatter(
+            fig,
+            shifted_filtered_raw_df,
+            time_range,
+            selected_channels,
+            filter=filter,
+            all_channels=sum(channels_region.values(), []),
+        )
+
+    print(
+        f"Step 5: Figure creation completed in {time.time() - fig_start_time:.2f} seconds."
+    )
 
     layout_start_time = time.time()
-    fig = apply_default_layout(fig, xaxis_range, time_range, selected_channels, y_axis_ticks, channel_offset)
-    print(f"Step 6: Layout update completed in {time.time() - layout_start_time:.2f} seconds.")
+    fig = apply_default_layout(
+        fig, xaxis_range, time_range, selected_channels, y_axis_ticks, channel_offset
+    )
+    print(
+        f"Step 6: Layout update completed in {time.time() - layout_start_time:.2f} seconds."
+    )
 
     print(f"Total execution time: {time.time() - start_time:.2f} seconds.")
     return fig, None, {"display": "none"}
 
-# def generate_graph_time_channel_modal(selected_channels, offset_selection, time_range, folder_path, freq_data, color_selection, xaxis_range, channels_region):
-#     """Handles the preprocessing and figure generation for the overall (=ALL CHANNELS) MEG signal visualization on a selected segment."""
-#     import time  # For logging execution times
 
-#     start_time = time.time()
-#     raw_ddf = pu.get_preprocessed_dataframe_dask(folder_path, freq_data, time_range[0], time_range[1])
-#     print(f"Step 1: Preprocessing completed in {time.time() - start_time:.2f} seconds.")
-
-#     # Filter time range
-#     filter_start_time = time.time()
-#     shifted_times = du.get_shifted_time_axis_dask(xaxis_range, raw_ddf)
-#     print(f"Step 2: Time shifting completed in {time.time() - filter_start_time:.2f} seconds.")
-
-#     # Filter the dataframe based on the selected channels
-#     filter_df_start_time = time.time()
-#     try:
-#         filtered_raw_df = raw_ddf[selected_channels].compute()
-#     except Exception:
-#         return dash.no_update, "⚠️ Error: Selected channels are invalid. This may be due to choosing a montage that is incompatible with the current data format.", ERROR
-
-
-#     print(f"Step 3: Dataframe filtering completed in {time.time() - filter_df_start_time:.2f} seconds.")
-
-#     # Offset channel traces along the y-axis
-#     offset_start_time = time.time()
-#     channel_offset = calculate_channel_offset_std(filtered_raw_df, offset_selection)
-#     y_axis_ticks = get_y_axis_ticks_with_gap(selected_channels, channel_offset)
-#     shifted_filtered_raw_df = filtered_raw_df + np.tile(y_axis_ticks, (len(filtered_raw_df), 1))
-#     print(f"Step 4: Channel offset calculation completed in {time.time() - offset_start_time:.2f} seconds.")
-
-#     # Create a dictionary mapping channels to their colors
-#     if color_selection == "rainbow":
-#         region_to_color = {
-#             region: REGION_COLOR_PALETTE[i % len(REGION_COLOR_PALETTE)]
-#             for i, region in enumerate(channels_region.keys())
-#         }
-
-#         # Build channel-to-color mapping
-#         channel_to_color = {
-#             channel: region_to_color[region]
-#             for region, channels in channels_region.items()
-#             for channel in channels
-#         }
-
-#         # Final color map only for selected channels
-#         color_map = {
-#             channel: channel_to_color[channel]
-#             for channel in selected_channels
-#             if channel in channel_to_color
-#         }
-#     elif color_selection == "blue":
-#         color_map = {channel: "blue" for channel in selected_channels}
-#     elif color_selection == "white":
-#         color_map = {channel: "white" for channel in selected_channels}
-
-#     # Use Plotly Express for efficient figure generation
-#     fig_start_time = time.time()
-#     shifted_filtered_raw_df["Time"] = shifted_times  # Add time as a column for Plotly Express
-
-#     fig = go.Figure()
-
-#     for col in shifted_filtered_raw_df.columns[:-1]:  # Exclude Time
-#         fig.add_trace(go.Scattergl(
-#             x=shifted_filtered_raw_df["Time"],
-#             y=shifted_filtered_raw_df[col],
-#             mode="lines",
-#             name=col,
-#             line=dict(color=color_map.get(col, None), width=1)
-#         ))
-
-#     print(f"Step 5: Figure creation completed in {time.time() - fig_start_time:.2f} seconds.")
-
-#     layout_start_time = time.time()
-#     layout = SIMPLE_FIG_LAYOUT.copy()
-#     layout['xaxis']['range'] = xaxis_range
-#     fig.update_layout(layout)
-#     print(f"Step 6: Layout update completed in {time.time() - layout_start_time:.2f} seconds.")
-
-#     print(f"Total execution time: {time.time() - start_time:.2f} seconds.")
-#     return fig, None, {"display": "none"}
-
-def generate_graph_time_ica(offset_selection, time_range, folder_path, ica_result_path, color_selection, xaxis_range):
+def generate_graph_time_ica(
+    offset_selection,
+    time_range,
+    folder_path,
+    ica_result_path,
+    color_selection,
+    xaxis_range,
+):
     """Handles the preprocessing and figure generation for the MEG signal visualization."""
     import time  # For logging execution times
 
     start_time = time.time()
-    raw_ddf = pu.get_ica_dataframe_dask(folder_path, time_range[0], time_range[1], ica_result_path)
+    raw_ddf = pu.get_ica_dataframe_dask(
+        folder_path, time_range[0], time_range[1], ica_result_path
+    )
     print(f"Step 1: Preprocessing completed in {time.time() - start_time:.2f} seconds.")
 
     # Filter time range
     filter_start_time = time.time()
     shifted_times = du.get_shifted_time_axis_dask(time_range, raw_ddf)
-    print(f"Step 2: Time shifting completed in {time.time() - filter_start_time:.2f} seconds.")
-
+    print(
+        f"Step 2: Time shifting completed in {time.time() - filter_start_time:.2f} seconds."
+    )
 
     # Filter the dataframe based on the selected channels
     filter_df_start_time = time.time()
@@ -269,21 +239,32 @@ def generate_graph_time_ica(offset_selection, time_range, folder_path, ica_resul
     try:
         filtered_raw_df = raw_ddf[selected_channels].compute()
     except Exception:
-        return dash.no_update, "⚠️ Error: Selected channels are invalid. This may be due to choosing a montage that is incompatible with the current data format."
+        return (
+            dash.no_update,
+            "⚠️ Error: Selected channels are invalid. This may be due to choosing a montage that is incompatible with the current data format.",
+        )
 
-
-    print(f"Step 3: Dataframe filtering completed in {time.time() - filter_df_start_time:.2f} seconds.")
+    print(
+        f"Step 3: Dataframe filtering completed in {time.time() - filter_df_start_time:.2f} seconds."
+    )
 
     # Offset channel traces along the y-axis
     offset_start_time = time.time()
     channel_offset = calculate_channel_offset_std(filtered_raw_df, offset_selection)
     y_axis_ticks = np.arange(len(selected_channels)) * channel_offset
-    shifted_filtered_raw_df = filtered_raw_df + np.tile(y_axis_ticks, (len(filtered_raw_df), 1))
-    print(f"Step 4: Channel offset calculation completed in {time.time() - offset_start_time:.2f} seconds.")
+    shifted_filtered_raw_df = filtered_raw_df + np.tile(
+        y_axis_ticks, (len(filtered_raw_df), 1)
+    )
+    print(
+        f"Step 4: Channel offset calculation completed in {time.time() - offset_start_time:.2f} seconds."
+    )
 
     if color_selection == "rainbow":
         num_colors = len(REGION_COLOR_PALETTE)
-        color_map = {channel: REGION_COLOR_PALETTE[i%num_colors] for i, channel in enumerate(selected_channels)}
+        color_map = {
+            channel: REGION_COLOR_PALETTE[i % num_colors]
+            for i, channel in enumerate(selected_channels)
+        }
     elif color_selection == "blue":
         color_map = {channel: "blue" for channel in selected_channels}
     elif color_selection == "white":
@@ -291,47 +272,61 @@ def generate_graph_time_ica(offset_selection, time_range, folder_path, ica_resul
 
     # Use Plotly Express for efficient figure generation
     fig_start_time = time.time()
-    shifted_filtered_raw_df["Time"] = shifted_times  # Add time as a column for Plotly Express
+    shifted_filtered_raw_df["Time"] = (
+        shifted_times  # Add time as a column for Plotly Express
+    )
 
     fig = go.Figure()
 
     for col in shifted_filtered_raw_df.columns[:-1]:  # Exclude Time
-        fig.add_trace(go.Scattergl(
-            x=shifted_filtered_raw_df["Time"],
-            y=shifted_filtered_raw_df[col],
-            mode="lines",
-            name=col,
-            line=dict(color=color_map.get(col, None), width=1)
-        ))
+        fig.add_trace(
+            go.Scattergl(
+                x=shifted_filtered_raw_df["Time"],
+                y=shifted_filtered_raw_df[col],
+                mode="lines",
+                name=col,
+                line=dict(color=color_map.get(col, None), width=1),
+            )
+        )
 
-    print(f"Step 5: Figure creation completed in {time.time() - fig_start_time:.2f} seconds.")
+    print(
+        f"Step 5: Figure creation completed in {time.time() - fig_start_time:.2f} seconds."
+    )
 
     layout_start_time = time.time()
-    fig = apply_default_layout(fig, xaxis_range, time_range, selected_channels, y_axis_ticks, channel_offset)
-    print(f"Step 6: Layout update completed in {time.time() - layout_start_time:.2f} seconds.")
+    fig = apply_default_layout(
+        fig, xaxis_range, time_range, selected_channels, y_axis_ticks, channel_offset
+    )
+    print(
+        f"Step 6: Layout update completed in {time.time() - layout_start_time:.2f} seconds."
+    )
 
     print(f"Total execution time: {time.time() - start_time:.2f} seconds.")
     return fig, None
 
-def update_annotations_on_graph(fig_dict, annotations_to_show, page_selection, annotations, chunk_limits):
+
+def update_annotations_on_graph(
+    fig_dict, annotations_to_show, page_selection, annotations, chunk_limits
+):
     """Update annotations visibility based on the checklist selection."""
-    
-    # Start time measurement
+
     start_time = time.time()
 
     fig_patch = Patch()
-    y_min, y_max = fig_dict['layout']['yaxis'].get('range', [0, 1])
+    y_min, y_max = fig_dict["layout"]["yaxis"].get("range", [0, 1])
 
-    # Measure time for this part
-    annotations_start_time = time.time()
-    
     # Filter annotations based on the current time range
+    annotations_start_time = time.time()
     time_range = chunk_limits[int(page_selection)]
-    annotations_df = pd.DataFrame(annotations).set_index('onset')
-    filtered_annotations_df = du.get_annotations_df_filtered_on_time(time_range, annotations_df)
+    annotations_df = pd.DataFrame(annotations).set_index("onset")
+    filtered_annotations_df = du.get_annotations_df_filtered_on_time(
+        time_range, annotations_df
+    )
 
     annotations_end_time = time.time()
-    print(f"Time to filter annotations: {annotations_end_time - annotations_start_time:.4f} seconds")
+    print(
+        f"Time to filter annotations: {annotations_end_time - annotations_start_time:.4f} seconds"
+    )
 
     # Prepare the shapes and annotations for the selected annotations
     new_shapes = []
@@ -343,12 +338,12 @@ def update_annotations_on_graph(fig_dict, annotations_to_show, page_selection, a
         description_colors[desc] = next(color_cycle)
 
     shapes_start_time = time.time()
-    
+
     for _, row in filtered_annotations_df.iterrows():
         description = row["description"]
-                
+
         if str(description) in annotations_to_show:
-            duration = row['duration']
+            duration = row["duration"]
             color = description_colors[description]  # Get assigned color
             # Check the duration and add either a vertical line or a rectangle
             if duration == 0:
@@ -363,7 +358,7 @@ def update_annotations_on_graph(fig_dict, annotations_to_show, page_selection, a
                         xref="x",
                         yref="y",
                         line=dict(color=color, width=1, dash="line"),
-                        opacity=0.9
+                        opacity=0.9,
                     )
                 )
             else:
@@ -378,37 +373,40 @@ def update_annotations_on_graph(fig_dict, annotations_to_show, page_selection, a
                         xref="x",
                         yref="y",
                         line=dict(color=color, width=2),
-                        fillcolor=color,  # Set the color of the rectangle
-                        opacity=0.3
+                        fillcolor=color,
+                        opacity=0.3,
                     )
                 )
             # Add the label in the margin
             new_annotations.append(
                 dict(
                     x=row.name,
-                    y=0,  # Middle of the plot area; adjust as needed
+                    y=0,
                     xref="x",
-                    yref="paper",  # Use relative y position in the plotting area
+                    yref="paper",
                     text=description,
                     showarrow=False,
                     font=dict(size=10, color=color),
                     align="center",
-                    xanchor="center",  # Center horizontally on x
-                    textangle=-90,  # Horizontal text
-                    bgcolor="white",  # Semi-transparent white background
+                    xanchor="center",
+                    textangle=-90,
+                    bgcolor="white",
                     borderwidth=1,
-                    opacity=1
+                    opacity=1,
                 )
             )
 
     shapes_end_time = time.time()
-    print(f"Time to generate shapes and annotations: {shapes_end_time - shapes_start_time:.4f} seconds")
+    print(
+        f"Time to generate shapes and annotations: {shapes_end_time - shapes_start_time:.4f} seconds"
+    )
 
-    # Update the figure with the new shapes and annotations
     fig_patch["layout"]["shapes"] = new_shapes
     fig_patch["layout"]["annotations"] = new_annotations
 
     end_time = time.time()
-    print(f"Total execution time for update_annotations_on_graph: {end_time - start_time:.4f} seconds")
+    print(
+        f"Total execution time for update_annotations_on_graph: {end_time - start_time:.4f} seconds"
+    )
 
     return fig_patch
