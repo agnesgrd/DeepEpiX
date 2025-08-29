@@ -35,3 +35,6 @@ src/cache-directory/*
 
 # Apptainer
 *.sif
+
+# Style formatting
+.flake8
