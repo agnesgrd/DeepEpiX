@@ -28,6 +28,8 @@ data/*
 # Cache
 src/cache-directory/*
 !src/cache-directory/.gitkeep
+!src/cache-directory/model_CNN.keras_predictions.csv
+!src/cache-directory/model_features_only.keras_predictions.csv
 
 # Jupyter Notebook test
 *.ipynb
