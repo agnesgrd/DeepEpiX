@@ -22,6 +22,7 @@ Thumbs.db
 # Data
 data/*
 !data/.gitkeep
+!data/toy_data.fif
 
 # Cache
 src/cache-directory/*
@@ -38,3 +39,4 @@ src/cache-directory/*
 
 # Style formatting
 .flake8
+
