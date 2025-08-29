@@ -45,10 +45,10 @@ def sort_filter_resample(folder_path, freq_data, channels_dict):
     high_pass_freq = freq_data.get("high_pass_freq")
     notch_freq = freq_data.get("notch_freq")
 
-    # Apply filtering and resampling
-    raw.filter(l_freq=high_pass_freq, h_freq=low_pass_freq, n_jobs=8)
-    raw.notch_filter(freqs=notch_freq)
-    raw.resample(resample_freq)
+    # # Apply filtering and resampling
+    # raw.filter(l_freq=high_pass_freq, h_freq=low_pass_freq, n_jobs=8)
+    # raw.notch_filter(freqs=notch_freq)
+    # raw.resample(resample_freq)
 
     # raw.rename_channels({ch['ch_name']: ch['ch_name'].split('-')[0] for ch in raw.info['chs']})
 
