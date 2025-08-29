@@ -23,6 +23,7 @@ Thumbs.db
 data/*
 !data/.gitkeep
 !data/toy_data.fif
+!data/small_toy_data.fif
 
 # Cache
 src/cache-directory/*
