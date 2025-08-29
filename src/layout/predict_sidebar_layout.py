@@ -68,7 +68,6 @@ def create_predict():
                         dbc.RadioItems(
                             id="sensitivity-analysis",
                             options=[
-                                {"label": "Yes", "value": True},
                                 {"label": "No", "value": False},
                             ],
                             value=False,  # Default selection

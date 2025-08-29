@@ -105,10 +105,7 @@ def register_execute_predict_script():
         smoothgrad_path = cache_dir / f"{os.path.basename(model_path)}_smoothGrad.pkl"
 
         # If already exists, skip execution
-        if (
-            predictions_csv_path.exists()
-            and str(predictions_csv_path) in model_probabilities_store
-        ):
+        if predictions_csv_path.exists():
             if (
                 sensitivity_analysis
                 and smoothgrad_path.exists()
