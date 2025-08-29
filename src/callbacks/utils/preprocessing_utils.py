@@ -59,7 +59,7 @@ def sort_filter_resample(folder_path, freq_data, channels_dict):
 
 
 def get_max_length(raw, resample_freq):
-    return raw.n_times / raw.info["sfreq"] - 1 / resample_freq
+    return raw.times[-1] - 1 / resample_freq
 
 
 def update_chunk_limits(total_duration):

@@ -73,10 +73,10 @@ def register_preprocess_meg_data():
                     raw.drop_channels(all_bad_channels)
                 annotations_dict = au.get_annotations_dataframe(raw, heartbeat_ch_name)
 
-                # --- Find .mrk file if folder_path is a directory ---
-                annotations_dict = au.get_mrk_annotations_dataframe(
-                    folder_path, annotations_dict
-                )
+                # #--- Find .mrk file if folder_path is a directory ---
+                # annotations_dict = au.get_mrk_annotations_dataframe(
+                #     folder_path, annotations_dict
+                # )
 
                 channels_dict = chu.get_grouped_channels_by_prefix(
                     raw, bad_channels=all_bad_channels
