@@ -141,31 +141,3 @@ def test_model_dash(
     df.to_csv(
         f"{output_path}/{os.path.basename(model_name)}_predictions.csv", index=False
     )
-
-    ### === Generate final summary row for global evaluation CSV === ###
-
-    # Select predicted spikes above threshold
-    pred_spike_times = [
-        onset for onset, prob in zip(adjusted_onsets, y_pred_probas) if prob > threshold
-    ]
-    pred_spike_probs = [round(prob, 3) for prob in y_pred_probas if prob > threshold]
-
-    # Create DataFrame for predictions
-    pred_df = pd.DataFrame(
-        {
-            "Patient": [os.path.basename(subject)] * len(pred_spike_times),
-            "Model": [os.path.basename(model_name)] * len(pred_spike_times),
-            "SpikeTime_s": pred_spike_times,
-            "Probability": pred_spike_probs,
-        }
-    )
-
-    pred_df.to_csv(
-        os.path.join(
-            output_path,
-            f"predictions_{os.path.basename(subject)}_{os.path.basename(model_name)}.csv",
-        ),
-        mode="a",
-        index=False,
-        header=not os.path.exists(os.path.join(output_path, "predictions.csv")),
-    )
