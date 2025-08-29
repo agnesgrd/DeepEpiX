@@ -1,8 +1,6 @@
 import os
 from pathlib import Path
 from collections import Counter
-import tkinter as tk
-from tkinter import filedialog
 import mne
 from dash import html
 import dash_bootstrap_components as dbc
@@ -27,15 +25,6 @@ def get_folder_path_options():
         if data
         else [{"label": "No data available", "value": ""}]
     )
-
-
-def browse_folder():
-    root = tk.Tk()
-    root.withdraw()  # Hide root window
-    root.attributes("-topmost", True)  # Make sure dialog appears on top
-    folder_path = filedialog.askdirectory(title="Select a folder", parent=root)
-    root.destroy()  # Destroy the root window after selection
-    return folder_path
 
 
 def test_ds_folder(path):

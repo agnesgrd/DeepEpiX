@@ -13,7 +13,6 @@ from layout.config_layout import INPUT_STYLES, FLEXDIRECTION
 from callbacks.storage_callbacks import register_populate_memory_tab_contents
 from callbacks.folder_path_callbacks import (
     register_handle_valid_folder_path,
-    register_update_dropdown,
     register_store_folder_path_and_clear_data,
     register_populate_tab_contents,
 )
@@ -148,14 +147,6 @@ layout = html.Div(
                 ),
                 dbc.Row(
                     [
-                        dbc.Col(
-                            dbc.Button(
-                                "📂 Open Folder",
-                                id="open-folder-button",
-                                color="secondary",
-                            ),
-                            width="auto",
-                        ),
                         dbc.Col(
                             dcc.Dropdown(
                                 id="folder-path-dropdown",
@@ -433,8 +424,6 @@ layout = html.Div(
 )
 
 register_populate_memory_tab_contents()
-
-register_update_dropdown()
 
 register_handle_valid_folder_path()
 

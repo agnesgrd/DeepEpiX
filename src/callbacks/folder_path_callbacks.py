@@ -7,45 +7,6 @@ from callbacks.utils import folder_path_utils as fpu
 from layout.config_layout import FLEXDIRECTION
 
 
-def register_update_dropdown():
-    @callback(
-        Output("folder-path-dropdown", "options"),
-        Output("folder-path-dropdown", "value"),
-        Output("folder-path-warning", "children"),  # Optional: warning display
-        Input("open-folder-button", "n_clicks"),
-        State("folder-path-dropdown", "options"),
-        prevent_initial_call=True,
-    )
-    def update_dropdown(n_clicks, folder_path_list):
-        """Update dropdown when a folder is selected via file explorer."""
-        if n_clicks > 0:
-            folder_path = fpu.browse_folder()
-
-            # Init options if None
-            if folder_path_list is None:
-                folder_path_list = []
-
-            if folder_path:
-                if not fpu.test_ds_folder(folder_path):
-                    return (
-                        dash.no_update,
-                        dash.no_update,
-                        "Selected folder is not a valid MEG folder (.ds or .fif or 4D).",
-                    )
-
-                # Prevent duplicates
-                if not any(
-                    option["value"] == folder_path for option in folder_path_list
-                ):
-                    folder_path_list.append(
-                        {"label": fpu.get_ds_folder(folder_path), "value": folder_path}
-                    )
-
-                return folder_path_list, folder_path, ""  # Clear warning if successful
-
-        return dash.no_update, dash.no_update, dash.no_update
-
-
 def register_handle_valid_folder_path():
     @callback(
         Output("load-button", "disabled"),
