@@ -90,7 +90,7 @@ def get_preprocessed_dataframe_dask(
     cache_dir=f"{config.CACHE_DIR}",
 ):
     os.makedirs(cache_dir, exist_ok=True)
-    cu.clear_old_cache_files(cache_dir)
+    # cu.clear_old_cache_files(cache_dir)
     cache_file = get_cache_filename(
         folder_path, freq_data, start_time, end_time, cache_dir
     )
