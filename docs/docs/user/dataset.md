@@ -66,4 +66,4 @@ Clicking **⚡ Preprocess** will:
 
 To view metadata again, return to the **🏠 Home** page and check the **📚 Database** table.
 
-![Database Memory](images/database.png)
+![Database Memory](../images/database.png)
