@@ -3,7 +3,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
 
-## 1️⃣ Go to the Menu
+## 1️⃣ Go to the **📈 Raw Visualization** main page
 If the left sidebar is collapsed, click the <i class="bi bi-layout-sidebar-inset"></i> **Open Sidebar** button. The sidebar contains 4 tabs:
 
 - <i class="bi bi-hand-index-thumb"></i> **Select**

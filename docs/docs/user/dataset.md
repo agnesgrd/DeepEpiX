@@ -1,11 +1,11 @@
 # Tuto 1 : Load & Preprocess Data
 
-![Preprocessing Steps](images/preprocessing.png)
+![Preprocessing Steps](../images/preprocessing.png)
 
-## 1️⃣ Go to Home Page
+## 1️⃣ Go to Home page
 
 Open the app as explained in the **Setup & Installation** section.
-You should arrive at the 🏠 **Home Page**.  
+You should arrive at the 🏠 **Home** page.  
 If not, use the **☰ menu** at the top left to navigate there.
 
 ## 2️⃣ Choose a Subject
@@ -64,6 +64,6 @@ Clicking **⚡ Preprocess** will:
 - Store it in memory for the session duration
 - Take you to the **📈 Raw Visualization** main page.
 
-To view metadata again, return to the **🏠 Home Page** and check the **📚 Database** table.
+To view metadata again, return to the **🏠 Home** page and check the **📚 Database** table.
 
 ![Database Memory](images/database.png)

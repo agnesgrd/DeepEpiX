@@ -16,22 +16,23 @@ plugins:
             separate_signature: true
 markdown_extensions:
   - admonition
-  - pymdownx.superfences        # nicer code blocks
+  - pymdownx.superfences # nicer code blocks
   - pymdownx.tabbed:
       alternate_style: true
 nav:
   - Overview: index.md
-  - Installation : install.md
+  - Installation: install.md
   - Architecture:
       - Folder Structure: folder-structure.md
-      - App Structure : app-structure.md
-      - Page Structure : page-structure.md
+      - App Structure: app-structure.md
+      - Page Structure: page-structure.md
   - User Guide:
       - Load & Preprocess Data: user/dataset.md
-      - Create Sensors Layout : user/montage.md
-      - Visualize Preprocessed Signal : user/raw-viz.md
+      - Create Sensors Layout: user/montage.md
+      - Visualize Preprocessed Signal: user/raw-viz.md
       - Analyze Preprocessed Signal: user/raw-analyze.md
-      - Save Modifications : user/save.md
+      - Save Modifications: user/save.md
+      - Visualize ICA: user/ica-viz.md
   - Developer Guide:
       - Setup & run: dev/setup.md
       - Add a new page: dev/new_page.md

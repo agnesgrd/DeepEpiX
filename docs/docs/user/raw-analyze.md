@@ -3,16 +3,11 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
 
-## 1️⃣ Go to the Menu
-If the left sidebar is collapsed, click the <i class="bi bi-layout-sidebar-inset"></i> **Open Sidebar** button. The sidebar contains 4 tabs:
-
-- <i class="bi bi-hand-index-thumb"></i> **Select**
-- <i class="bi bi-activity"></i> **Analyze**
-- <i class="bi bi-stars"></i> **Spike Prediction**
-- <i class="bi bi-floppy"></i> **Save**
+## 1️⃣ Visualize preprocessed signal
+See [Tuto](raw-viz.md)
 
 ## 2️⃣ Analyze Your Signal Manually
-In the <i class="bi bi-activity"></i> Analyze tab:
+In the <i class="bi bi-activity"></i> **Analyze** tab:
 
 - **Activate the Topomap**: click once on the button to activate the feature (click again to deactivate). Then click on the signal at the desired timepoint to view spatial maps.
 - **Add annotations**: click or select a segment on the graph to auto-fill onset and duration (set duration = 0 for punctual events). Add a label and click **Add New Event**. It will appear in the annotation options (make sure it is selected to be visible on the graph).
