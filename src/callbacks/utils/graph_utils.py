@@ -17,10 +17,14 @@ from callbacks.utils import smoothgrad_utils as su
 
 
 def calculate_channel_offset_std(signal_df, scale_factor, min_offset=1, max_offset=10):
-    stds = signal_df.std(skipna=True)
+    # per-channel quantile clipping to reduce artifact effect
+    q_low = signal_df.quantile(0.1)
+    q_high = signal_df.quantile(0.9)
+    trimmed = signal_df.clip(lower=q_low, upper=q_high, axis=1)
+
+    stds = trimmed.std(skipna=True)
     scale_norm = (max_offset - min_offset) / scale_factor * 2
-    mean_std = stds.mean() * scale_norm
-    return mean_std
+    return stds.mean() * scale_norm
 
 
 def get_y_axis_ticks_with_gap(channel_names, base_offset, group_gap=2):
@@ -72,7 +76,7 @@ def apply_default_layout(
     layout["xaxis"]["minallowed"] = time_range[0]
     layout["xaxis"]["maxallowed"] = time_range[1]
 
-    height_per_channel = 25  # if compact_view else 35
+    height_per_channel = 35  # if compact_view else 35
     layout["height"] = max(500, len(selected_channels) * height_per_channel)
 
     ymin = min(y_axis_ticks) - 2 * channel_offset
@@ -102,6 +106,7 @@ def generate_graph_time_channel(
     raw_ddf = pu.get_preprocessed_dataframe_dask(
         folder_path, freq_data, time_range[0], time_range[1], channels_region
     )
+
     print(f"Step 1: Preprocessing completed in {time.time() - start_time:.2f} seconds.")
 
     # Filter time range

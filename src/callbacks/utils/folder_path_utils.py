@@ -75,6 +75,20 @@ def get_bad_channels(raw, new_bad_channels):
     return all_bad_channels
 
 
+def get_raw_modality(raw):
+    n_eeg = len(mne.pick_types(raw.info, meg=False, eeg=True, stim=False, eog=False))
+    n_meg = len(mne.pick_types(raw.info, meg=True, eeg=False, stim=False, eog=False))
+
+    if n_eeg > 0 and n_meg > 0:
+        return "mixed"
+    elif n_eeg > 0:
+        return "eeg"
+    elif n_meg > 0:
+        return "meg"
+    else:
+        return "unknown"
+
+
 def read_raw(folder_path, preload, verbose, bad_channels=None):
     folder_path = Path(folder_path)
 

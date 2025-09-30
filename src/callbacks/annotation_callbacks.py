@@ -73,7 +73,6 @@ def register_update_annotation_graph(
             return dash.no_update
 
         time_range = chunk_limits[int(page_selection)]
-
         annotations_df = pd.DataFrame(annotations_data).set_index("onset")
 
         # Create the annotation graph

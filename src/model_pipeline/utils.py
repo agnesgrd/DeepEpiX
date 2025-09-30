@@ -39,7 +39,6 @@ def standardize(X, mean=False, std=False):
 # read raw from different acquisition systems
 def read_raw(folder_path, preload, verbose, bad_channels=None):
     folder_path = Path(folder_path)
-    print(folder_path)
 
     if folder_path.suffix == ".ds":
         raw = mne.io.read_raw_ctf(str(folder_path), preload=preload, verbose=verbose)

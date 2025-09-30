@@ -107,7 +107,7 @@ def get_preprocessed_dataframe_dask(
     @delayed
     def crop_and_to_df(prep_raw):
         raw_chunk = prep_raw.copy().crop(tmin=start_time, tmax=end_time)
-        return raw_chunk.to_data_frame(picks="meg", index="time")
+        return raw_chunk.to_data_frame(picks="all", index="time")
 
     @delayed
     def standardize(raw_df):

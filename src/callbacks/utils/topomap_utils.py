@@ -60,7 +60,9 @@ def create_topomap_from_raw(raw, sfreq, t0, t):
     return img_str
 
 
-def create_topomap_from_preprocessed(original_raw, raw_ddf, sfreq, t0, t, bad_channels):
+def create_topomap_from_preprocessed(
+    original_raw, raw_ddf, sfreq, t0, t, bad_channels, modality
+):
     """
     Create a topomap using preprocessed Dask data and original Raw metadata.
 
@@ -79,15 +81,53 @@ def create_topomap_from_preprocessed(original_raw, raw_ddf, sfreq, t0, t, bad_ch
     data = preprocessed_df.values.T
 
     # Create MNE RawArray using original metadata
+    if modality == "eeg":
+        montage = mne.channels.make_standard_montage("standard_1020")
+        original_raw.set_montage(montage)
+
     info = original_raw.info.copy()
+    print(info)
 
     if bad_channels:
         info["bads"] = bad_channels
 
     # Filter MEG channels if needed
-    picks = mne.pick_types(info, meg=True, ref_meg=False, exclude="bads")
+    if modality == "meg":
+        # Get only MEG channels (both magnetometers and gradiometers)
+        picks = mne.pick_types(
+            info,
+            meg=True,
+            eeg=False,
+            stim=False,
+            eog=False,
+            ref_meg=False,
+            exclude="bads",
+        )
+
+    elif modality == "eeg":
+        picks = mne.pick_types(
+            info, meg=False, eeg=True, stim=False, eog=False, exclude="bads"
+        )
+
+    elif modality == "mixed":
+        # Get only MEG channels (both magnetometers and gradiometers)
+        picks = mne.pick_types(
+            info,
+            meg=True,
+            eeg=True,
+            stim=False,
+            eog=False,
+            ref_meg=False,
+            exclude="bads",
+        )
+
     picked_info = mne.pick_info(info, picks)
-    raw_processed = mne.io.RawArray(data, picked_info).pick("mag")
+
+    if modality == "meg" or "mixed":
+        raw_processed = mne.io.RawArray(data, picked_info).pick("mag")
+
+    elif modality == "eeg":
+        raw_processed = mne.io.RawArray(data, picked_info)
 
     # Use your existing topomap function
     return create_topomap_from_raw(raw_processed, sfreq, t0, t)

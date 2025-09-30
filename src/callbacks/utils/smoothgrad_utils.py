@@ -37,6 +37,7 @@ def add_smoothgrad_scatter(
 
     # Filter out values where the color value is less than or equal to 0
     scatter_df_filtered = scatter_df[scatter_df["Color"] > 0]
+    print(scatter_df_filtered["Color"].min(), scatter_df_filtered["Color"].max())
 
     # Create the scatter plot with the filtered data
     scatter_fig = px.scatter(

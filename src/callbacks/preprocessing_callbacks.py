@@ -39,6 +39,7 @@ def register_preprocess_meg_data():
         Output("frequency-store", "data"),
         Output("annotation-store", "data"),
         Output("channel-store", "data", allow_duplicate=True),
+        Output("raw-modality", "data"),
         Output("chunk-limits-store", "data"),
         Output("url", "pathname"),
         Input("preprocess-display-button", "n_clicks"),
@@ -68,10 +69,15 @@ def register_preprocess_meg_data():
                 raw = fpu.read_raw(
                     folder_path, preload=True, verbose=False, bad_channels=None
                 )
+                modality = fpu.get_raw_modality(raw)
+
                 all_bad_channels = fpu.get_bad_channels(raw, bad_channels)
                 if all_bad_channels:
                     raw.drop_channels(all_bad_channels)
-                annotations_dict = au.get_annotations_dataframe(raw, heartbeat_ch_name)
+
+                annotations_dict = au.get_annotations_dataframe(
+                    raw, heartbeat_ch_name, modality
+                )
 
                 # #--- Find .mrk file if folder_path is a directory ---
                 # annotations_dict = au.get_mrk_annotations_dataframe(
@@ -79,7 +85,7 @@ def register_preprocess_meg_data():
                 # )
 
                 channels_dict = chu.get_grouped_channels_by_prefix(
-                    raw, bad_channels=all_bad_channels
+                    raw, modality, bad_channels=all_bad_channels
                 )
                 max_length = pu.get_max_length(raw, resample_freq)
                 chunk_limits = pu.update_chunk_limits(max_length)
@@ -111,6 +117,7 @@ def register_preprocess_meg_data():
                     freq_data,
                     annotations_dict,
                     channels_dict,
+                    modality,
                     chunk_limits,
                     "/viz/raw-signal",
                 )
@@ -123,9 +130,11 @@ def register_preprocess_meg_data():
                     dash.no_update,
                     dash.no_update,
                     dash.no_update,
+                    dash.no_update,
                 )
 
         return (
+            dash.no_update,
             dash.no_update,
             dash.no_update,
             dash.no_update,

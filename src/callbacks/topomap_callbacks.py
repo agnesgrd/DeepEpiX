@@ -18,6 +18,7 @@ def register_display_topomap_on_click():
         State("chunk-limits-store", "data"),
         State("frequency-store", "data"),
         State("channel-store", "data"),
+        State("raw-modality", "data"),
         prevent_initial_call=True,
     )
     def display_clicked_content(
@@ -28,6 +29,7 @@ def register_display_topomap_on_click():
         chunk_limits,
         freq_data,
         channel_store,
+        modality,
     ):
         if button is False:
             try:
@@ -56,6 +58,7 @@ def register_display_topomap_on_click():
                     time_range[0],
                     t,
                     channel_store.get("bad", []),
+                    modality,
                 )  # Returns base64-encoded string
                 print(
                     f"Time to generate topomap image: {time.time() - img_str_start_time:.4f} seconds"

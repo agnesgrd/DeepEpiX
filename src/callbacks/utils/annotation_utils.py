@@ -6,6 +6,7 @@ import mne
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
+import datetime
 
 
 def get_annotation_descriptions(annotations_store):
@@ -47,18 +48,48 @@ def get_heartbeat_event(raw, ch_name):
     return pd.DataFrame(event_list)
 
 
-def get_annotations_dataframe(raw, heartbeat_ch_name):
+# def time_to_seconds(time_str):
+#     """
+#     Convert a time string 'HH:MM:SS.ssssss' into seconds as float.
+#     """
+#     t = datetime.datetime.strptime(time_str, "%H:%M:%S.%f")
+#     delta = datetime.timedelta(
+#         hours=t.hour, minutes=t.minute, seconds=t.second, microseconds=t.microsecond
+#     )
+#     return round(delta.total_seconds(), 3)
+
+
+def get_annotations_dataframe(raw, heartbeat_ch_name, modality):
 
     annotations_df = raw.annotations.to_data_frame()
-    annotations_df["onset"] = pd.to_datetime(annotations_df["onset"]).dt.tz_localize(
-        "UTC"
-    )
     origin_time = pd.Timestamp(raw.annotations.orig_time)
-    annotations_df["onset"] = (annotations_df["onset"] - origin_time).dt.total_seconds()
 
-    heartbeat_df = get_heartbeat_event(raw, heartbeat_ch_name)
-    df_combined = pd.concat([annotations_df, heartbeat_df], ignore_index=True)
-    annotations_dict = df_combined.to_dict(orient="records")
+    if pd.isna(origin_time):
+
+        annotations_df["onset"] = (
+            annotations_df["onset"].dt.hour * 3600
+            + annotations_df["onset"].dt.minute * 60
+            + annotations_df["onset"].dt.second
+            + annotations_df["onset"].dt.microsecond / 1e6
+        )
+    else:
+        annotations_df["onset"] = pd.to_datetime(
+            annotations_df["onset"]
+        ).dt.tz_localize("UTC")
+        annotations_df["onset"] = (
+            annotations_df["onset"] - origin_time
+        ).dt.total_seconds()
+
+    if modality == "meg":
+        try:
+            heartbeat_df = get_heartbeat_event(raw, heartbeat_ch_name)
+            annotations_df = pd.concat(
+                [annotations_df, heartbeat_df], ignore_index=True
+            )
+        except Exception as e:
+            print(f"Warning: Could not extract heartbeat events: {e}")
+
+    annotations_dict = annotations_df.to_dict(orient="records")
 
     return annotations_dict
 

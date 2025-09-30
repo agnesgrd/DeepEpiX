@@ -578,10 +578,11 @@ def update_montage_store(
     State("channel-store", "data"),
     State("folder-store", "data"),
     State("selection-method-dropdown", "value"),
+    State("raw-modality", "data"),
     prevent_initial_call=True,
 )
 def update_meg_layout(
-    checked_values, pick_values, channel_groups, folder_path, selection_method
+    checked_values, pick_values, channel_groups, folder_path, selection_method, modality
 ):
 
     region_keys = list(channel_groups.keys())
@@ -604,7 +605,15 @@ def update_meg_layout(
                 selected = random.sample(available, min(pick_count, len(available)))
                 selected_channels_by_group[i].extend(selected)
 
+    if not any(selected_channels_by_group):
+        return dash.no_update
+
     raw = fpu.read_raw(folder_path, preload=False, verbose=False)
+
+    if modality == "eeg":
+        montage = mne.channels.make_standard_montage("standard_1020")
+        raw.set_montage(montage)
+
     info = raw.info
 
     highlighted = [

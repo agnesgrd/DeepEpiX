@@ -22,6 +22,7 @@ STATIC_DIR = APP_ROOT / "static"
 MODEL_PIPELINE_DIR = APP_ROOT / "model_pipeline"
 TENSORFLOW_ENV = APP_ROOT.parent / ".tfenv"
 TORCH_ENV = APP_ROOT.parent.parent / ".torchenv"
+MONTAGES_DIR = STATIC_DIR / "montages"
 
 ##### Default plotting variables #####
 DEFAULT_Y_AXIS_OFFSET = 40
