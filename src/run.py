@@ -46,6 +46,9 @@ app.layout = html.Div(
                                         dbc.DropdownMenuItem(divider=True),
                                         dbc.DropdownMenuItem("Model", header=True),
                                         dbc.DropdownMenuItem(
+                                            "Add custom", href="/model/custom"
+                                        ),
+                                        dbc.DropdownMenuItem(
                                             "Performance", href="/model/performance"
                                         ),
                                         dbc.DropdownMenuItem(
