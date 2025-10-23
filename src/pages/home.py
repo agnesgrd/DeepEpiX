@@ -143,7 +143,16 @@ layout = html.Div(
                             className="bi bi-person-plus-fill",
                             style={"marginRight": "10px", "fontSize": "1.2em"},
                         ),
-                        "Choose MEG Data Folder",
+                        "Select M/EEG Data",
+                        dbc.Tooltip(
+                            "This dropdown lists all M/EEG data files located in the /data folder. "
+                            "To use a different folder, change the path in the /src/config.py file.",
+                            target="data-path-dropdown",
+                            autohide=True,
+                            placement="top",
+                            class_name="custom-tooltip",
+                            trigger="focus",
+                        ),
                     ]
                 ),
                 dbc.Row(
@@ -158,7 +167,7 @@ layout = html.Div(
                         ),
                         dbc.Col(
                             dcc.Dropdown(
-                                id="folder-path-dropdown",
+                                id="data-path-dropdown",
                                 options=fpu.get_folder_path_options(),
                                 placeholder="Select ...",
                             ),
@@ -221,7 +230,7 @@ layout = html.Div(
             children=[
                 html.Div(
                     [
-                        html.Span(
+                        html.H6(
                             [
                                 html.I(
                                     className="bi bi-sliders2",
@@ -238,9 +247,10 @@ layout = html.Div(
                                 dbc.Input(
                                     id="resample-freq",
                                     type="number",
-                                    value=150,
                                     step=1,
-                                    min=50,
+                                    min=1,
+                                    persistence=True,
+                                    persistence_type="session",
                                     style=INPUT_STYLES["number-in-box"],
                                 ),
                             ]
@@ -251,9 +261,10 @@ layout = html.Div(
                                 dbc.Input(
                                     id="high-pass-freq",
                                     type="number",
-                                    value=0.5,
                                     step=0.1,
                                     min=0.1,
+                                    persistence=True,
+                                    persistence_type="session",
                                     style=INPUT_STYLES["number-in-box"],
                                 ),
                             ]
@@ -264,9 +275,10 @@ layout = html.Div(
                                 dbc.Input(
                                     id="low-pass-freq",
                                     type="number",
-                                    value=50,
                                     step=1,
                                     min=1,
+                                    persistence=True,
+                                    persistence_type="session",
                                     style=INPUT_STYLES["number-in-box"],
                                 ),
                             ]
@@ -277,15 +289,16 @@ layout = html.Div(
                                 dbc.Input(
                                     id="notch-freq",
                                     type="number",
-                                    value=50,
                                     step=1,
                                     min=0,
+                                    persistence=True,
+                                    persistence_type="session",
                                     style=INPUT_STYLES["number-in-box"],
                                 ),
                             ],
                             style={"marginBottom": "20px"},
                         ),
-                        html.Span(
+                        html.H6(
                             [
                                 html.I(
                                     className="bi bi-heart-pulse-fill",
@@ -319,7 +332,7 @@ layout = html.Div(
                                 ),
                             ]
                         ),
-                        html.Span(
+                        html.H6(
                             [
                                 html.I(
                                     className="bi bi-eye-slash-fill",

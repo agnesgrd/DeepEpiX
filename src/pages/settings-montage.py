@@ -214,7 +214,7 @@ layout = html.Div(
             ],
             style={**FLEXDIRECTION["row-flex"], "display": "flex"},
         ),
-    ]
+    ],
 )
 
 

@@ -68,12 +68,15 @@ def register_display_topomap_on_click():
                 topomap_image = html.Img(
                     src=img_src,
                     style={
-                        "height": "160px",
-                        "margin": "0 5px",
+                        "width": "100%",
                     },
                 )
 
-                return html.Div(f"Time: {t:.3f} s"), topomap_image, dash.no_update
+                return (
+                    f"Time: {t:.3f} s",
+                    topomap_image,
+                    dash.no_update,
+                )
 
             except Exception as e:
                 print(f"⚠️ Error in plot_topomap: {str(e)}")

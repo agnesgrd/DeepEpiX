@@ -70,7 +70,7 @@ def create_sidebar():
             "overflowY": "auto",
             "justifyContent": "flex-start",
             "gap": "20px",
-            "width": "250px",
+            "minWidth": "250px",
             "boxSizing": "border-box",
             "fontSize": "12px",
             "borderRadius": "10px",

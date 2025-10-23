@@ -98,7 +98,7 @@ def generate_graph_time_channel(
     channels_region,
     filter={},
 ):
-    """Handles the preprocessing and figure generation for the MEG signal visualization."""
+    """Handles the preprocessing and figure generation for the M/EEG signal visualization."""
     import time
 
     # Get recording from cache
@@ -222,7 +222,7 @@ def generate_graph_time_ica(
     color_selection,
     xaxis_range,
 ):
-    """Handles the preprocessing and figure generation for the MEG signal visualization."""
+    """Handles the preprocessing and figure generation for the M/EEG signal visualization."""
     import time  # For logging execution times
 
     start_time = time.time()

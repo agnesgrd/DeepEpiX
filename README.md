@@ -235,7 +235,7 @@ Then, open the app in your web browser at:
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-> For quick access, ensure that your MEG data is placed in the `data` folder within the project directory.
+> For quick access, ensure that your M/EEG data is placed in the `data` folder within the project directory.
 
 </details>
 

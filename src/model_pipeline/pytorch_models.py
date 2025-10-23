@@ -132,19 +132,16 @@ def test_model(model_name, testing_generator, X_test_ids):
     win = X_test_ids[:, 0]
 
     y_timing_data = load_obj(
-        "data_raw_" + str(params.args.subject_number) + "_timing.pkl",
+        "data_raw_timing.pkl",
         params.args.path_output,
     )
     y_block_data = load_obj(
-        "data_raw_" + str(params.args.subject_number) + "_blocks.pkl",
+        "data_raw_blocks.pkl",
         params.args.path_output,
     )
 
     with open(
-        params.args.path_output
-        + "subject_"
-        + str(params.args.subject_number)
-        + "_predictions.csv",
+        params.args.path_output + "subject_predictions.csv",
         "w",
         newline="",
     ) as f:
@@ -156,10 +153,7 @@ def test_model(model_name, testing_generator, X_test_ids):
         y_block = y_block_data[win[ind]]
 
         with open(
-            params.args.path_output
-            + "subject_"
-            + str(params.args.subject_number)
-            + "_predictions.csv",
+            params.args.path_output + "subject_predictions.csv",
             "a",
             newline="",
         ) as f:
@@ -208,9 +202,7 @@ def test_model_dash(
 
     model.eval()
 
-    f = open(
-        op.join(output_path, "data_raw_" + str(params.subject_number) + "_windows_bi")
-    )
+    f = open(op.join(output_path, "data_raw_windows_bi"))
 
     y_pred_probas = []
     adjusted_onsets = []
@@ -231,9 +223,7 @@ def test_model_dash(
     del model
 
     # Load timing data
-    y_timing_data = load_obj(
-        "data_raw_" + str(params.subject_number) + "_timing.pkl", output_path
-    )
+    y_timing_data = load_obj("data_raw_timing.pkl", output_path)
 
     if adjust_onset == "Yes":
         # Compute adjusted onsets based on GFP peaks

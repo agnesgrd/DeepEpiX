@@ -30,7 +30,7 @@ cache = Cache(
     },
 )
 
-################################# RAW DATA PREPROCESSING (FILTERING, SUBSAMPLING) #################################################################
+# RAW DATA PREPROCESSING (FILTERING, SUBSAMPLING) #################################################################
 
 
 def sort_filter_resample(folder_path, freq_data, channels_dict):
@@ -55,7 +55,7 @@ def sort_filter_resample(folder_path, freq_data, channels_dict):
     return raw
 
 
-############################### MAIN CACHED FUNCTIONS (PREPROCESSING) ##############################################
+# MAIN CACHED FUNCTIONS (PREPROCESSING) ##############################################
 
 
 def get_max_length(raw, resample_freq):
@@ -127,7 +127,7 @@ def get_preprocessed_dataframe_dask(
 
 def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw=None):
     """
-    Preprocess the MEG data in chunks and cache them.
+    Preprocess the M/EEG data in chunks and cache them.
 
     :param folder_path: Path to the raw data file.
     :param freq_data: Dictionary containing frequency parameters for preprocessing.
@@ -157,7 +157,7 @@ def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw
     return process_data_in_chunks(folder_path, freq_data, start_time, end_time, raw)
 
 
-###################################################### ICA ########################################################################
+# ICA ########################################################################
 
 
 def get_cache_filename_ica(
@@ -213,7 +213,7 @@ def get_ica_dataframe_dask(
     return ddf
 
 
-################################## POWER SPECTRUM DECOMPOSITION ######################################################
+# POWER SPECTRUM DECOMPOSITION ######################################################
 
 
 def compute_power_spectrum_decomposition(folder_path, freq_data, theme="light"):

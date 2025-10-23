@@ -2,30 +2,11 @@ from pathlib import Path
 from config import MODELS_DIR
 
 
-def get_model_options(model_type):
+def get_model_options():
     model_dir = Path(MODELS_DIR)
 
-    if model_type == "AE":
-        models = [
-            f
-            for f in model_dir.iterdir()
-            if f.suffix in {".pth", ".keras", ".h5"} and ("AE" in str(f)) is True
-        ]
-
-    elif model_type == "CNN":
-        models = [
-            f
-            for f in model_dir.iterdir()
-            if f.suffix in {".pth", ".keras", ".h5"} and ("AE" in str(f)) is False
-        ]
-
-    elif model_type == "all":
-        models = [
-            f for f in model_dir.iterdir() if f.suffix in {".pth", ".keras", ".h5"}
-        ]
-
-    return (
-        [{"label": d.name, "value": str(d.resolve())} for d in models]
-        if models
-        else [{"label": "No data available", "value": ""}]
-    )
+    items = list(model_dir.iterdir())
+    if items:
+        return [{"label": d.name, "value": str(d.resolve())} for d in items]
+    else:
+        return [{"label": "No data available", "value": ""}]

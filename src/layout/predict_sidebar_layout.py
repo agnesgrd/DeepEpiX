@@ -20,11 +20,11 @@ def create_predict():
                         ),
                         dcc.Dropdown(
                             id="model-dropdown",
-                            options=pu.get_model_options("CNN"),
+                            options=pu.get_model_options(),
                             placeholder="Select ...",
                         ),
                     ],
-                    style={"marginBottom": "20px"},
+                    style={"marginBottom": "10px"},
                 ),
                 html.Div(
                     [

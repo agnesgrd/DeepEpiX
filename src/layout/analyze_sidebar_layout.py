@@ -30,12 +30,15 @@ def create_analyze():
                                 target="plot-topomap-button",
                                 placement="left",
                             ),
-                            # Loading component to show the loading spinner while the long callback is processing
                             dcc.Loading(
                                 id="topomap-loading",
-                                type="dot",  # You can use "circle", "dot", etc. for different spinner styles
+                                type="dot",
                                 children=html.Div(
-                                    id="topomap-result", style={"marginTop": "0px"}
+                                    id="topomap-result",
+                                    style={
+                                        "display": "flex",
+                                        "justifyContent": "center",
+                                    },
                                 ),
                             ),
                         ]

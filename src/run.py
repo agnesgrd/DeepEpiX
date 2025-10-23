@@ -27,6 +27,7 @@ app.layout = html.Div(
         html.Div(
             children=[
                 html.Div(
+                    id="header-bandeau",
                     children=[
                         # left section: Logo and navigation menu
                         html.Div(
@@ -46,7 +47,7 @@ app.layout = html.Div(
                                         dbc.DropdownMenuItem(divider=True),
                                         dbc.DropdownMenuItem("Model", header=True),
                                         dbc.DropdownMenuItem(
-                                            "Add custom", href="/model/custom"
+                                            "Custom", href="/model/custom"
                                         ),
                                         dbc.DropdownMenuItem(
                                             "Performance", href="/model/performance"
@@ -159,6 +160,10 @@ app.layout = html.Div(
                         "alignItems": "center",
                         "zIndex": "1200",
                         "background": "linear-gradient(90deg, rgba(13, 110, 253, 0.7), rgba(255, 105, 180, 0.7))",
+                        "position": "fixed",
+                        "top": 0,
+                        "left": 0,
+                        "width": "100%",
                     },
                 ),
                 # main content container
@@ -167,7 +172,7 @@ app.layout = html.Div(
                         page_container,
                     ],
                     style={
-                        "padding-top": "10px",
+                        "padding-top": "80px",
                         "width": "98%",
                         "margin": "0 auto",
                         "display": "inline-block",

@@ -121,7 +121,7 @@ def read_raw(folder_path, preload, verbose, bad_channels=None):
         )
 
     else:
-        raise ValueError("Unrecognized file or folder type for MEG data.")
+        raise ValueError("Unrecognized file or folder type for M/EEG data.")
 
     if bad_channels:
         raw.drop_channels(bad_channels)

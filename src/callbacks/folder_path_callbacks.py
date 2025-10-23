@@ -9,11 +9,11 @@ from layout.config_layout import FLEXDIRECTION
 
 def register_update_dropdown():
     @callback(
-        Output("folder-path-dropdown", "options"),
-        Output("folder-path-dropdown", "value"),
+        Output("data-path-dropdown", "options"),
+        Output("data-path-dropdown", "value"),
         Output("folder-path-warning", "children"),  # Optional: warning display
         Input("open-folder-button", "n_clicks"),
-        State("folder-path-dropdown", "options"),
+        State("data-path-dropdown", "options"),
         prevent_initial_call=True,
     )
     def update_dropdown(n_clicks, folder_path_list):
@@ -30,7 +30,7 @@ def register_update_dropdown():
                     return (
                         dash.no_update,
                         dash.no_update,
-                        "Selected folder is not a valid MEG folder (.ds or .fif or 4D).",
+                        "Selected folder is not a valid M/EEG folder (.ds or .fif or 4D).",
                     )
 
                 # Prevent duplicates
@@ -52,7 +52,7 @@ def register_handle_valid_folder_path():
         Output("preprocess-display-button", "disabled", allow_duplicate=True),
         Output("frequency-container", "style"),
         Output("folder-path-warning", "children", allow_duplicate=True),
-        Input("folder-path-dropdown", "value"),
+        Input("data-path-dropdown", "value"),
         prevent_initial_call=True,
     )
     def handle_valid_folder_path(folder_path):
@@ -63,7 +63,7 @@ def register_handle_valid_folder_path():
                     True,
                     True,
                     {"display": "none"},
-                    "Path must end with '.ds' or '.fif' or contain 3 files for 4D neuroimaging to be a valid raw MEG object.",
+                    "Path must end with '.ds' or '.fif' or contain 3 files for 4D neuroimaging to be a valid raw M/EEG object.",
                 )
 
             try:
@@ -75,7 +75,7 @@ def register_handle_valid_folder_path():
                     "",
                 )  # Valid: enable button and clear warning
             except Exception as e:
-                return True, True, {"display": "none"}, f"Invalid MEG path: {str(e)}"
+                return True, True, {"display": "none"}, f"Invalid M/EEG path: {str(e)}"
 
         return True, True, {"display": "none"}, "Please select a path."
 
@@ -94,7 +94,7 @@ def register_store_folder_path_and_clear_data():
         Output("raw-modality", "clear_data"),
         Output("ica-store", "clear_data"),
         Input("load-button", "n_clicks"),
-        State("folder-path-dropdown", "value"),
+        State("data-path-dropdown", "value"),
         prevent_initial_call=True,
     )
     def store_folder_path_and_clear_data(n_clicks, folder_path):

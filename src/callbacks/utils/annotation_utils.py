@@ -6,7 +6,6 @@ import mne
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
-import datetime
 
 
 def get_annotation_descriptions(annotations_store):
@@ -80,7 +79,7 @@ def get_annotations_dataframe(raw, heartbeat_ch_name, modality):
             annotations_df["onset"] - origin_time
         ).dt.total_seconds()
 
-    if modality == "meg":
+    if modality in ["meg", "mixed"]:
         try:
             heartbeat_df = get_heartbeat_event(raw, heartbeat_ch_name)
             annotations_df = pd.concat(

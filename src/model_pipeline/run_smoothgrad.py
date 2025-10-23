@@ -71,29 +71,23 @@ def postprocess_grad(av_grad):
     av_grad_np = av_grad[0, :, :].numpy()  # already abs values.
     thresh = np.quantile(av_grad_np, 0.75)
     av_grad_np[av_grad_np < thresh] = np.min(av_grad_np[av_grad_np > thresh]) / 2
-    av_grad_np[av_grad_np > thresh] = (
-        0.25
-        * (
-            (av_grad_np[av_grad_np > thresh] - np.min(av_grad_np[av_grad_np > thresh]))
-            / (
-                np.max(av_grad_np[av_grad_np > thresh])
-                - np.min(av_grad_np[av_grad_np > thresh])
-            )
-        )
-        + 0.75
-    )
+    # fmt: off
+    av_grad_np[av_grad_np > thresh] = 0.25 * (
+        (av_grad_np[av_grad_np > thresh] - np.min(av_grad_np[av_grad_np > thresh])) / (np.max(av_grad_np[av_grad_np > thresh]) - np.min(av_grad_np[av_grad_np > thresh]))
+    ) + 0.75
+    # fmt: on
     av_grad_np = signal.wiener(av_grad_np, (7, 7))
     return av_grad_np
 
 
-### MAIN
+# MAIN
 
 
 def run_smoothgrad(model_file, model_type, path_to_files, y_pred_path, threshold):
 
-    f = open(f"{path_to_files}/data_raw_1_windows_bi")
-    blocks_file = utils.load_obj("data_raw_1_blocks.pkl", path_to_files)
-    data_file = utils.load_obj("data_raw_1.pkl", path_to_files)
+    f = open(f"{path_to_files}/data_raw_windows_bi")
+    blocks_file = utils.load_obj("data_raw_blocks.pkl", path_to_files)
+    data_file = utils.load_obj("data_raw.pkl", path_to_files)
     full_result = pd.read_csv(y_pred_path)
     # Convert 'probas' column to NumPy array
     y_pred = full_result["probas"].to_numpy()  # or df["probas"].values
@@ -130,13 +124,12 @@ def run_smoothgrad(model_file, model_type, path_to_files, y_pred_path, threshold
                 norm_grads = postprocess_grad(av_grad)
 
                 # If the model predicts a spike then fill the gradient array over the full window (comprising the beggining and end window overlaps)
-                full_grads[
-                    (w * params.total_lenght)
-                    - math.floor(params.overlap / 2) : (w * params.total_lenght)
-                    + params.total_lenght
-                    + math.ceil(params.overlap / 2),
-                    :,
-                ] = norm_grads[:, :]
+                start = (w * params.total_lenght) - math.floor(params.overlap / 2)
+                # fmt: off
+                end = (w * params.total_lenght) + params.total_lenght + math.ceil(params.overlap / 2)
+                # fmt : on
+
+                full_grads[start:end, :] = norm_grads[:, :]
 
     grad_path = f"{path_to_files}/{os.path.basename(model_file)}_smoothGrad.pkl"
     with open(grad_path, "wb") as f:

@@ -63,7 +63,7 @@ def register_preprocess_meg_data():
         heartbeat_ch_name,
         bad_channels,
     ):
-        """Preprocess MEG data and save it, store annotations and chunk limits in memory."""
+        """Preprocess M/EEG data and save it, store annotations and chunk limits in memory."""
         if n_clicks > 0:
             try:
                 raw = fpu.read_raw(

@@ -43,7 +43,7 @@ def register_update_graph_raw_signal():
         channel_store,
         sensitivity_analysis_store,
     ):
-        """Update MEG signal visualization based on time and channel selection."""
+        """Update M/EEG signal visualization based on time and channel selection."""
 
         if n_clicks == 0:
             return dash.no_update, dash.no_update, dash.no_update

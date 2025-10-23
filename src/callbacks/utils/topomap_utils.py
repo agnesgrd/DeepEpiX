@@ -13,7 +13,6 @@ def create_topomap_from_raw(raw, sfreq, t0, t):
     Parameters:
     - raw: MNE Raw object
     - timepoint: Time in seconds
-    - meg_type: Type of MEG channel to use ('mag' or 'grad')
     Returns:
     - Base64-encoded string of the topomap image
     """
@@ -40,6 +39,7 @@ def create_topomap_from_raw(raw, sfreq, t0, t):
         contours=6,
         sensors=True,  # Display the sensor locations
         res=128,
+        sphere=None,
     )
 
     ax.axis("off")

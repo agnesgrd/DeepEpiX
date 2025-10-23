@@ -138,7 +138,7 @@ def register_execute_predict_script():
 
         command = [
             ACTIVATE_ENV,
-            str(config.MODEL_PIPELINE_DIR / "run_model.py"),
+            str(config.MODEL_PIPELINE_DIR / "main.py"),
             str(model_path),
             str(venv),
             str(subject_folder_path),
