@@ -106,7 +106,7 @@ app.layout = html.Div(
                                         ),
                                         dbc.Switch(
                                             id="color-mode-switch",
-                                            value=False,
+                                            value=True,
                                             className="d-inline-block ms-1",
                                             persistence=True,
                                         ),
