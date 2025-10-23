@@ -1,6 +1,4 @@
-Model name,Description,Creation date,Training mode,Epochs number
-best_model_sfcn.keras,,21/02/2025,5 CV,
-pytorch_model.pth,,28/01/2025,5 CV,
-sfcn_time_all_best_model.h5,,31/01/2025,,
-tensorflow_light_features_model.keras,lightweight 2D CNN + feature-based ANN,28/01/2025,,ANN: 5 / CNN: 15
-tensorflow_model.h5,,28/01/2025,,
+Model name,Modality,Task,Problem,Input,Output,Training Description,Creation date, Reference
+model_CNN.keras,MEG,IED detection,window classification,300ms x 275-channels windows,window probabilities,9-minute recordings (CTF Omega 275-channel gradiometers whole-head system) from 59 patients,2025,
+model_features_only.keras,MEG,IED detection,window classification,300ms x 275-channels windows,window probabilities,9-minute recordings (CTF Omega 275-channel gradiometers whole-head system) from 59 patients,2025,
+transformer.pth,MEG,IED detection,window classification,400ms x n-channels windows, window probabilities,9-minute recordings (CTF Omega 275-channel gradiometers whole-head system) from 59 patients,2025,"BIOT: Biosignal Transformer for Cross-data Learning in the Wild (C Yang, 2023)"
