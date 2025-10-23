@@ -171,6 +171,7 @@ def create_graph_container(
                                     "responsive": True,
                                     "doubleClick": "autosize",
                                     "displayModeBar": True,
+                                    "modeBarButtonsToRemove": ["resetScale2d"],
                                 },
                             ),
                         ],

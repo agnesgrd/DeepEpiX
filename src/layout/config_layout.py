@@ -150,6 +150,7 @@ DEFAULT_FIG_LAYOUT = dict(
     hovermode="closest",
     paper_bgcolor="rgba(0,0,0,0)",
     autosize=True,
+    modebar_remove=["resetScale2d"],
 )
 
 # Define the region-to-color mapping
