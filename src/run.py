@@ -81,7 +81,6 @@ app.layout = html.Div(
                                 html.Span(
                                     "DeepEpiX ©",
                                     style={
-                                        # "color": "white",
                                         "fontWeight": "bold",
                                         "fontSize": "16px",
                                         "marginLeft": "8px",
