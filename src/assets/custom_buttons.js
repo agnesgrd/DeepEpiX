@@ -48,4 +48,26 @@ if (graphDiv) {
   }
 }
 
+window.addEventListener('scroll', function() {
+    const header = document.getElementById('header-bandeau');
+    if (!header) return;
+
+    let lastScroll = 0;
+    let timeout;
+
+    const scrollHandler = () => {
+        clearTimeout(timeout);
+
+        // Hide header while scrolling
+        header.style.transform = 'translateY(-100%)';
+        
+        // Show after scrolling stops
+        timeout = setTimeout(() => {
+            header.style.transform = 'translateY(0)';
+        }, 300);  // delay in ms
+    };
+
+    scrollHandler();
+});
+
 
