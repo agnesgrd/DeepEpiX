@@ -1,12 +1,12 @@
 <!-- PROJECT LOGO -->
 <div align="center">
   <a href="https://github.com/agnesgrd/DeepEpiX">
-    <img src="https://github.com/user-attachments/assets/bbe75d9c-204c-4890-8a9b-f8d5131b0032" alt="Logo" width="200" />
+    <img src="https://github.com/user-attachments/assets/bbe75d9c-204c-4890-8a9b-f8d5131b0032" alt="Logo" width="100" />
   </a>
 </div>
 
 
-<h3 align="center">DeepEpiX</h3>
+<h1 align="center">DeepEpiX</h3>
 
   <p align="center">
     Software for annotation and automatic spike detection in MEG recordings
