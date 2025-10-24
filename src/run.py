@@ -1,6 +1,14 @@
+import argparse
+import config
 from dash import Dash, html, dcc, page_container, Input, Output
 import dash_bootstrap_components as dbc
-import config
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--data_dir", default=config.DATA_DIR, help="Path to data directory"
+)
+args = parser.parse_args()
+config.DATA_DIR = args.data_dir
 
 app = Dash(
     __name__,
@@ -202,4 +210,5 @@ app.clientside_callback(
 server = app.server
 
 if __name__ == "__main__":
+
     app.run(debug=config.DEBUG, port=config.PORT)

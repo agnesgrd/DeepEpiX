@@ -6,11 +6,11 @@ from tkinter import filedialog
 import mne
 from dash import html
 import dash_bootstrap_components as dbc
-from config import DATA_DIR
+import config
 
 
 def get_folder_path_options():
-    data_dir = Path(DATA_DIR)
+    data_dir = Path(config.DATA_DIR)
     data = list(data_dir.glob("*.ds")) + list(data_dir.glob("*.fif"))
 
     folders = []
