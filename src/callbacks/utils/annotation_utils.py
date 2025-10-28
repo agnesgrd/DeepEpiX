@@ -119,12 +119,12 @@ def extract_meg_timepoints_from_mrk(file_path):
     return meg_timepoints
 
 
-def get_mrk_annotations_dataframe(folder_path, annotations_dict):
+def get_mrk_annotations_dataframe(data_path, annotations_dict):
     mrk_file_path = None
-    if os.path.isdir(folder_path):
-        for file in os.listdir(folder_path):
+    if os.path.isdir(data_path):
+        for file in os.listdir(data_path):
             if file.lower().endswith(".mrk"):
-                mrk_file_path = os.path.join(folder_path, file)
+                mrk_file_path = os.path.join(data_path, file)
                 break
 
     # --- If .mrk file found, extract MEG timepoints and add to annotations ---

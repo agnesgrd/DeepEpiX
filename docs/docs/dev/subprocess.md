@@ -26,13 +26,13 @@ from ... import run_model_pipeline
 if __name__ == "__main__":
     model_path = sys.argv[1]
     model_type = sys.argv[2]
-    subject_folder_path = sys.argv[3]
+    data_path = sys.argv[3]
     results_path = sys.argv[4]
     threshold = float(sys.argv[5])
     adjust_onset = sys.argv[6]
     bad_channels = sys.argv[7]
 
-    run_model_pipeline(model_path, model_type, subject_folder_path, results_path, threshold, adjust_onset, bad_channels)
+    run_model_pipeline(model_path, model_type, data_path, results_path, threshold, adjust_onset, bad_channels)
 ```
 
 ---
@@ -70,7 +70,7 @@ if __name__ == "__main__":
             "model_pipeline/run_model.py",         # Script to run
             str(model_path),                       # Argument 1
             str(venv),                             # Argument 2
-            str(subject_folder_path),              # Argument 3
+            str(data_path),              # Argument 3
             str(cache_dir),                        # Argument 4
             str(threshold),                        # Argument 5
             str(adjust_onset),                     # Argument 6

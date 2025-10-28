@@ -9,22 +9,14 @@ import dash_bootstrap_components as dbc
 import config
 
 
-def get_folder_path_options():
-    data_dir = Path(config.DATA_DIR)
-    data = list(data_dir.glob("*.ds")) + list(data_dir.glob("*.fif"))
+def get_data_path_options(data_dir=Path(config.DATA_DIR)):
+    all_data = get_valid_paths(str(data_dir))  # recursive search
 
-    folders = []
-    for folder in data_dir.iterdir():
-        if folder.is_dir():
-            files = list(folder.glob("*"))
-            if any(f.name == "hs_file" for f in files):
-                folders.append(folder)
-
-    all_data = data + folders
+    print(all_data)
 
     return (
         [{"label": d.name, "value": str(d.resolve())} for d in all_data]
-        if data
+        if all_data
         else [{"label": "No data available", "value": ""}]
     )
 
@@ -33,32 +25,71 @@ def browse_folder():
     root = tk.Tk()
     root.withdraw()  # Hide root window
     root.attributes("-topmost", True)  # Make sure dialog appears on top
-    folder_path = filedialog.askdirectory(title="Select a folder", parent=root)
+    data_path = filedialog.askdirectory(title="Select a folder", parent=root)
     root.destroy()  # Destroy the root window after selection
-    return folder_path
+    return data_path
 
 
-def test_ds_folder(path):
-    parts = path.split(os.sep)
-    for part in reversed(parts):
-        if part.endswith((".ds", ".fif")):
-            return True
-
+def test_valid_path(path: str) -> bool:
+    """
+    Recursively check if a directory tree contains a valid MEG/EEG dataset:
+    - Any file ending with .ds or .fif
+    - Any folder containing an 'hs_file'
+    """
     p = Path(path)
-    if p.is_dir():
-        files = list(p.glob("*"))
-        if any(f.name == "hs_file" for f in files):
+
+    # Direct match
+    if p.suffix in {".ds", ".fif"}:
+        return True
+    if p.is_dir() and (p / "hs_file").exists():
+        return True
+
+    # Recursive search
+    for root, dirs, files in os.walk(p):
+        # Check for .ds or .fif files
+        if any(f.endswith((".ds", ".fif")) for f in files):
             return True
+        # Check if any subfolder contains hs_file
+        for d in dirs:
+            if (Path(root) / d / "hs_file").exists():
+                return True
 
     return False
 
 
-def get_ds_folder(path):
-    parts = path.split(os.sep)
-    for part in reversed(parts):
-        if part.endswith((".ds", ".fif")):
-            return part
-    return None
+# def get_valid_paths(path):
+#     parts = path.split(os.sep)
+#     for part in reversed(parts):
+#         if part.endswith((".ds", ".fif")):
+#             return part
+#     return None
+
+
+def get_valid_paths(path) -> list:
+    """
+    Recursively collect all valid dataset paths under a directory:
+    - Folders ending with .ds (do not recurse inside)
+    - Files ending with .fif
+    - Folders containing 'hs_file'
+    Returns a list of Path objects.
+    """
+    path = Path(path)
+    valid_paths = []
+
+    if path.is_file() and path.suffix == ".fif":
+        valid_paths.append(path)
+        return valid_paths
+
+    if path.is_dir():
+        # Add current path if it's a .ds folder or contains hs_file
+        if path.name.endswith(".ds") or (path / "hs_file").exists():
+            valid_paths.append(path)
+        else:
+            # Recurse into subdirectories
+            for sub in path.iterdir():
+                valid_paths.extend(get_valid_paths(sub))
+
+    return valid_paths
 
 
 def get_bad_channels(raw, new_bad_channels):
@@ -89,18 +120,18 @@ def get_raw_modality(raw):
         return "unknown"
 
 
-def read_raw(folder_path, preload, verbose, bad_channels=None):
-    folder_path = Path(folder_path)
+def read_raw(data_path, preload, verbose, bad_channels=None):
+    data_path = Path(data_path)
 
-    if folder_path.suffix == ".ds":
-        raw = mne.io.read_raw_ctf(str(folder_path), preload=preload, verbose=verbose)
+    if data_path.suffix == ".ds":
+        raw = mne.io.read_raw_ctf(str(data_path), preload=preload, verbose=verbose)
 
-    elif folder_path.suffix == ".fif":
-        raw = mne.io.read_raw_fif(str(folder_path), preload=preload, verbose=verbose)
+    elif data_path.suffix == ".fif":
+        raw = mne.io.read_raw_fif(str(data_path), preload=preload, verbose=verbose)
 
-    elif folder_path.is_dir():
+    elif data_path.is_dir():
         # Assume BTi/4D format: folder must contain 3 specific files
-        files = list(folder_path.glob("*"))
+        files = list(data_path.glob("*"))
         raw_fname = next(
             (f for f in files if "rfDC" in f.name and f.suffix == ""), None
         )
@@ -129,9 +160,9 @@ def read_raw(folder_path, preload, verbose, bad_channels=None):
     return raw
 
 
-def build_table_raw_info(folder_path):
+def build_table_raw_info(data_path):
 
-    raw = read_raw(folder_path, preload=False, verbose=False)
+    raw = read_raw(data_path, preload=False, verbose=False)
     info = raw.info
 
     table = [
@@ -242,9 +273,9 @@ def build_table_raw_info(folder_path):
     return table
 
 
-def build_table_events_statistics(folder_path):
+def build_table_events_statistics(data_path):
 
-    raw = read_raw(folder_path, preload=False, verbose=False)
+    raw = read_raw(data_path, preload=False, verbose=False)
     annotations = raw.annotations
 
     if len(annotations) == 0:

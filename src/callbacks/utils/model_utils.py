@@ -16,8 +16,8 @@ def render_pretrained_models_table():
                     html.Td(
                         str(row[col]),
                         style={
-                            "whiteSpace": "nowrap",
-                            "overflowX": "auto",
+                            # "whiteSpace": "nowrap",
+                            # "overflowX": "auto",
                             "maxWidth": "200px",
                             "padding": "10px",
                         },

@@ -4,17 +4,17 @@ from dash import html, dcc
 import dash_bootstrap_components as dbc
 
 # --- Local Utilities ---
-from callbacks.utils import folder_path_utils as fpu
+from callbacks.utils import path_utils as dpu
 
 # --- Layout Config ---
 from layout.config_layout import INPUT_STYLES, FLEXDIRECTION
 
 # --- Callbacks ---
 from callbacks.storage_callbacks import register_populate_memory_tab_contents
-from callbacks.folder_path_callbacks import (
-    register_handle_valid_folder_path,
+from callbacks.data_path_callbacks import (
+    register_handle_valid_data_path,
     register_update_dropdown,
-    register_store_folder_path_and_clear_data,
+    register_store_data_path_and_clear_data,
     register_populate_tab_contents,
 )
 from callbacks.preprocessing_callbacks import (
@@ -130,9 +130,8 @@ layout = html.Div(
             className="mb-5",
             style={
                 "width": "100%",
-                "border": "none",
-                "boxShadow": "0px 4px 12px rgba(13, 110, 253, 0.3)",  # soft blue shadow
-                "borderRadius": "12px",  # smooth corners
+                "boxShadow": "0px 12px 24px rgba(0, 0, 0, 0.15)",  # smooth grey shadow
+                "borderRadius": "30px",
             },
         ),
         html.Div(
@@ -168,7 +167,7 @@ layout = html.Div(
                         dbc.Col(
                             dcc.Dropdown(
                                 id="data-path-dropdown",
-                                options=fpu.get_folder_path_options(),
+                                options=dpu.get_data_path_options(),
                                 placeholder="Select ...",
                             ),
                             width=4,
@@ -217,7 +216,7 @@ layout = html.Div(
                     className="gy-2 align-items-center",
                 ),
                 html.Div(
-                    id="folder-path-warning",
+                    id="data-path-warning",
                     className="text-danger",
                     style={"marginTop": "10px"},
                 ),
@@ -432,9 +431,8 @@ layout = html.Div(
                         className="mb-5",  # Adds margin below the card
                         style={
                             "width": "100%",
-                            "border": "none",
-                            "boxShadow": "0px 4px 12px rgba(255, 105, 180, 0.3)",  # soft blue shadow
-                            "borderRadius": "12px",  # smooth corners
+                            "boxShadow": "0px 12px 24px rgba(0, 0, 0, 0.15)",  # smooth grey shadow
+                            "borderRadius": "30px",
                         },
                     ),
                     style={"width": "50%"},
@@ -449,9 +447,9 @@ register_populate_memory_tab_contents()
 
 register_update_dropdown()
 
-register_handle_valid_folder_path()
+register_handle_valid_data_path()
 
-register_store_folder_path_and_clear_data()
+register_store_data_path_and_clear_data()
 
 register_populate_tab_contents()
 

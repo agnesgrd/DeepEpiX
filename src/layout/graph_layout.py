@@ -88,7 +88,7 @@ def create_graph_container(
                                 outline=True,
                             ),
                             dbc.Tooltip(
-                                "Move graph to previous spike",
+                                "Move graph to previous event",
                                 target=prev_spike_id,
                                 placement="bottom",
                             ),
@@ -118,7 +118,7 @@ def create_graph_container(
                                 outline=True,
                             ),
                             dbc.Tooltip(
-                                "Move graph to next spike",
+                                "Move graph to next event",
                                 target=next_spike_id,
                                 placement="bottom",
                             ),

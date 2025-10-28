@@ -24,10 +24,10 @@ def annotation_by_description(annotations):
     return annotations_by_description
 
 
-def modify_name_oldmarkerfile(folder_path, old_mrk_name):
+def modify_name_oldmarkerfile(data_path, old_mrk_name):
     """Renames 'MarkerFile.mrk' to 'OldMarkerFile.mrk' in the given folder."""
-    old_name = os.path.join(folder_path, "MarkerFile.mrk")
-    new_name = os.path.join(folder_path, f"{old_mrk_name}.mrk")
+    old_name = os.path.join(data_path, "MarkerFile.mrk")
+    new_name = os.path.join(data_path, f"{old_mrk_name}.mrk")
 
     if os.path.exists(old_name):
         os.rename(old_name, new_name)
@@ -36,12 +36,12 @@ def modify_name_oldmarkerfile(folder_path, old_mrk_name):
         print(f"File '{old_name}' not found!")
 
 
-def save_mrk_file(folder_path, new_mrk_name, annotations_to_save, annotations):
+def save_mrk_file(data_path, new_mrk_name, annotations_to_save, annotations):
     """Saves annotation data to a .mrk file in the specified folder."""
-    if not os.path.exists(folder_path):
-        return f"⚠️ Error: Folder '{folder_path}' does not exist."
+    if not os.path.exists(data_path):
+        return f"⚠️ Error: Folder '{data_path}' does not exist."
 
-    new_mrk_path = os.path.join(folder_path, new_mrk_name + ".mrk")
+    new_mrk_path = os.path.join(data_path, new_mrk_name + ".mrk")
 
     try:
         annotations_dict = annotation_by_description(annotations)
@@ -49,7 +49,7 @@ def save_mrk_file(folder_path, new_mrk_name, annotations_to_save, annotations):
 
         with open(new_mrk_path, "w") as f:
             f.write(
-                f"PATH OF DATASET:\n{folder_path} \n\n\nNUMBER OF MARKERS:\n{nb_annot}\n\n\n"
+                f"PATH OF DATASET:\n{data_path} \n\n\nNUMBER OF MARKERS:\n{nb_annot}\n\n\n"
             )
 
             for description, annot_list in annotations_dict.items():

@@ -9,7 +9,7 @@ def register_display_psd():
     @callback(
         Output("psd-status", "children"),
         Input("compute-display-psd-button", "n_clicks"),
-        State("folder-store", "data"),
+        State("data-path-store", "data"),
         State("resample-freq", "value"),
         State("high-pass-freq", "value"),
         State("low-pass-freq", "value"),
@@ -20,7 +20,7 @@ def register_display_psd():
     )
     def display_psd(
         n_clicks,
-        folder_path,
+        data_path,
         resample_freq,
         high_pass_freq,
         low_pass_freq,
@@ -29,7 +29,7 @@ def register_display_psd():
     ):
         """Compute and display power spectrum decomposition depending on the frequency parameters stored."""
         if None in (
-            folder_path,
+            data_path,
             resample_freq,
             high_pass_freq,
             low_pass_freq,
@@ -44,6 +44,4 @@ def register_display_psd():
                 "high_pass_freq": high_pass_freq,
                 "notch_freq": notch_freq,
             }
-            return pu.compute_power_spectrum_decomposition(
-                folder_path, freq_data, theme
-            )
+            return pu.compute_power_spectrum_decomposition(data_path, freq_data, theme)

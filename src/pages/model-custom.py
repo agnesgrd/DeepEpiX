@@ -50,9 +50,8 @@ layout = html.Div(
             className="mb-5",
             style={
                 "width": "100%",
-                "border": "none",
-                "boxShadow": "0px 4px 12px rgba(13, 110, 253, 0.3)",  # soft blue shadow
-                "borderRadius": "12px",  # smooth corners
+                "boxShadow": "0px 12px 24px rgba(0, 0, 0, 0.15)",  # smooth grey shadow
+                "borderRadius": "30px",
             },
         ),
         html.Div(

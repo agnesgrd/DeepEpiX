@@ -21,7 +21,7 @@ app.layout = html.Div(
         dcc.Location(
             id="url", refresh=False
         ),  # track the URL and switch between pages based on tab selection
-        dcc.Store(id="folder-store", storage_type="session"),
+        dcc.Store(id="data-path-store", storage_type="session"),
         dcc.Store(id="chunk-limits-store", data=[], storage_type="session"),
         dcc.Store(id="frequency-store", storage_type="session"),
         dcc.Store(id="annotation-store", data=[], storage_type="session"),

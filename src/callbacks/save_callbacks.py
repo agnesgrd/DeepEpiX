@@ -5,7 +5,7 @@ from datetime import datetime
 import mne
 from callbacks.utils import markerfile_utils as mu
 from callbacks.utils import annotation_utils as au
-from callbacks.utils import folder_path_utils as fpu
+from callbacks.utils import path_utils as dpu
 
 
 def register_display_annotations_to_save_checkboxes():
@@ -54,18 +54,18 @@ def register_save_modifications():
     @callback(
         Output("saving-mrk-status", "children"),
         Input("save-annotation-button", "n_clicks"),
-        State("folder-store", "data"),
+        State("data-path-store", "data"),
         State("saving-format-radio", "value"),
         State("annotations-to-save-checkboxes", "value"),
         State("annotation-store", "data"),
         State("bad-channels-to-save-checkboxes", "value"),
     )
     def _save_modifications(
-        n_clicks, folder_path, format, annotations_to_save, annotations, bad_channels
+        n_clicks, data_path, format, annotations_to_save, annotations, bad_channels
     ):
         """Modify name of old markerfile and create new markerfile."""
         if n_clicks > 0:
-            if not folder_path:
+            if not data_path:
                 return "⚠️ Error: No folder path selected."
             if not annotations:
                 return "⚠️ Error: No annotations found."
@@ -73,9 +73,9 @@ def register_save_modifications():
                 return dash.no_update
 
             try:
-                is_ds = folder_path.endswith(".ds")
-                is_fif = folder_path.endswith(".fif")
-                is_dir = os.path.isdir(folder_path)
+                is_ds = data_path.endswith(".ds")
+                is_fif = data_path.endswith(".fif")
+                is_dir = os.path.isdir(data_path)
 
                 if format == "original":
                     if is_ds:
@@ -83,16 +83,16 @@ def register_save_modifications():
                         old_mrk_name = (
                             f"OldMarkerFile_{datetime.now().strftime('%d.%m.%H.%M')}"
                         )
-                        mu.modify_name_oldmarkerfile(folder_path, old_mrk_name)
+                        mu.modify_name_oldmarkerfile(data_path, old_mrk_name)
                         mu.save_mrk_file(
-                            folder_path, "MarkerFile", annotations_to_save, annotations
+                            data_path, "MarkerFile", annotations_to_save, annotations
                         )
                         return "File saved successfully !"
                     elif is_dir:
                         return "This action is impossible. Please select FIF saving format."
 
                 if format == "fif" or (format == "original" and is_fif):
-                    raw = fpu.read_raw(folder_path, verbose=False, preload=True)
+                    raw = dpu.read_raw(data_path, verbose=False, preload=True)
 
                     # Filter annotations
                     filtered = [
@@ -113,13 +113,13 @@ def register_save_modifications():
 
                     # Determine save path
                     if is_fif:
-                        fname = folder_path
+                        fname = data_path
                     elif is_ds:
-                        fname = folder_path.rstrip(".ds") + ".fif"
+                        fname = data_path.rstrip(".ds") + ".fif"
                     elif is_dir:
                         fname = os.path.join(
-                            os.path.dirname(folder_path),
-                            os.path.basename(folder_path) + ".fif",
+                            os.path.dirname(data_path),
+                            os.path.basename(data_path) + ".fif",
                         )
                     else:
                         return "⚠️ Error: Unsupported folder path format."

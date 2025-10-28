@@ -4,7 +4,7 @@ from dash import html, Input, Output, State, callback
 import dash_bootstrap_components as dbc
 
 # Local Imports
-from callbacks.utils import folder_path_utils as fpu
+from callbacks.utils import path_utils as dpu
 from callbacks.utils import annotation_utils as au
 from callbacks.utils import history_utils as hu
 from layout.config_layout import ICON
@@ -18,7 +18,7 @@ def register_populate_memory_tab_contents():
         Output("history-container-memory", "children"),
         Input("url", "pathname"),
         Input("subject-tabs-memory", "active_tab"),
-        State("folder-store", "data"),
+        State("data-path-store", "data"),
         State("chunk-limits-store", "data"),
         State("frequency-store", "data"),
         State("annotation-store", "data"),
@@ -28,14 +28,14 @@ def register_populate_memory_tab_contents():
     def populate_memory_tab_contents(
         pathname,
         selected_tab,
-        folder_path,
+        data_path,
         chunk_limits,
         freq_data,
         annotations_data,
         history_data,
     ):
         """Populate memory tab content based on selected tab and stored folder path."""
-        if not folder_path or not chunk_limits or not freq_data:
+        if not data_path or not chunk_limits or not freq_data:
             return dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
         subject_content = dash.no_update
@@ -58,7 +58,7 @@ def register_populate_memory_tab_contents():
                     ),
                     dbc.ListGroup(
                         [
-                            dbc.ListGroupItem([html.Strong(folder_path)]),
+                            dbc.ListGroupItem([html.Strong(data_path)]),
                         ],
                         style={"marginBottom": "15px"},
                     ),
@@ -112,7 +112,7 @@ def register_populate_memory_tab_contents():
             )
 
         if selected_tab == "raw-info-tab-memory":
-            raw_info_content = fpu.build_table_raw_info(folder_path)
+            raw_info_content = dpu.build_table_raw_info(data_path)
 
         if selected_tab == "events-tab-memory":
             event_stats_content = au.build_table_events_statistics(annotations_data)

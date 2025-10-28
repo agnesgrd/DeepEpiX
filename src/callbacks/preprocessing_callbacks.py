@@ -5,7 +5,7 @@ from dash import Input, Output, State, callback
 # External Libraries
 
 # Local Imports
-from callbacks.utils import folder_path_utils as fpu
+from callbacks.utils import path_utils as dpu
 from callbacks.utils import preprocessing_utils as pu
 from callbacks.utils import annotation_utils as au
 from callbacks.utils import channel_utils as chu
@@ -43,7 +43,7 @@ def register_preprocess_meg_data():
         Output("chunk-limits-store", "data"),
         Output("url", "pathname"),
         Input("preprocess-display-button", "n_clicks"),
-        State("folder-store", "data"),
+        State("data-path-store", "data"),
         State("resample-freq", "value"),
         State("high-pass-freq", "value"),
         State("low-pass-freq", "value"),
@@ -55,7 +55,7 @@ def register_preprocess_meg_data():
     )
     def preprocess_meg_data(
         n_clicks,
-        folder_path,
+        data_path,
         resample_freq,
         high_pass_freq,
         low_pass_freq,
@@ -66,12 +66,12 @@ def register_preprocess_meg_data():
         """Preprocess M/EEG data and save it, store annotations and chunk limits in memory."""
         if n_clicks > 0:
             try:
-                raw = fpu.read_raw(
-                    folder_path, preload=True, verbose=False, bad_channels=None
+                raw = dpu.read_raw(
+                    data_path, preload=True, verbose=False, bad_channels=None
                 )
-                modality = fpu.get_raw_modality(raw)
+                modality = dpu.get_raw_modality(raw)
 
-                all_bad_channels = fpu.get_bad_channels(raw, bad_channels)
+                all_bad_channels = dpu.get_bad_channels(raw, bad_channels)
                 if all_bad_channels:
                     raw.drop_channels(all_bad_channels)
 
@@ -79,9 +79,9 @@ def register_preprocess_meg_data():
                     raw, heartbeat_ch_name, modality
                 )
 
-                # #--- Find .mrk file if folder_path is a directory ---
+                # #--- Find .mrk file if data_path is a directory ---
                 # annotations_dict = au.get_mrk_annotations_dataframe(
-                #     folder_path, annotations_dict
+                #     data_path, annotations_dict
                 # )
 
                 channels_dict = chu.get_grouped_channels_by_prefix(
@@ -97,14 +97,12 @@ def register_preprocess_meg_data():
                     "notch_freq": notch_freq,
                 }
 
-                prep_raw = pu.sort_filter_resample(
-                    folder_path, freq_data, channels_dict
-                )
+                prep_raw = pu.sort_filter_resample(data_path, freq_data, channels_dict)
 
                 for chunk_idx in chunk_limits:
                     start_time, end_time = chunk_idx
                     pu.get_preprocessed_dataframe_dask(
-                        folder_path,
+                        data_path,
                         freq_data,
                         start_time,
                         end_time,

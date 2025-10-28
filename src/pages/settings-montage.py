@@ -10,7 +10,7 @@ import dash_bootstrap_components as dbc
 import mne
 import matplotlib.pyplot as plt
 from layout.config_layout import REGION_COLOR_PALETTE, BOX_STYLES, FLEXDIRECTION
-from callbacks.utils import folder_path_utils as fpu
+from callbacks.utils import path_utils as dpu
 
 dash.register_page(__name__, name="Settings", path="/settings/montage")
 
@@ -82,8 +82,8 @@ layout = html.Div(
                     className="mb-5",
                     style={
                         "width": "100%",
-                        "boxShadow": "0px 4px 12px rgba(13, 110, 253, 0.3)",
-                        "borderRadius": "12px",
+                        "boxShadow": "0px 12px 24px rgba(0, 0, 0, 0.15)",  # smooth grey shadow
+                        "borderRadius": "30px",
                     },
                 ),
             ]
@@ -576,13 +576,13 @@ def update_montage_store(
     Input({"type": "montage-checklist", "group": ALL}, "value"),
     Input({"type": "random-pick-count", "group": ALL}, "value"),
     State("channel-store", "data"),
-    State("folder-store", "data"),
+    State("data-path-store", "data"),
     State("selection-method-dropdown", "value"),
     State("raw-modality", "data"),
     prevent_initial_call=True,
 )
 def update_meg_layout(
-    checked_values, pick_values, channel_groups, folder_path, selection_method, modality
+    checked_values, pick_values, channel_groups, data_path, selection_method, modality
 ):
 
     region_keys = list(channel_groups.keys())
@@ -608,7 +608,7 @@ def update_meg_layout(
     if not any(selected_channels_by_group):
         return dash.no_update
 
-    raw = fpu.read_raw(folder_path, preload=False, verbose=False)
+    raw = dpu.read_raw(data_path, preload=False, verbose=False)
 
     if modality == "eeg":
         montage = mne.channels.make_standard_montage("standard_1020")

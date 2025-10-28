@@ -16,7 +16,7 @@ from flask_caching import Cache
 
 # Local Modules
 import config
-from callbacks.utils import folder_path_utils as fpu
+from callbacks.utils import path_utils as dpu
 from callbacks.utils import cache_utils as cu
 
 app = dash.get_app()
@@ -33,9 +33,9 @@ cache = Cache(
 # RAW DATA PREPROCESSING (FILTERING, SUBSAMPLING) #################################################################
 
 
-def sort_filter_resample(folder_path, freq_data, channels_dict):
+def sort_filter_resample(data_path, freq_data, channels_dict):
 
-    raw = fpu.read_raw(folder_path, preload=True, verbose=False)
+    raw = dpu.read_raw(data_path, preload=True, verbose=False)
 
     channels_order = [ch for group in channels_dict.values() for ch in group]
     raw.reorder_channels(channels_order)
@@ -72,16 +72,16 @@ def update_chunk_limits(total_duration):
 
 
 def get_cache_filename(
-    folder_path, freq_data, start_time, end_time, cache_dir=f"{config.CACHE_DIR}"
+    data_path, freq_data, start_time, end_time, cache_dir=f"{config.CACHE_DIR}"
 ):
     # Create a unique hash key
-    hash_input = f"{folder_path}_{freq_data}_{start_time}_{end_time}"
+    hash_input = f"{data_path}_{freq_data}_{start_time}_{end_time}"
     hash_key = hashlib.md5(hash_input.encode()).hexdigest()
     return os.path.join(cache_dir, f"{hash_key}.parquet")
 
 
 def get_preprocessed_dataframe_dask(
-    folder_path,
+    data_path,
     freq_data,
     start_time,
     end_time,
@@ -92,7 +92,7 @@ def get_preprocessed_dataframe_dask(
     os.makedirs(cache_dir, exist_ok=True)
     cu.clear_old_cache_files(cache_dir)
     cache_file = get_cache_filename(
-        folder_path, freq_data, start_time, end_time, cache_dir
+        data_path, freq_data, start_time, end_time, cache_dir
     )
 
     # If cache exists, load and return
@@ -102,7 +102,7 @@ def get_preprocessed_dataframe_dask(
     # Otherwise, compute and save
     @delayed
     def load_sort_filter():
-        return sort_filter_resample(folder_path, freq_data, channels_dict)
+        return sort_filter_resample(data_path, freq_data, channels_dict)
 
     @delayed
     def crop_and_to_df(prep_raw):
@@ -125,24 +125,24 @@ def get_preprocessed_dataframe_dask(
     return ddf
 
 
-def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw=None):
+def get_preprocessed_dataframe(data_path, freq_data, start_time, end_time, raw=None):
     """
     Preprocess the M/EEG data in chunks and cache them.
 
-    :param folder_path: Path to the raw data file.
+    :param data_path: Path to the raw data file.
     :param freq_data: Dictionary containing frequency parameters for preprocessing.
     :param chunk_duration: Duration of each chunk in seconds (default is 3 minutes).
     :param cache: Cache object to store preprocessed chunks.
     :return: Processed dataframe in pandas format.
     """
 
-    @cache.memoize(make_name=f"{folder_path}:{freq_data}:{start_time}:{end_time}")
+    @cache.memoize(make_name=f"{data_path}:{freq_data}:{start_time}:{end_time}")
     def process_data_in_chunks(
-        folder_path, freq_data, start_time, end_time, prep_raw=None
+        data_path, freq_data, start_time, end_time, prep_raw=None
     ):
         try:
             if prep_raw is None:
-                prep_raw = sort_filter_resample(folder_path, freq_data)
+                prep_raw = sort_filter_resample(data_path, freq_data)
 
             raw_chunk = prep_raw.copy().crop(tmin=start_time, tmax=end_time)
             raw_df = raw_chunk.to_data_frame(picks="meg", index="time")
@@ -154,22 +154,20 @@ def get_preprocessed_dataframe(folder_path, freq_data, start_time, end_time, raw
             return f"⚠️ Error during processing: {str(e)}"
 
     # Process and return the result in JSON format
-    return process_data_in_chunks(folder_path, freq_data, start_time, end_time, raw)
+    return process_data_in_chunks(data_path, freq_data, start_time, end_time, raw)
 
 
 # ICA ########################################################################
 
 
-def get_cache_filename_ica(
-    folder_path, start_time, end_time, ica_result_path, cache_dir
-):
-    hash_input = f"{folder_path}_{start_time}_{end_time}_{ica_result_path}"
+def get_cache_filename_ica(data_path, start_time, end_time, ica_result_path, cache_dir):
+    hash_input = f"{data_path}_{start_time}_{end_time}_{ica_result_path}"
     hash_key = hashlib.md5(hash_input.encode()).hexdigest()
     return os.path.join(cache_dir, f"{hash_key}.parquet")
 
 
 def get_ica_dataframe_dask(
-    folder_path,
+    data_path,
     start_time,
     end_time,
     ica_result_path,
@@ -180,16 +178,14 @@ def get_ica_dataframe_dask(
     cu.clear_old_cache_files(cache_dir)
 
     cache_file = get_cache_filename_ica(
-        folder_path, start_time, end_time, ica_result_path, cache_dir
+        data_path, start_time, end_time, ica_result_path, cache_dir
     )
 
     if os.path.exists(cache_file):
         return dd.read_parquet(cache_file)
 
     if raw is None:
-        raw = fpu.read_raw(folder_path, preload=True, verbose=False).pick_types(
-            meg=True
-        )
+        raw = dpu.read_raw(data_path, preload=True, verbose=False).pick_types(meg=True)
         raw.filter(l_freq=1.0, h_freq=None)
 
     raw = raw.copy().crop(tmin=start_time, tmax=end_time)
@@ -216,8 +212,8 @@ def get_ica_dataframe_dask(
 # POWER SPECTRUM DECOMPOSITION ######################################################
 
 
-def compute_power_spectrum_decomposition(folder_path, freq_data, theme="light"):
-    raw = fpu.read_raw(folder_path, preload=True, verbose=False)
+def compute_power_spectrum_decomposition(data_path, freq_data, theme="light"):
+    raw = dpu.read_raw(data_path, preload=True, verbose=False)
 
     low_pass_freq = freq_data.get("low_pass_freq")
     high_pass_freq = freq_data.get("high_pass_freq")

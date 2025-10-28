@@ -66,7 +66,7 @@ def apply_default_layout(
     - fig: The Plotly figure to update.
     - xaxis_range: Range for the x-axis (list or tuple).
     - time_range: Time range for the x-axis (tuple or list with two values [start, end]).
-    - folder_path: Title for the plot.
+    - data_path: Title for the plot.
 
     Returns:
     - Updated Plotly figure with applied layout.
@@ -91,7 +91,7 @@ def generate_graph_time_channel(
     selected_channels,
     offset_selection,
     time_range,
-    folder_path,
+    data_path,
     freq_data,
     color_selection,
     xaxis_range,
@@ -104,7 +104,7 @@ def generate_graph_time_channel(
     # Get recording from cache
     start_time = time.time()
     raw_ddf = pu.get_preprocessed_dataframe_dask(
-        folder_path, freq_data, time_range[0], time_range[1], channels_region
+        data_path, freq_data, time_range[0], time_range[1], channels_region
     )
 
     print(f"Step 1: Preprocessing completed in {time.time() - start_time:.2f} seconds.")
@@ -217,7 +217,7 @@ def generate_graph_time_channel(
 def generate_graph_time_ica(
     offset_selection,
     time_range,
-    folder_path,
+    data_path,
     ica_result_path,
     color_selection,
     xaxis_range,
@@ -227,7 +227,7 @@ def generate_graph_time_ica(
 
     start_time = time.time()
     raw_ddf = pu.get_ica_dataframe_dask(
-        folder_path, time_range[0], time_range[1], ica_result_path
+        data_path, time_range[0], time_range[1], ica_result_path
     )
     print(f"Step 1: Preprocessing completed in {time.time() - start_time:.2f} seconds.")
 

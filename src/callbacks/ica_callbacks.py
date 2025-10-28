@@ -4,7 +4,7 @@ from dash import Input, Output, State, callback
 import mne
 import config
 from callbacks.utils import preprocessing_utils as pu
-from callbacks.utils import folder_path_utils as fpu
+from callbacks.utils import path_utils as dpu
 from callbacks.utils import history_utils as hu
 
 
@@ -15,7 +15,7 @@ def register_compute_ica():
         Output("ica-store", "data"),
         Output("history-store", "data", allow_duplicate=True),
         Input("compute-ica-button", "n_clicks"),
-        State("folder-store", "data"),
+        State("data-path-store", "data"),
         State("chunk-limits-store", "data"),
         State("n-components", "value"),
         State("ica-method", "value"),
@@ -29,7 +29,7 @@ def register_compute_ica():
     )
     def _compute_ica(
         n_clicks,
-        folder_path,
+        data_path,
         chunk_limits,
         n_components,
         ica_method,
@@ -46,7 +46,7 @@ def register_compute_ica():
             return dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
         # Validation: Check if all required fields are filled
-        if not folder_path:
+        if not data_path:
             error_message = "⚠️ Please choose a subject to display on Home page."
             return error_message, dash.no_update, dash.no_update, dash.no_update
 
@@ -80,8 +80,8 @@ def register_compute_ica():
         if ica_result_path.exists() and str(ica_result_path) in ica_store:
             return "✅ Reusing existing ICA results", 0, dash.no_update, dash.no_update
 
-        raw = fpu.read_raw(
-            folder_path,
+        raw = dpu.read_raw(
+            data_path,
             preload=True,
             verbose=False,
             bad_channels=channel_store.get("bad", []),
@@ -100,7 +100,7 @@ def register_compute_ica():
         for chunk_idx in chunk_limits:
             start_time, end_time = chunk_idx
             pu.get_ica_dataframe_dask(
-                folder_path, start_time, end_time, ica_result_path, raw
+                data_path, start_time, end_time, ica_result_path, raw
             )
 
         ica_store = [str(ica_result_path)]

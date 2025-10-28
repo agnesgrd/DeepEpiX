@@ -1,7 +1,7 @@
 import time
 import dash
 from dash import html, Input, Output, State, callback
-from callbacks.utils import folder_path_utils as fpu
+from callbacks.utils import path_utils as dpu
 from callbacks.utils import topomap_utils as tu
 from callbacks.utils import preprocessing_utils as pu
 
@@ -12,7 +12,7 @@ def register_display_topomap_on_click():
         Output("topomap-picture", "children"),
         Output("history-store", "data", allow_duplicate=True),
         Input("meg-signal-graph", "clickData"),
-        State("folder-store", "data"),
+        State("data-path-store", "data"),
         State("plot-topomap-button", "outline"),
         State("page-selector", "value"),
         State("chunk-limits-store", "data"),
@@ -23,7 +23,7 @@ def register_display_topomap_on_click():
     )
     def display_clicked_content(
         click_info,
-        folder_path,
+        data_path,
         button,
         page_selection,
         chunk_limits,
@@ -41,10 +41,10 @@ def register_display_topomap_on_click():
 
                 # Load raw data (metadata only)
                 load_start_time = time.time()
-                raw = fpu.read_raw(folder_path, preload=False, verbose=False)
+                raw = dpu.read_raw(data_path, preload=False, verbose=False)
                 time_range = chunk_limits[int(page_selection)]
                 raw_ddf = pu.get_preprocessed_dataframe_dask(
-                    folder_path, freq_data, time_range[0], time_range[1], channel_store
+                    data_path, freq_data, time_range[0], time_range[1], channel_store
                 )
                 print(
                     f"Time to load raw and preprocessed data: {time.time() - load_start_time:.4f} seconds"

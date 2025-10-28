@@ -42,7 +42,7 @@ def register_execute_predict_script():
         Output("model-probabilities-store", "data", allow_duplicate=True),
         Output("sensitivity-analysis-store", "data", allow_duplicate=True),
         Input("run-prediction-button", "n_clicks"),
-        State("folder-store", "data"),
+        State("data-path-store", "data"),
         State("model-dropdown", "value"),
         State("venv", "value"),
         State("initial-threshold", "value"),
@@ -55,7 +55,7 @@ def register_execute_predict_script():
     )
     def _execute_predict_script(
         n_clicks,
-        subject_folder_path,
+        data_path,
         model_path,
         venv,
         threshold,
@@ -69,7 +69,7 @@ def register_execute_predict_script():
             return None, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
         # Validation: Check if all required fields are filled
-        if not subject_folder_path:
+        if not data_path:
             error_message = "⚠️ Please choose a subject to display on Home page."
             return (
                 error_message,
@@ -141,7 +141,7 @@ def register_execute_predict_script():
             str(config.MODEL_PIPELINE_DIR / "main.py"),
             str(model_path),
             str(venv),
-            str(subject_folder_path),
+            str(data_path),
             str(cache_dir),
             str(threshold),  # Ensure threshold is passed as a string
             str(adjust_onset),

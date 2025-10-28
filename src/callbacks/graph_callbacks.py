@@ -17,7 +17,7 @@ def register_update_graph_raw_signal():
         State("meg-signal-graph", "figure"),
         State("montage-radio", "value"),
         State("channel-region-checkboxes", "value"),
-        State("folder-store", "data"),
+        State("data-path-store", "data"),
         State("offset-display", "value"),
         State("colors-radio", "value"),
         State("chunk-limits-store", "data"),
@@ -34,7 +34,7 @@ def register_update_graph_raw_signal():
         graph,
         montage_selection,
         channel_selection,
-        folder_path,
+        data_path,
         offset_selection,
         color_selection,
         chunk_limits,
@@ -48,7 +48,7 @@ def register_update_graph_raw_signal():
         if n_clicks == 0:
             return dash.no_update, dash.no_update, dash.no_update
 
-        if not folder_path:
+        if not data_path:
             return (
                 dash.no_update,
                 "Please choose a subject to display on Home page.",
@@ -127,7 +127,7 @@ def register_update_graph_raw_signal():
                 selected_channels,
                 float(offset_selection),
                 time_range,
-                folder_path,
+                data_path,
                 freq_data,
                 color_selection,
                 xaxis_range,
@@ -160,7 +160,7 @@ def register_update_graph_ica(ica_result_radio_id):
         Input("update-button-ica", "n_clicks"),
         Input("page-selector-ica", "value"),
         State(ica_result_radio_id, "value"),
-        State("folder-store", "data"),
+        State("data-path-store", "data"),
         State("offset-display-ica", "value"),
         State("colors-radio-ica", "value"),
         State("chunk-limits-store", "data"),
@@ -175,7 +175,7 @@ def register_update_graph_ica(ica_result_radio_id):
         n_clicks,
         page_selection,
         ica_result_path,
-        folder_path,
+        data_path,
         offset_selection,
         color_selection,
         chunk_limits,
@@ -189,7 +189,7 @@ def register_update_graph_ica(ica_result_radio_id):
         if n_clicks == 0:
             return dash.no_update, dash.no_update
 
-        if not folder_path:
+        if not data_path:
             return dash.no_update, "Please choose a subject to display on Home page."
 
         if (
@@ -215,7 +215,7 @@ def register_update_graph_ica(ica_result_radio_id):
             fig, error = gu.generate_graph_time_ica(
                 offset_selection,
                 time_range,
-                folder_path,
+                data_path,
                 ica_result_path,
                 color_selection,
                 xaxis_range,
