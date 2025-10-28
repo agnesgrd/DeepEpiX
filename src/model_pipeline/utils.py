@@ -31,18 +31,18 @@ def standardize(X, mean=False, std=False):
 
 
 # read raw from different acquisition systems
-def read_raw(folder_path, preload, verbose, bad_channels=None):
-    folder_path = Path(folder_path)
+def read_raw(data_path, preload, verbose, bad_channels=None):
+    data_path = Path(data_path)
 
-    if folder_path.suffix == ".ds":
-        raw = mne.io.read_raw_ctf(str(folder_path), preload=preload, verbose=verbose)
+    if data_path.suffix == ".ds":
+        raw = mne.io.read_raw_ctf(str(data_path), preload=preload, verbose=verbose)
 
-    elif folder_path.suffix == ".fif":
-        raw = mne.io.read_raw_fif(str(folder_path), preload=preload, verbose=verbose)
+    elif data_path.suffix == ".fif":
+        raw = mne.io.read_raw_fif(str(data_path), preload=preload, verbose=verbose)
 
-    elif folder_path.is_dir():
+    elif data_path.is_dir():
         # Assume BTi/4D format: folder must contain 3 specific files
-        files = list(folder_path.glob("*"))
+        files = list(data_path.glob("*"))
         # Try to identify the correct files by names
         raw_fname = next(
             (f for f in files if "rfDC" in f.name and f.suffix == ""), None

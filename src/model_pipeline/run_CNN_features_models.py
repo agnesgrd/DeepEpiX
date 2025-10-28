@@ -6,11 +6,11 @@ Description: Testing Pipeline for model_CNN.keras & model_features_only.keras (t
 
 import os
 import gc
+import pickle
 import numpy as np
 import pandas as pd
 import tensorflow as tf
 from tensorflow import keras
-import model_pipeline.params as params
 from model_pipeline.features_utils import get_win_data_feat
 from model_pipeline.sliding_windows_utils import (
     save_data_matrices,
@@ -30,11 +30,31 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 # === Helper functions specific to models ===
 
 
-def prepare_data(subject, output_path, channel_groups):
+def prepare_data(
+    subject,
+    output_path,
+    channel_groups,
+    freq,
+    sfreq,
+    window_size,
+    spike_spacing_from_borders,
+):
     """Prepare data matrices, create windows, and generate test IDs."""
-    save_data_matrices(subject, output_path, channel_groups)
-    window_size = params.window_size_ms
-    total_nb_windows = create_windows(output_path, window_size)
+    with open("good_channels_dict.pkl", "rb") as f:
+        good_channels = pickle.load(f)
+    save_data_matrices(
+        subject,
+        output_path,
+        channel_groups,
+        good_channels,
+        "mag",
+        (freq[0], freq[1]),
+        sfreq,
+        window_size,
+    )
+    total_nb_windows = create_windows(
+        output_path, window_size, False, sfreq, spike_spacing_from_borders
+    )
     return generate_database(total_nb_windows)
 
 
@@ -45,7 +65,7 @@ def load_model(model_name):
     return model
 
 
-def predict_windows(model, X_test_ids, model_name, output_path):
+def predict_windows(model, X_test_ids, model_name, output_path, dim):
     """Predict probabilities for all windows using the given model."""
     file_path = os.path.join(output_path, "data_raw_windows_bi")
     with open(file_path, "rb") as f:
@@ -54,7 +74,7 @@ def predict_windows(model, X_test_ids, model_name, output_path):
         device = "/GPU:0" if tf.config.list_physical_devices("GPU") else "/CPU:0"
         with tf.device(device):
             for cur_win in X_test_ids:
-                sample = get_win_data_signal(f, cur_win, params.dim)
+                sample = get_win_data_signal(f, cur_win, dim)
 
                 if "features" in model_name:
                     sample = get_win_data_feat(sample)
@@ -65,7 +85,7 @@ def predict_windows(model, X_test_ids, model_name, output_path):
     return y_pred_probas
 
 
-def get_adjusted_onsets(X_test_ids, output_path):
+def get_adjusted_onsets(X_test_ids, output_path, dim, sfreq):
     """Adjust onset times based on GFP peaks."""
     y_timing_data = load_obj("data_raw_timing.pkl", output_path)
     onsets = []
@@ -81,23 +101,23 @@ def get_adjusted_onsets(X_test_ids, output_path):
                 "rb",
             ),
             cur_win,
-            params.dim,
+            dim,
         ).squeeze()
 
         gfp = compute_gfp(window.T)
-        times = np.linspace(0, window.shape[0] / params.sfreq, window.shape[0])
+        times = np.linspace(0, window.shape[0] / sfreq, window.shape[0])
         peak_time = find_peak_gfp(gfp, times)
 
-        onset = ((y_timing_data[win] - window.shape[0] / 2) / params.sfreq) + peak_time
+        onset = ((y_timing_data[win] - window.shape[0] / 2) / sfreq) + peak_time
         onsets.append(round(onset, 3))
 
     return onsets
 
 
-def get_onsets(output_path):
+def get_onsets(output_path, sfreq):
     """Get raw timing data."""
     y_timing_data = load_obj("data_raw_timing.pkl", output_path)
-    onsets = (y_timing_data / params.sfreq).round(3).tolist()
+    onsets = (y_timing_data / sfreq).round(3).tolist()
     return onsets
 
 
@@ -128,14 +148,30 @@ def test_model(
     channel_groups=None,
 ):
     """Run the full pipeline: prepare data, predict, adjust onsets, and save results."""
+
+    # Params
+    window_size = 0.2
+    sfreq = 150
+    freq = [1, 70]
+    dim = (int(sfreq * window_size), 23, 1)
+    spike_spacing_from_borders = 0.03
+
     # 1. Data preparation
-    X_test_ids = prepare_data(subject, output_path, channel_groups)
+    X_test_ids = prepare_data(
+        subject,
+        output_path,
+        channel_groups,
+        freq,
+        sfreq,
+        window_size,
+        spike_spacing_from_borders,
+    )
 
     # 2. Load model
     model = load_model(model_name)
 
     # 3. Predictions
-    y_pred_probas = predict_windows(model, X_test_ids, model_name, output_path)
+    y_pred_probas = predict_windows(model, X_test_ids, model_name, output_path, dim)
 
     # 4. Cleanup model & GPU memory
     del model
@@ -144,9 +180,9 @@ def test_model(
 
     # 5. Adjust onset times
     if adjust_onset:
-        onsets = get_adjusted_onsets(X_test_ids, output_path)
+        onsets = get_adjusted_onsets(X_test_ids, output_path, dim, sfreq)
     else:
-        onsets = get_onsets(output_path)
+        onsets = get_onsets(output_path, sfreq)
 
     # 6. Save predictions
     return save_predictions(output_path, model_name, onsets, y_pred_probas)

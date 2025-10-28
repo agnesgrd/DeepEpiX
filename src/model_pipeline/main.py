@@ -1,6 +1,7 @@
 import sys
 import ast
 import importlib
+import os
 
 
 def run_model_pipeline(
@@ -15,15 +16,14 @@ def run_model_pipeline(
 
     # === Determine module based on model_name ===
     MODEL_MODULES = {
-        "cnn": "model_pipeline.run_CNN_features_models",
-        "features": "model_pipeline.run_CNN_features_models",
-        "pytorch": "model_pipeline.pytorch_models",
+        "model_CNN.keras": "model_pipeline.run_CNN_features_models",
+        "model_features_only.keras": "model_pipeline.run_CNN_features_models",
+        "pytorch?": "model_pipeline.pytorch_models",
+        "model_CNN_EEG.keras": "model_pipeline.run_CNN_EEG_model",
         # "new_model": "model_pipeline.run_new_model",  # example
     }
 
-    module_name = next(
-        (mod for key, mod in MODEL_MODULES.items() if key in model_name.lower()), None
-    )
+    module_name = MODEL_MODULES.get(os.path.basename(model_name))
     if module_name is None:
         raise ValueError(f"Cannot determine backend for model '{model_name}'")
 
@@ -45,18 +45,16 @@ def run_model_pipeline(
 if __name__ == "__main__":
     model_path = sys.argv[1]
     model_type = sys.argv[2]
-    subject_folder_path = sys.argv[3]
+    data_path = sys.argv[3]
     results_path = sys.argv[4]
     threshold = float(sys.argv[5])  # Convert back to float
-    adjust_onset = str(sys.argv[6]).lower() == "true" # Bool
+    adjust_onset = str(sys.argv[6]).lower() == "true"  # Bool
     channel_groups = ast.literal_eval(sys.argv[7])
-
-    print(adjust_onset)
 
     run_model_pipeline(
         model_path,
         model_type,
-        subject_folder_path,
+        data_path,
         results_path,
         threshold,
         adjust_onset,

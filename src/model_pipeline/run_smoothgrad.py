@@ -8,7 +8,6 @@ from scipy import signal
 import tensorflow as tf
 import tensorflow.keras as keras
 import model_pipeline.utils as utils
-import params
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
@@ -83,7 +82,20 @@ def postprocess_grad(av_grad):
 # MAIN
 
 
-def run_smoothgrad(model_file, model_type, path_to_files, y_pred_path, threshold):
+def run_smoothgrad(
+    model_file,
+    model_type,
+    path_to_files,
+    y_pred_path,
+    threshold,
+    dim,
+    nb_repeat_sg,
+    sfreq,
+    window_size,
+    noise_val,
+    total_length,
+    overlap,
+):
 
     f = open(f"{path_to_files}/data_raw_windows_bi")
     blocks_file = utils.load_obj("data_raw_blocks.pkl", path_to_files)
@@ -93,14 +105,14 @@ def run_smoothgrad(model_file, model_type, path_to_files, y_pred_path, threshold
     y_pred = full_result["probas"].to_numpy()  # or df["probas"].values
 
     total_nb_windows = len(blocks_file)
-    total_nb_points = data_file["meg"][0].shape[1]
+    total_nb_points = data_file["m/eeg"][0].shape[1]
 
     # Instantiate arrays to store the full signal portion between start_win and stop_win and the corresponding gradient values
-    full_grads = np.zeros((total_nb_points, params.dim[1]))
+    full_grads = np.zeros((total_nb_points, dim[1]))
 
-    my_labels = np.ones((params.nb_repeat_sg, 1))
+    my_labels = np.ones((nb_repeat_sg, 1))
 
-    dim = (int(params.sfreq * params.window_size_ms), params.dim[1])
+    dim = (int(sfreq * window_size), dim[1])
 
     # Model Selection
     if "TensorFlow" in model_type:
@@ -113,20 +125,20 @@ def run_smoothgrad(model_file, model_type, path_to_files, y_pred_path, threshold
 
                 # Noise Augmentation (generating multiple noisy copies of the input before averaging the gradients to reduce variance)
                 sample_non_norm, noisy_images = generate_noisy_input(
-                    f, w, params.nb_repeat_sg, params.noise_val, dim
+                    f, w, nb_repeat_sg, noise_val, dim
                 )
 
                 # Compute SmoothGrad (average and normalizing)
                 av_grad, pred = get_av_grad(
-                    noisy_images, model, my_labels, params.nb_repeat_sg
+                    noisy_images, model, my_labels, nb_repeat_sg
                 )
 
                 norm_grads = postprocess_grad(av_grad)
 
                 # If the model predicts a spike then fill the gradient array over the full window (comprising the beggining and end window overlaps)
-                start = (w * params.total_lenght) - math.floor(params.overlap / 2)
+                start = (w * total_length) - math.floor(overlap / 2)
                 # fmt: off
-                end = (w * params.total_lenght) + params.total_lenght + math.ceil(params.overlap / 2)
+                end = (w * total_length) + total_length + math.ceil(overlap / 2)
                 # fmt : on
 
                 full_grads[start:end, :] = norm_grads[:, :]
@@ -143,4 +155,29 @@ if __name__ == "__main__":
     y_pred_path = sys.argv[4]
     threshold = float(sys.argv[5])  # Convert back to float
 
-    run_smoothgrad(model_path, model_type, path_to_files, y_pred_path, threshold)
+    # Parameters
+    window_size = 0.2
+    sfreq = 150
+    freq = [1, 70]
+    dim = (int(sfreq * window_size), 23, 1)
+
+    nb_repeat_sg = 10
+    noise_val = 0.1
+    centre_unique = 12
+    overlap = 9
+    total_lenght = centre_unique + overlap
+
+    run_smoothgrad(
+        model_path,
+        model_type,
+        path_to_files,
+        y_pred_path,
+        threshold,
+        dim,
+        nb_repeat_sg,
+        sfreq,
+        window_size,
+        noise_val,
+        total_length,
+        overlap,
+    )
