@@ -50,7 +50,6 @@ def prepare_data(
         "mag",
         (freq[0], freq[1]),
         sfreq,
-        window_size,
     )
     total_nb_windows = create_windows(
         output_path, window_size, False, sfreq, spike_spacing_from_borders
@@ -153,7 +152,7 @@ def test_model(
     window_size = 0.2
     sfreq = 150
     freq = [1, 70]
-    dim = (int(sfreq * window_size), 23, 1)
+    dim = (int(sfreq * window_size), 275, 1)
     spike_spacing_from_borders = 0.03
 
     # 1. Data preparation
