@@ -41,8 +41,7 @@ This software is designed for clinicians to annotate raw MEG data and run predic
 Full installation and usage instructions are available here: [DeepEpiX Documentation](https://agnesgrd.github.io/deepepix-docs/)
 
 ## License
-This project is licensed under the GNU General Public License v3.0 (GPLv3).  
-See the COPYING file for details.
+This project is distributed under the DeepEpiX License (research-use only). See LICENSE for details.
 
 [Python-url]: https://www.python.org
 [Python-shield]: https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54
