@@ -21,7 +21,7 @@ Thumbs.db
 
 # Data
 data/*
-!data/.gitkeep
+!data/raw.fif
 
 # Cache
 src/cache-directory/*
