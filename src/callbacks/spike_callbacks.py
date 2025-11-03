@@ -7,7 +7,7 @@ from callbacks.utils import history_utils as hu
 def register_enable_delete_event_button():
     @callback(
         Output("delete-event-button", "disabled"),
-        Input("meg-signal-graph", "selectedData"),
+        Input("signal-graph", "selectedData"),
         prevent_initial_call=True,
     )
     def enable_delete_event_button(selected_data):
@@ -39,21 +39,21 @@ def register_add_event_onset_duration_on_click():
     @callback(
         Output("event-onset", "value"),
         Output("event-duration", "value"),
-        Input("meg-signal-graph", "clickData"),
-        Input("meg-signal-graph", "selectedData"),
+        Input("signal-graph", "clickData"),
+        Input("signal-graph", "selectedData"),
         prevent_initial_call=True,
     )
     def _update_event_onset_duration_on_click(click_info, selected_data):
         trigger_id = dash.ctx.triggered[0]["prop_id"].split(".")[0]
 
         try:
-            if trigger_id == "meg-signal-graph" and selected_data:
+            if trigger_id == "signal-graph" and selected_data:
                 start_time = selected_data["range"]["x"][0]
                 end_time = selected_data["range"]["x"][1]
                 duration = end_time - start_time
                 return round(start_time, 3), round(duration, 3)
 
-            elif trigger_id == "meg-signal-graph" and click_info:
+            elif trigger_id == "signal-graph" and click_info:
                 t = click_info["points"][0]["x"]
                 return round(t, 3), 0
 
@@ -127,7 +127,7 @@ def register_delete_selected_spike():
         Output("annotation-store", "data", allow_duplicate=True),
         Output("history-store", "data", allow_duplicate=True),
         Input("delete-event-button", "n_clicks"),
-        State("meg-signal-graph", "selectedData"),
+        State("signal-graph", "selectedData"),
         State("annotation-store", "data"),
         State("annotation-checkboxes", "value"),
         State("history-store", "data"),

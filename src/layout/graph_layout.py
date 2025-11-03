@@ -12,7 +12,7 @@ def create_graph_container(
     next_spike_id="next-spike",
     annotation_dropdown_id="annotation-dropdown",
     loading_id="loading-graph",
-    signal_graph_id="meg-signal-graph",
+    signal_graph_id="signal-graph",
     annotation_graph_id="annotation-graph",
 ):
     return html.Div(

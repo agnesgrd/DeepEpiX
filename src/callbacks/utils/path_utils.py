@@ -12,8 +12,6 @@ import config
 def get_data_path_options(data_dir=Path(config.DATA_DIR)):
     all_data = get_valid_paths(str(data_dir))  # recursive search
 
-    print(all_data)
-
     return (
         [{"label": d.name, "value": str(d.resolve())} for d in all_data]
         if all_data

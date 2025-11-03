@@ -9,12 +9,12 @@ from layout.config_layout import ERROR
 
 def register_update_graph_raw_signal():
     @callback(
-        Output("meg-signal-graph", "figure"),
+        Output("signal-graph", "figure"),
         Output("python-error", "children"),
         Output("python-error", "style"),
         Input("update-button", "n_clicks"),
         Input("page-selector", "value"),
-        State("meg-signal-graph", "figure"),
+        State("signal-graph", "figure"),
         State("montage-radio", "value"),
         State("channel-region-checkboxes", "value"),
         State("data-path-store", "data"),

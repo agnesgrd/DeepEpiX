@@ -86,7 +86,6 @@ def create_topomap_from_preprocessed(
         original_raw.set_montage(montage)
 
     info = original_raw.info.copy()
-    print(info)
 
     if bad_channels:
         info["bads"] = bad_channels

@@ -23,7 +23,7 @@ def calculate_channel_offset_std(signal_df, scale_factor, min_offset=1, max_offs
     trimmed = signal_df.clip(lower=q_low, upper=q_high, axis=1)
 
     stds = trimmed.std(skipna=True)
-    scale_norm = (max_offset - min_offset) / scale_factor * 2
+    scale_norm = (max_offset - min_offset) / scale_factor * 5
     return stds.mean() * scale_norm
 
 

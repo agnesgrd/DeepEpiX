@@ -146,7 +146,6 @@ def generate_database(total_nb_windows: int) -> np.ndarray:
         Array of shape (N, 1), for window index
     """
     X_test_ids = np.arange(total_nb_windows, dtype=int)
-    print(X_test_ids.shape)
     return X_test_ids
 
 

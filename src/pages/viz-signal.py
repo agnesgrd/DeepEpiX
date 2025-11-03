@@ -185,7 +185,7 @@ layout = html.Div(
                             prev_spike_id="prev-spike",
                             next_spike_id="next-spike",
                             loading_id="loading-graph",
-                            signal_graph_id="meg-signal-graph",
+                            signal_graph_id="signal-graph",
                             annotation_graph_id="annotation-graph",
                         ),
                     ],
@@ -223,7 +223,7 @@ clientside_callback(
     }
     """,
     Output("dummy-output", "children"),
-    Input("meg-signal-graph", "figure"),
+    Input("signal-graph", "figure"),
     prevent_initial_call=False,
 )
 
@@ -266,7 +266,7 @@ register_clear_check_all_annotation_checkboxes(
 )
 
 register_update_annotations_on_graph(
-    graph_id="meg-signal-graph",
+    graph_id="signal-graph",
     checkboxes_id="annotation-checkboxes",
     page_selector_id="page-selector",
 )
@@ -338,14 +338,14 @@ register_enable_delete_event_button()
 
 register_move_with_keyboard(
     keyboard_id="keyboard",
-    graph_id="meg-signal-graph",
+    graph_id="signal-graph",
     page_selector_id="page-selector",
 )
 
 register_move_to_next_annotation(
     prev_spike_id="prev-spike",
     next_spike_id="next-spike",
-    graph_id="meg-signal-graph",
+    graph_id="signal-graph",
     dropdown_id="annotation-dropdown",
     checkboxes_id="annotation-checkboxes",
     page_selector_id="page-selector",
