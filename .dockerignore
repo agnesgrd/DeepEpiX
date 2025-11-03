@@ -20,8 +20,10 @@ build/
 Thumbs.db
 
 # Data (exclude large datasets)
-data/
-!data/.gitkeep  # Keep empty data folder if necessary
+data/*
+# !data/.gitkeep  # Keep empty data folder if necessary
+!data/patient_test.fif
+
 
 # Cache
 src/cache-directory/
