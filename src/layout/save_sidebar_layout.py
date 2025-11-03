@@ -45,7 +45,7 @@ def create_save():
                         inline=False,
                         style={"margin": "10px 0", "fontSize": "12px"},
                         persistence=True,
-                        persistence_type="session",
+                        persistence_type="memory",
                     ),
                 ],
                 style=BOX_STYLES["classic"],
