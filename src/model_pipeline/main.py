@@ -18,7 +18,8 @@ def run_model_pipeline(
     MODEL_MODULES = {
         "model_CNN.keras": "model_pipeline.run_CNN_features_models",
         "model_features_only.keras": "model_pipeline.run_CNN_features_models",
-        "pytorch?": "model_pipeline.pytorch_models",
+        "transformer.ckpt": "model_pipeline.run_hbiot",
+        "hbiot.ckpt": "model_pipeline.run_hbiot",
         "model_CNN_EEG.keras": "model_pipeline.run_CNN_EEG_model",
         # "new_model": "model_pipeline.run_new_model",  # example
     }

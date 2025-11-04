@@ -26,7 +26,7 @@ def register_update_selected_model():
         # Detect environment
         if selected_value.endswith((".keras", ".h5")):
             environment = "TensorFlow (.tfenv)"
-        elif selected_value.endswith(".pth"):
+        elif selected_value.endswith((".pth", ".ckpt")):
             environment = "PyTorch (.torchenv)"
         else:
             environment = "Unknown"
