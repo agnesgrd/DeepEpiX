@@ -45,15 +45,31 @@ def save_data_matrices(
     raw.filter(freq[0], freq[1], n_jobs=8)
     raw.resample(sfreq).pick([channel_type])
 
-    if subject_path.suffix == ".ds":
-        raw = interpolate_missing_channels(raw, good_channels)
-        data = {"m/eeg": [raw.get_data()], "file": [str(subject_path)]}
+    if channel_type == "mag":
+        first_key = next(iter(channel_groups), None)
+        base_name = first_key.split("-")[0]
+        if base_name in good_channels:
+            print("letsgo here")
+            raw = interpolate_missing_channels(raw, good_channels)
+            data = {"m/eeg": [raw.get_data()], "file": [str(subject_path)]}
 
-    elif subject_path.suffix == ".fif" or subject_path.is_dir():
+        else:
+            channels_order = [
+                ch
+                for group, chans in channel_groups.items()
+                if (group != "bad" and group != "EEG")
+                for ch in chans
+            ]
+            raw.reorder_channels(channels_order)
+
+            meg_data = fill_missing_channels(raw, len(good_channels))
+            data = {"m/eeg": [meg_data], "file": [str(subject_path)]}
+
+    elif channel_type == "eeg":
         channels_order = [
             ch
             for group, chans in channel_groups.items()
-            if group != "bad"
+            if (group != "bad")
             for ch in chans
         ]
         raw.reorder_channels(channels_order)
