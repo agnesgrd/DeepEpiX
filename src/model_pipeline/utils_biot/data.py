@@ -15,6 +15,43 @@ import pickle
 logger = logging.getLogger(__name__)
 
 
+def get_optimal_num_workers(ratio: float = 0.5, min_workers: int = 0, max_workers: Optional[int] = None) -> int:
+    """Dynamically determine the optimal number of workers for data loading.
+
+    Args:
+        ratio: Conservative ratio to multiply CPU count by (default: 0.5 for 50% of CPUs)
+        min_workers: Minimum number of workers (default: 0)
+        max_workers: Maximum number of workers (default: None, no limit)
+
+    Returns:
+        Optimal number of workers as an integer
+
+    Example:
+        # Use 50% of available CPUs
+        num_workers = get_optimal_num_workers(ratio=0.5)
+
+        # Use 75% of available CPUs, but at least 2 and at most 8
+        num_workers = get_optimal_num_workers(ratio=0.75, min_workers=2, max_workers=8)
+    """
+    try:
+        cpu_count = os.cpu_count() or 1
+    except Exception:
+        cpu_count = 1
+
+    # Calculate optimal workers with conservative ratio
+    optimal_workers = max(min_workers, int(cpu_count * ratio))
+
+    # Apply maximum limit if specified
+    if max_workers is not None:
+        optimal_workers = min(optimal_workers, max_workers)
+
+    logger.info(f"Dynamically determined num_workers: {optimal_workers} "
+                f"(CPU count: {cpu_count}, ratio: {ratio}, "
+                f"min: {min_workers}, max: {max_workers})")
+
+    return optimal_workers
+
+
 ## --- Dataset and Datamodules ---
 def load_and_process_meg_data(
     file_path: str,
@@ -533,6 +570,7 @@ class PredictionDataModule(L.LightningDataModule):
         dataset_config: Dict[str, Any],
         dataloader_config: Dict[str, Any],
         reference_channels_path: Optional[str] = None,
+        num_workers_ratio: float = 0.5,
         **kwargs
     ):
         """Initialize prediction data module.
@@ -541,6 +579,8 @@ class PredictionDataModule(L.LightningDataModule):
             file_path: Path to the MEG file (.fif or .ds)
             dataset_config: Configuration for data processing
             dataloader_config: Configuration for data loaders
+            reference_channels_path: Path to reference channels pickle file
+            num_workers_ratio: Ratio of CPU cores to use for workers (default: 0.5)
             **kwargs: Additional parameters for compatibility (unused)
         """
         super().__init__()
@@ -548,6 +588,7 @@ class PredictionDataModule(L.LightningDataModule):
         self.dataset_config = dataset_config
         self.dataloader_config = dataloader_config
         self.reference_channels_path = reference_channels_path
+        self.num_workers_ratio = num_workers_ratio
 
         self.predict_dataset: Optional[PredictDataset] = None
         self.input_shape: Optional[torch.Size] = None
@@ -584,15 +625,28 @@ class PredictionDataModule(L.LightningDataModule):
                 logger.info(f"Input shape: {self.input_shape}")
 
     def predict_dataloader(self) -> torch.utils.data.DataLoader:
-        """Create the prediction dataloader."""
+        """Create the prediction dataloader with dynamic num_workers."""
         if self.predict_dataset is None:
             raise RuntimeError("Call setup() before getting prediction dataloader")
-            
-        predict_config = self.dataloader_config.get('predict', self.dataloader_config.get('test', {}))
+
+        predict_config = self.dataloader_config.get('predict', self.dataloader_config.get('test', {})).copy()
+
         # Check that shuffle is False for prediction
         if predict_config.get('shuffle', True):
             logger.warning("Shuffle should be False for prediction dataloader, setting to False")
             predict_config['shuffle'] = False
+
+        # Dynamically determine num_workers if not explicitly set or if set to 0
+        logger.info(f"Configuring predict dataloader with initial config: {predict_config}")
+        if 'num_workers' not in predict_config or predict_config['num_workers'] == 0:
+            optimal_workers = get_optimal_num_workers(
+                ratio=self.num_workers_ratio,
+                min_workers=0,
+                max_workers=None
+            )
+            predict_config['num_workers'] = optimal_workers
+            logger.info(f"Using dynamically determined num_workers={optimal_workers} "
+                       f"for predict dataloader (ratio={self.num_workers_ratio})")
 
         # Use module-level predict_collate_fn
         return torch.utils.data.DataLoader(
