@@ -26,7 +26,7 @@ def get_grouped_channels_meg(grouped_channels, ch_names):
 
     elif "A" in ch_names[int(len(ch_names) / 2)]:
 
-        with open(Path(config.MONTAGES_DIR / "montage_A...123"), "r") as f:
+        with open(Path(config.MONTAGES_DIR / "montage_A1...json"), "r") as f:
             CHANNEL_GROUPS = json.load(f)
 
         for region, channels in CHANNEL_GROUPS.items():

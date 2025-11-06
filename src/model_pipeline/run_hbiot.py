@@ -305,11 +305,13 @@ class MEGSpikeDetector(L.LightningModule):
             unknown_mask = torch.ones_like(channel_mask, dtype=torch.bool)
 
         # Forward pass with batch-aware channel mask
+        force_sequential = not self.config["model"]["name"] == "BIOTHierarchical"
         logits = self.forward(
             X,
             channel_mask=channel_mask,
             window_mask=window_mask,
             unknown_mask=unknown_mask,
+            force_sequential=force_sequential,
         )
 
         # Apply temperature scaling and compute calibrated probabilities
@@ -587,36 +589,17 @@ def test_model(
 # if __name__ == "__main__":
 #     import argparse
 
-#     parser = argparse.ArgumentParser(description="Predict spikes in MEG data")
-#     parser.add_argument(
-#         "--file_path",
-#         type=str,
-#         required=True,
-#         help="Path to MEG file (.fif, .ds, of 4D format)",
-#     )
-#     parser.add_argument(
-#         "--config",
-#         type=str,
-#         default="./utils_biot/config/hparams.yaml",
-#         help="Path to configuration file",
-#     )
-#     parser.add_argument(
-#         "--checkpoint",
-#         type=str,
-#         default="./utils_biot/config/epoch=16-val_pr_auc=0.42.ckpt",
-#         help="Path to model checkpoint",
-#     )
-#     parser.add_argument(
-#         "--output",
-#         type=str,
-#         default=None,
-#         help="Output CSV file path (auto-generated if not provided)",
-#     )
-#     parser.add_argument(
-#         "--no-gfp",
-#         action="store_true",
-#         help="Skip GFP peak calculation for onset adjustment",
-#     )
+#     parser = argparse.ArgumentParser(description='Predict spikes in MEG data')
+#     parser.add_argument('--file_path', type=str, required=True,
+#                         help='Path to MEG file (.fif, .ds, of 4D format)')
+#     parser.add_argument('--config', type=str, default='./utils_biot/config_hbiot/hparams.yaml',
+#                         help='Path to configuration file')
+#     parser.add_argument('--checkpoint', type=str, default='./utils_biot/config_hbiot/epoch=23-val_pr_auc=0.48.ckpt',
+#                         help='Path to model checkpoint')
+#     parser.add_argument('--output', type=str, default=None,
+#                         help='Output CSV file path (auto-generated if not provided)')
+#     parser.add_argument('--no-gfp', action='store_true',
+#                         help='Skip GFP peak calculation for onset adjustment')
 
 #     args = parser.parse_args()
 
@@ -626,7 +609,7 @@ def test_model(
 #         config_path=args.config,
 #         checkpoint_path=args.checkpoint,
 #         compute_gfp_peaks=not args.no_gfp,
-#         output_csv=args.output,
+#         output_csv=args.output
 #     )
 
 #     # Print summary
