@@ -21,18 +21,18 @@ RUN /DeepEpiX/.dashenv/bin/pip install --upgrade pip
 RUN /DeepEpiX/.tfenv/bin/pip install --upgrade pip
 
 # Install dash environment dependencies
-RUN /DeepEpiX/.dashenv/bin/pip install -r requirements/requirements-python3.9.txt
+RUN /DeepEpiX/.dashenv/bin/pip install -r requirements/requirements-dashenv.txt
 
 # Install TensorFlow environment dependencies based on OS/architecture
 RUN OS=$(uname) && ARCH=$(uname -m) && echo "OS: $OS, ARCH: $ARCH" && \
     if [ "$OS" = "Darwin" ]; then \
-        echo "Detected macOS ($ARCH). Installing Metal-compatible TensorFlow..."; \
-        /DeepEpiX/.tfenv/bin/pip install -r requirements/requirements-tfenv-macos.txt; \
+    echo "Detected macOS ($ARCH). Installing Metal-compatible TensorFlow..."; \
+    /DeepEpiX/.tfenv/bin/pip install -r requirements/requirements-tfenv-macos.txt; \
     elif [ "$ARCH" = "x86_64" ] || [ "$ARCH" = "aarch64" ]; then \
-        echo "Detected Linux ($ARCH). Installing CUDA-compatible TensorFlow..."; \
-        /DeepEpiX/.tfenv/bin/pip install -r requirements/requirements-tfenv-cuda.txt; \
+    echo "Detected Linux ($ARCH). Installing CUDA-compatible TensorFlow..."; \
+    /DeepEpiX/.tfenv/bin/pip install -r requirements/requirements-tfenv-cuda.txt; \
     else \
-        echo "Unknown architecture: $ARCH. Cannot install CPU-only TensorFlow..."; \
+    echo "Unknown architecture: $ARCH. Cannot install CPU-only TensorFlow..."; \
     fi
 
 # Copy the rest of the application

@@ -10,7 +10,7 @@ git clone https://github.com/agnesgrd/DeepEpiX.git
 cd DeepEpiX
 python3 -m venv .dashenv
 source .dashenv/bin/activate
-python3 -m pip install -r requirements/requirements-python3.9.txt
+python3 -m pip install -r requirements/requirements-dashenv.txt
 deactivate
 ```
 
