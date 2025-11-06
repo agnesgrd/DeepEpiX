@@ -76,7 +76,8 @@ data:
         batch_size: 50
         drop_last: false
         num_workers: 0
-        pin_memory: first_half_spike_duration
+        pin_memory: false
+        persistent_workers: true
         shuffle: false
         worker_init_fn: null
       train:

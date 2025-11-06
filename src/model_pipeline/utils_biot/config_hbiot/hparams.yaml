@@ -77,6 +77,7 @@ data:
         drop_last: false
         num_workers: 0
         pin_memory: false
+        persistent_workers: true
         shuffle: false
         worker_init_fn: null
       train:
